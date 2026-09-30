@@ -22,7 +22,8 @@ export function groupParam(g: TimelineGroupBy): string {
 }
 
 /**
- * `?day=2025-05-17&view=timeline&group=oars&team=<id>&class=8%2B&shell=<id>&tab=conflicts`.
+ * `?day=2025-05-17&view=timeline&group=oars&team=<id>&class=8%2B&shell=<id>&tab=conflicts`, and
+ * `?event=<id>` to open the list on one event.
  * Changes replace the history entry, so filters do not pile up behind the back button.
  */
 export function useScheduleParams() {
@@ -56,6 +57,8 @@ export function useScheduleParams() {
     groupBy,
     filters,
     day: params.get('day'),
+    /** A link to one event (activity feed, mention emails): show and highlight it once. */
+    event: params.get('event'),
     tab: params.get('tab') === 'conflicts' ? ('conflicts' as const) : ('schedule' as const),
     set,
   };
@@ -69,6 +72,45 @@ export function useNow(intervalMs = 60_000): number {
     return () => window.clearInterval(id);
   }, [intervalMs]);
   return now;
+}
+
+/**
+ * `?event=<id>` (links from the activity feed and mention emails): once the schedule has
+ * rendered, scroll the event's row into view, highlight it briefly, and replace the parameter
+ * with the event's day so a refresh or the back button does not repeat it.
+ */
+export function useEventLink(
+  eventId: string | null,
+  event: RegattaEvent | undefined,
+  ready: boolean,
+  set: (patch: Record<string, string | null>) => void,
+) {
+  useEffect(() => {
+    if (!eventId || !ready) return;
+    if (!event) {
+      set({ event: null });
+      return;
+    }
+    const row = document.querySelector<HTMLElement>(`[data-event-id="${event.id}"]`);
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    row?.scrollIntoView?.({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    row?.focus({ preventScroll: true });
+    if (row) row.dataset.highlight = 'true';
+    set({
+      event: null,
+      day: event.day,
+      view: null,
+      tab: null,
+      team: null,
+      class: null,
+      shell: null,
+    });
+    // Not cleared on cleanup: consuming the parameter re-runs this effect, and the glow should
+    // still fade. Removing an attribute from a row that is gone is harmless.
+    window.setTimeout(() => {
+      if (row) delete row.dataset.highlight;
+    }, 2400);
+  }, [eventId, event, ready, set]);
 }
 
 export type ConfirmFn = (opts: {

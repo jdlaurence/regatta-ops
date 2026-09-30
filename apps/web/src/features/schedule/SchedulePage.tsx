@@ -26,12 +26,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/select';
 import { EventFormDialog, ImportEventsDialog } from '@/features/events';
 import { useConfirm } from './ConfirmDialog';
-import { useEventEdits, useNow, useScheduleParams } from './hooks';
+import { useEventEdits, useEventLink, useNow, useScheduleParams } from './hooks';
 import {
   defaultDay,
   entriesWithoutEvent,
   entryMatches,
   hasFilters,
+  NO_FILTERS,
   regattaDays,
   scheduleItems,
 } from './lib';
@@ -56,7 +57,8 @@ export default function SchedulePage() {
     error,
     refetch,
   } = useFindings(regattaId);
-  const { view, groupBy, filters, day: dayParam, tab, set } = useScheduleParams();
+  const params = useScheduleParams();
+  const { groupBy, set } = params;
   const canEdit = useCan('regatta.edit');
   const now = useNow();
   const isDesktop = useInspectorStore((s) => s.isDesktop);
@@ -68,7 +70,14 @@ export default function SchedulePage() {
 
   const days = useMemo(() => (ws ? regattaDays(ws.regatta, ws.events) : []), [ws]);
   const today = todayIn(ws?.regatta.timezone, new Date(now));
+  // A link to one event shows its day in the list, unfiltered, until the highlight is done.
+  const target = params.event ? ws?.byId.events.get(params.event) : undefined;
+  const view = target ? 'list' : params.view;
+  const tab = target ? 'schedule' : params.tab;
+  const filters = target ? NO_FILTERS : params.filters;
+  const dayParam = target?.day ?? params.day;
   const day = dayParam && days.includes(dayParam) ? dayParam : defaultDay(days, today);
+  useEventLink(params.event, target, !!ws, set);
 
   const items = useMemo(
     () => (ws ? scheduleItems(ws.events, ws.entries, day, filters, ws.byId.teams) : []),
@@ -85,7 +94,6 @@ export default function SchedulePage() {
   const untimed = races
     .filter((i) => !i.event.scheduledAt)
     .reduce((n, i) => n + i.entries.filter((e) => e.status !== 'scratched').length, 0);
-  const problemCount = findings.filter((f) => f.severity !== 'info').length;
 
   const openEntry = useCallback(
     (entryId: string, teamId: string) => void navigate(lineupEntryPath(regattaId, teamId, entryId)),
@@ -193,7 +201,7 @@ export default function SchedulePage() {
             emptyText={
               hasFilters(filters)
                 ? 'No scheduled entries match these filters on this day.'
-                : 'No scheduled entries on this day. Entries show here once their event has a time.'
+                : 'No entries with a race time on this day. Add entries on a team’s lineups page, and give their events a time in the list.'
             }
           />
           {untimed > 0 && (
@@ -276,7 +284,9 @@ export default function SchedulePage() {
             <TabsTrigger value="schedule">Schedule</TabsTrigger>
             <TabsTrigger value="conflicts">
               Conflicts
-              {problemCount > 0 && <span className="text-ink-2 tabular-nums">{problemCount}</span>}
+              {findings.length > 0 && (
+                <span className="text-ink-2 tabular-nums">{findings.length}</span>
+              )}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="schedule" className="outline-none">

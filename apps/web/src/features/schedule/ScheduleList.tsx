@@ -32,6 +32,10 @@ import {
 import { InlineEdit } from './InlineEdit';
 import { STAGE_LABELS, eventTitle, wallTime, type ScheduleItem } from './lib';
 
+/** A row reached from a link to its event (`?event=`) glows briefly (set by useEventLink). */
+const HIGHLIGHT =
+  'transition-colors duration-700 data-[highlight=true]:bg-accent-tint data-[highlight=true]:duration-150';
+
 export interface ScheduleListProps {
   ws: RegattaWorkingSet;
   regattaId: string;
@@ -85,7 +89,11 @@ export function ScheduleList({
             <li
               key={item.event.id}
               data-event-id={item.event.id}
-              className="flex flex-col gap-2 border-b border-line px-3 py-3 last:border-b-0 md:px-4"
+              tabIndex={-1}
+              className={cn(
+                'flex flex-col gap-2 border-b border-line px-3 py-3 outline-none last:border-b-0 md:px-4',
+                HIGHLIGHT,
+              )}
             >
               <EventHeader
                 event={item.event}
@@ -288,7 +296,11 @@ function LogisticsRow({
   return (
     <li
       data-event-id={event.id}
-      className="flex items-center gap-3 border-b border-line bg-bg/60 px-3 py-1.5 last:border-b-0 md:px-4"
+      tabIndex={-1}
+      className={cn(
+        'flex items-center gap-3 border-b border-line bg-bg/60 px-3 py-1.5 outline-none last:border-b-0 md:px-4',
+        HIGHLIGHT,
+      )}
     >
       {event.scheduledAt ? (
         <TimeCell

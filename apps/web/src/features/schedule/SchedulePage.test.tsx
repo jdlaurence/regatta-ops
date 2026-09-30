@@ -176,6 +176,25 @@ describe('SchedulePage list', () => {
   });
 });
 
+describe('SchedulePage links to an event', () => {
+  it('opens the list on the event, unfiltered, highlights it, and drops the parameter', async () => {
+    const { router } = renderSchedule(world(), `?event=${EVENT3}&view=timeline&team=${IDS.boys}`);
+    await screen.findByRole('list', { name: 'Races and logistics' });
+    const row = eventRow(EVENT3);
+    await waitFor(() => expect(row).toHaveAttribute('data-highlight', 'true'));
+    expect(row).toHaveFocus();
+    await waitFor(() => expect(router.state.location.search).toBe('?day=2026-11-01'));
+    // The girls' entry shows although the link arrived with a boys-only filter.
+    expect(entryRow(ENTRY2)).not.toBeNull();
+  });
+
+  it('ignores a link to an event that is gone', async () => {
+    const { router } = renderSchedule(world(), '?event=missing00000000');
+    await screen.findByRole('list', { name: 'Races and logistics' });
+    await waitFor(() => expect(router.state.location.search).toBe(''));
+  });
+});
+
 describe('SchedulePage timeline', () => {
   it('switches to the timeline, and a bar opens the entry on the lineups page', async () => {
     const user = userEvent.setup();

@@ -109,17 +109,19 @@ export function ScheduleToolbar({
         )}
       </div>
       {/* Phones show the filters on request; wider screens always. */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="self-start sm:hidden"
-        aria-expanded={filtersOpen}
-        aria-controls="schedule-filters"
-        onClick={() => setFiltersOpen((o) => !o)}
-      >
-        <ListFilter aria-hidden />
-        Filters{active > 0 && <span className="tabular-nums">({active})</span>}
-      </Button>
+      {(teams.length > 1 || classes.length > 1 || shellOptions.length > 0) && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="self-start sm:hidden"
+          aria-expanded={filtersOpen}
+          aria-controls="schedule-filters"
+          onClick={() => setFiltersOpen((o) => !o)}
+        >
+          <ListFilter aria-hidden />
+          Filters{active > 0 && <span className="tabular-nums">({active})</span>}
+        </Button>
+      )}
       <div
         id="schedule-filters"
         className={cn('flex-wrap items-center gap-2 sm:flex', filtersOpen ? 'flex' : 'hidden')}
