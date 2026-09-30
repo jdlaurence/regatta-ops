@@ -174,13 +174,17 @@ describe('Shells tab', () => {
     expect(photo.getAttribute('src')).toMatch(/^data:image\/png;base64,/);
     expect(within(drawer).queryByRole('alert')).toBeNull();
     expect((await store.get('shells', IDS.shell))?.photoUrl).toMatch(/^data:image\/png/);
-    // The table behind the drawer gets a photo column with a thumbnail.
-    expect(
-      await within(table).findByRole('img', { name: 'Photo of Spencer', hidden: true }),
-    ).toBeInTheDocument();
-    expect(
-      within(table).getByRole('columnheader', { name: 'Photo', hidden: true }),
-    ).toBeInTheDocument();
+    // The table behind the drawer gets a photo column with a thumbnail. Adding the column
+    // re-renders the table, so look it up again rather than holding the first element.
+    await waitFor(() => {
+      const current = screen.getByRole('table', { name: 'Shells', hidden: true });
+      expect(
+        within(current).getByRole('img', { name: 'Photo of Spencer', hidden: true }),
+      ).toBeInTheDocument();
+      expect(
+        within(current).getByRole('columnheader', { name: 'Photo', hidden: true }),
+      ).toBeInTheDocument();
+    });
     const [log] = await store.list('activity_log', { where: { targetId: IDS.shell } });
     expect(log!.summary).toBe('edited shell Spencer (photo)');
 
