@@ -38,6 +38,25 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
 - The race type is `RegattaEvent` (not `Event`, which collides with the DOM).
 - Instants are ISO UTC strings; days are `YYYY-MM-DD` in the regatta timezone; convert with
   `zonedToInstant` / `instantToZoned` / `clockAt` from `time.ts`.
+- PocketBase field names drop the `Id` suffix of relations (`eventId` → `event`); days are text;
+  empty relations come back as `''`. `apps/web/src/data/pb-mapper.ts` + `schema.ts` own the
+  mapping (one line per field); `backend/README.md` lists the record shapes.
+- PLAN.md §18 records every deviation made during the build; read it before assuming §1–§17.
+
+## App building blocks (apps/web/src)
+
+- Data: `useRegattaWorkingSet(id)` (everything a regatta page needs), `useFindings(id)` (the
+  conflict engine on it), `useList` / `useRecord` / `useCreate` / `useUpdate` / `useDelete` /
+  `useBatch` (optimistic), `useGuardedUpdate` (409 on stale event times and placements),
+  `useCan(action)` (role + online), `useCurrentUser`. All exported from `@/data`.
+- Shared UI: `BoatStrip`, chips (`TeamChip`, `ShellChip`, `OarChip`, `SideBadge`, `ClassBadge`),
+  `ConflictBadge`, `ConflictsPanel`, `DayTimeline`, `Inspector` (portal into the right panel),
+  `DataTable`, `CsvImport`, `CommentsThread`, `ActivityFeed`, `PublishStatus`,
+  `ShareLinksDialog`, `components/trailer/*` (`TrailerEndView`, `RulesEditor`,
+  `TrailerIsometric`), `components/ui/*` (button, dialog/sheet, combobox, select, tabs, menus).
+- Edits to a final regatta go through `useConfirmFinalEdit` (features/regattas).
+- Deep links: entries `/regattas/:id/lineups/:teamId?entry=<id>`, events
+  `/regattas/:id/schedule?event=<id>`, fleet `/fleet/shells?shell=<id>`.
 - Seed and PocketBase ids are 15 lowercase alphanumerics; `stableId(key)` makes them.
 
 ## Conventions (PLAN.md §11.2, mandatory)
