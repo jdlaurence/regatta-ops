@@ -215,13 +215,13 @@ async function animationsWhileSeating(page: Page): Promise<{ name: string; ms: n
   await signInAs(page, 'coach');
   await page.goto(regattaUrl(HOTL, `lineups/${SEED_TEAM_IDS.boys}`));
   await settle(page);
-  // A new double, so there are empty seats; focus lands on its first seat.
+  // A new double, so there are empty seats; focus lands on its top seat, stroke.
   await page.getByRole('button', { name: 'Add entry' }).first().click();
   await page.getByRole('button', { name: /^Event:/ }).click();
   await page.keyboard.type("Men's Youth 2x");
   await page.keyboard.press('Enter');
   await page.getByRole('dialog').getByRole('button', { name: 'Add entry' }).click();
-  await expect(page.locator(':focus')).toHaveAccessibleName('Seat 1, empty');
+  await expect(page.locator(':focus')).toHaveAccessibleName('Seat 2, empty');
   // Type to open the picker, then take someone who is not in a boat yet (0 entries).
   await page.keyboard.type('a');
   await page.getByRole('option').filter({ hasText: /0$/ }).first().click();
