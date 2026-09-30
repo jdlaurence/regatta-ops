@@ -1,5 +1,6 @@
-// Seats of an entry, as a strip (desktop) or as rows (phones and narrow columns). Each editable
-// seat is a drop target, a drag source when occupied, and the trigger of its athlete picker.
+// Seats of an entry, as a vertical boat strip: the cox on top, then stroke down to bow. Each
+// editable seat is a drop target, a drag source when occupied, and the trigger of its athlete
+// picker (a bottom sheet on phones).
 //
 // Keyboard (PLAN.md §5.6, every drag has an equivalent):
 //   Enter            choose an athlete (the picker)
@@ -7,44 +8,28 @@
 //   Space            pick up the seat's athlete; Space or Enter on another seat puts them there
 //                    (the two swap); Escape cancels
 //   Delete/Backspace clear the seat
-//   arrows           move between seats; up and down move between entries on a strip
+//   up and down      the seat above or below in this boat; Home and End the top and bottom
+//   left and right   the same row of the boat before or after this one
 
-import {
-  useMemo,
-  useState,
-  type HTMLAttributes,
-  type KeyboardEvent,
-  type ReactNode,
-  type Ref,
-} from 'react';
+import { useMemo, useState, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Eraser } from 'lucide-react';
 import {
   athleteName,
   athleteShortName,
   entrySeatSides,
-  seatSide,
   type Athlete,
   type Entry,
   type Seat,
   type Severity,
-  type Side,
 } from '@srt/domain';
 import { cn } from '@/lib/cn';
-import {
-  BoatSeat,
-  BoatStrip,
-  seatLabel,
-  type BoatSeatProps,
-  type BoatStripSeat,
-  type SeatOccupant,
-} from '@/components/BoatStrip';
+import { BoatSeat, BoatStrip, type BoatSeatProps, type SeatOccupant } from '@/components/BoatStrip';
 import { ConflictIcon } from '@/components/ConflictBadge';
 import { SideBadge } from '@/components/chips';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
-import { teamStyle } from '@/lib/team-colors';
 import { useLineup } from './context';
-import { seatCandidates, sheetOrder, stripOrder, type SeatRef } from './lib';
+import { seatCandidates, sheetOrder, type SeatRef } from './lib';
 import { useIsSettling, useLineupUi, usePickerOpen, type PickerState } from './store';
 
 export const SEAT_HELP_ID = 'lineup-seat-help';
@@ -65,28 +50,32 @@ export function focusSeatSoon(ref: SeatRef) {
   setTimeout(() => focusSeat(ref), 30);
 }
 
-type Direction = 'prev' | 'next' | 'up' | 'down' | 'first' | 'last';
+type Direction = 'up' | 'down' | 'left' | 'right' | 'first' | 'last';
 
 function seatsIn(card: Element): HTMLElement[] {
   return Array.from(card.querySelectorAll<HTMLElement>('[data-lineup-seat]'));
 }
 
+/**
+ * Move focus from a seat. Up and down stay in the boat; left and right go to the same row of
+ * the neighboring entry in page order (the next card in the grid, or the first of the next row),
+ * or its last row when that boat is shorter.
+ */
 function moveFocus(from: HTMLElement, dir: Direction) {
   const card = from.closest('[data-lineup-entry]');
   if (!card) return;
   const seats = seatsIn(card);
   const i = seats.indexOf(from);
-  const cards = Array.from(document.querySelectorAll('[data-lineup-entry]')).filter(
-    (c) => seatsIn(c).length > 0,
-  );
-  const ci = cards.indexOf(card);
   let target: HTMLElement | undefined;
-  if (dir === 'prev') target = seats[i - 1] ?? seatsIn(cards[ci - 1] ?? card).at(-1);
-  if (dir === 'next') target = seats[i + 1] ?? seatsIn(cards[ci + 1] ?? card)[0];
+  if (dir === 'up') target = seats[i - 1];
+  if (dir === 'down') target = seats[i + 1];
   if (dir === 'first') target = seats[0];
   if (dir === 'last') target = seats.at(-1);
-  if (dir === 'up' || dir === 'down') {
-    const other = cards[ci + (dir === 'up' ? -1 : 1)];
+  if (dir === 'left' || dir === 'right') {
+    const cards = Array.from(document.querySelectorAll('[data-lineup-entry]')).filter(
+      (c) => seatsIn(c).length > 0,
+    );
+    const other = cards[cards.indexOf(card) + (dir === 'left' ? -1 : 1)];
     if (other) {
       const list = seatsIn(other);
       target = list[Math.min(i, list.length - 1)];
@@ -95,11 +84,9 @@ function moveFocus(from: HTMLElement, dir: Direction) {
   target?.focus();
 }
 
-/** The seat after this one in the entry, for filling a boat seat by seat from the keyboard. */
-function nextSeatRef(entry: Entry, seat: Seat, list: boolean, coxAtBow: boolean): SeatRef | null {
-  const order = list
-    ? sheetOrder(entry.boatClass)
-    : stripOrder(entry.boatClass, coxAtBow ? 'bow' : 'stern');
+/** The seat below this one, for filling a boat from the top (cox, stroke, ... bow). */
+function nextSeatRef(entry: Entry, seat: Seat): SeatRef | null {
+  const order = sheetOrder(entry.boatClass);
   const next = order[order.indexOf(seat) + 1];
   return next ? { entryId: entry.id, seat: next } : null;
 }
@@ -202,13 +189,16 @@ export interface SeatDropData {
   seat: Seat;
 }
 
-function useSeatWiring(
-  entry: Entry,
-  seat: Seat,
-  occupantId: string | null,
-  coxAtBow: boolean,
-  listMode: boolean,
-) {
+const ARROWS: Record<string, Direction> = {
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+  ArrowLeft: 'left',
+  ArrowRight: 'right',
+  Home: 'first',
+  End: 'last',
+};
+
+function useSeatWiring(entry: Entry, seat: Seat, occupantId: string | null) {
   const { actions, index, canEdit, isPhone } = useLineup();
   const target: SeatRef = { entryId: entry.id, seat };
   const dnd = canEdit && !isPhone;
@@ -281,17 +271,7 @@ function useSeatWiring(
       if (occupantId) actions.clear(target);
       return;
     }
-    const arrows: Record<string, Direction> = listMode
-      ? { ArrowUp: 'prev', ArrowDown: 'next', Home: 'first', End: 'last' }
-      : {
-          ArrowLeft: 'prev',
-          ArrowRight: 'next',
-          ArrowUp: 'up',
-          ArrowDown: 'down',
-          Home: 'first',
-          End: 'last',
-        };
-    const dir = arrows[k];
+    const dir = ARROWS[k];
     if (dir) {
       e.preventDefault();
       moveFocus(el, dir);
@@ -315,7 +295,7 @@ function useSeatWiring(
   const onPick = (athleteId: string | null) => {
     if (athleteId === null) actions.clear(target);
     else actions.place(target, athleteId);
-    const next = athleteId ? nextSeatRef(entry, seat, listMode, coxAtBow) : null;
+    const next = athleteId ? nextSeatRef(entry, seat) : null;
     focusSeatSoon(next ?? target);
   };
 
@@ -402,21 +382,13 @@ function SeatPicker({
 }
 
 // ---------------------------------------------------------------------------
-// Strip mode
+// The boat
 
 function occupantFor(a: Athlete | undefined): SeatOccupant | null {
   return a ? { id: a.id, name: athleteName(a), shortName: athleteShortName(a) } : null;
 }
 
-function StripSeat({
-  entry,
-  props,
-  coxAtBow,
-}: {
-  entry: Entry;
-  props: BoatSeatProps;
-  coxAtBow: boolean;
-}) {
+function StripSeat({ entry, props }: { entry: Entry; props: BoatSeatProps }) {
   const { canEdit, isPhone } = useLineup();
   const seat = props.seat.seat;
   const occupantId = props.seat.occupant?.id ?? null;
@@ -434,7 +406,7 @@ function StripSeat({
     openSheet,
     seatId,
     describedBy,
-  } = useSeatWiring(entry, seat, occupantId, coxAtBow, false);
+  } = useSeatWiring(entry, seat, occupantId);
   const el = (
     <BoatSeat
       {...props}
@@ -450,6 +422,7 @@ function StripSeat({
       className={cn(
         props.className,
         'touch-manipulation select-none',
+        (canEdit || isPhone) && 'hover:bg-surface-2',
         isDragging && 'opacity-40',
         carrying && 'cursor-copy',
       )}
@@ -469,6 +442,7 @@ function StripSeat({
   );
 }
 
+/** An entry's crew as a vertical boat: the cox on top, then stroke down to bow. */
 export function EntryStrip({
   entry,
   seatConflicts,
@@ -485,195 +459,26 @@ export function EntryStrip({
   for (const [s, rec] of records ?? []) {
     seats[s] = rec.athleteId ? occupantFor(index.athleteById.get(rec.athleteId)) : null;
   }
-  const coxAtBow = shell?.coxPosition === 'bow';
   const interactive = canEdit || isPhone;
   return (
     <BoatStrip
       boatClass={entry.boatClass}
       seats={seats}
-      coxPosition={shell?.coxPosition}
       seatSides={entrySeatSides(entry, shell)}
       size="md"
+      orientation="vertical"
       teamColor={team.colorKey}
       conflict={conflict}
+      // The card's conflict badges carry the icons; the hull keeps the color.
+      showConflictIcon={false}
       seatConflicts={seatConflicts}
       label={`${entry.label}${shell ? `, ${shell.nickname || shell.name}` : ''}`}
       interactive={interactive}
-      fitNames
       renderSeat={
         interactive
-          ? (s, props) => <StripSeat key={s.seat} entry={entry} props={props} coxAtBow={coxAtBow} />
+          ? (s, props) => <StripSeat key={s.seat} entry={entry} props={props} />
           : undefined
       }
     />
-  );
-}
-
-// ---------------------------------------------------------------------------
-// List mode: cox first, then stroke down to bow, like the club's sheets
-
-/** Rigger side of a sweep seat as a letter (the strip draws it as a tick). */
-function SideMark({ side }: { side: Side | null }) {
-  return (
-    <span aria-hidden className="w-3 shrink-0 text-center text-xs font-medium text-ink-2">
-      {side === 'port' ? 'P' : side === 'starboard' ? 'S' : ''}
-    </span>
-  );
-}
-
-type SeatRowProps = Omit<HTMLAttributes<HTMLElement>, 'onKeyDown'> & {
-  ref?: Ref<HTMLElement>;
-  seat: BoatStripSeat;
-  interactive: boolean;
-  selected?: boolean;
-  highlighted?: boolean;
-  settling?: boolean;
-  onKeyDown?: (e: KeyboardEvent<HTMLElement>) => void;
-};
-
-function SeatRowView({
-  ref,
-  seat,
-  interactive,
-  selected,
-  highlighted,
-  settling,
-  className,
-  onKeyDown,
-  ...rest
-}: SeatRowProps) {
-  const Tag = interactive ? 'button' : 'div';
-  const occupant = seat.occupant;
-  return (
-    <Tag
-      ref={ref as Ref<HTMLButtonElement & HTMLDivElement>}
-      {...(interactive ? { type: 'button' as const, 'aria-label': seat.label, onKeyDown } : {})}
-      className={cn(
-        'flex min-h-11 w-full items-center gap-3 border-t border-line px-3 text-left first:border-t-0 md:min-h-10',
-        interactive && 'select-none hover:bg-surface-2 focus-visible:outline-offset-[-2px]',
-        (selected || highlighted) && 'bg-accent-tint',
-        className,
-      )}
-      {...rest}
-    >
-      {!interactive && <span className="sr-only">{seat.label}</span>}
-      <span
-        aria-hidden
-        className="w-9 shrink-0 font-display text-sm font-semibold text-ink-2 tabular-nums"
-      >
-        {seat.isCox ? 'Cox' : seat.seat}
-      </span>
-      <SideMark side={seat.side} />
-      <span
-        aria-hidden
-        className={cn(
-          'min-w-0 flex-1 truncate text-base',
-          occupant ? 'font-medium text-ink' : 'text-ink-2',
-          settling && 'animate-settle',
-        )}
-      >
-        {occupant ? occupant.name : 'Empty'}
-      </span>
-      {seat.conflict && <ConflictIcon severity={seat.conflict} />}
-    </Tag>
-  );
-}
-
-function ListSeat({
-  entry,
-  seat,
-  coxAtBow,
-}: {
-  entry: Entry;
-  seat: BoatStripSeat;
-  coxAtBow: boolean;
-}) {
-  const { canEdit, isPhone } = useLineup();
-  const occupantId = seat.occupant?.id ?? null;
-  const {
-    setRef,
-    listeners,
-    isDragging,
-    isOver,
-    picker,
-    settling,
-    carrying,
-    onKeyDown,
-    onOpenChange,
-    onPick,
-    openSheet,
-    seatId,
-    describedBy,
-  } = useSeatWiring(entry, seat.seat, occupantId, coxAtBow, true);
-  const interactive = canEdit || isPhone;
-  const el = (
-    <SeatRowView
-      ref={setRef as Ref<HTMLElement>}
-      {...listeners}
-      data-lineup-seat={seatId}
-      aria-describedby={describedBy}
-      seat={seat}
-      interactive={interactive}
-      selected={!!picker}
-      highlighted={isOver}
-      settling={settling}
-      onKeyDown={onKeyDown}
-      onClick={isPhone ? openSheet : undefined}
-      className={cn(isDragging && 'opacity-40', carrying && 'cursor-copy')}
-    />
-  );
-  if (!canEdit || isPhone) return el;
-  return (
-    <SeatPicker
-      entry={entry}
-      seat={seat.seat}
-      occupantId={occupantId}
-      picker={picker}
-      onPick={onPick}
-      onOpenChange={onOpenChange}
-      trigger={el}
-    />
-  );
-}
-
-export function EntrySeatList({
-  entry,
-  seatConflicts,
-}: {
-  entry: Entry;
-  seatConflicts: Partial<Record<Seat, Severity>>;
-}) {
-  const { index, team } = useLineup();
-  const shell = entry.shellId ? index.shellById.get(entry.shellId) : null;
-  const sides = entrySeatSides(entry, shell);
-  const records = index.seatsByEntry.get(entry.id);
-  const coxAtBow = shell?.coxPosition === 'bow';
-  const rows: BoatStripSeat[] = sheetOrder(entry.boatClass).map((s, i) => {
-    const id = records?.get(s)?.athleteId;
-    const occupant = id ? occupantFor(index.athleteById.get(id)) : null;
-    const side = seatSide(entry.boatClass, s, sides);
-    const conflict = seatConflicts[s] ?? null;
-    return {
-      seat: s,
-      index: i,
-      isCox: s === 'cox',
-      occupant,
-      side,
-      conflict,
-      label: seatLabel(s, occupant, side, conflict),
-    };
-  });
-  const filled = rows.filter((r) => r.occupant).length;
-  return (
-    <div
-      role="group"
-      aria-label={`${entry.label}, ${filled} of ${rows.length} seats filled`}
-      style={teamStyle(team.colorKey)}
-      className="overflow-hidden rounded-control border border-l-4 border-line border-l-team"
-    >
-      {rows.map((r) => (
-        <ListSeat key={r.seat} entry={entry} seat={r} coxAtBow={coxAtBow} />
-      ))}
-    </div>
   );
 }

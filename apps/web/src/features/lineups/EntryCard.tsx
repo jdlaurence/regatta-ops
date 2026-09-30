@@ -1,6 +1,8 @@
-// One entry: label, status, shell and oars, conflict badges, the ⋯ menu, the boat strip (or
-// seat rows on a phone), and a line of facts. Clicking the card selects it; the label opens
-// the entry's details in the inspector.
+// One entry as a card in the builder's grid: label and the ⋯ menu, status and conflict badges,
+// the shell and oars, then the boat stood on end (cox on top, stroke down to bow), and a line of
+// facts. Everything above the boat has a fixed height, so boats side by side start level and
+// their seat rows line up. Clicking the card selects it; the label opens the entry's details in
+// the inspector.
 
 import { useRef, type MouseEvent } from 'react';
 import {
@@ -32,8 +34,8 @@ import {
 } from '@/components/ui/menu';
 import { useLineup } from './context';
 import { OarPicker, ShellPicker } from './EquipmentPickers';
-import { hotSeatPlans, rerigNote, seatConflicts, stripFits } from './lib';
-import { EntrySeatList, EntryStrip } from './Seats';
+import { hotSeatPlans, rerigNote, seatConflicts } from './lib';
+import { EntryStrip } from './Seats';
 import { useLineupUi } from './store';
 
 export const STATUS_LABELS: Record<EntryStatus, string> = {
@@ -162,8 +164,7 @@ function Facts({ entry, findings }: { entry: Entry; findings: Finding[] }) {
 }
 
 export function EntryCard({ entry, showClass }: { entry: Entry; showClass?: boolean }) {
-  const { index, findingsByEntry, entriesWidth } = useLineup();
-  const asList = !stripFits(entry.boatClass, entriesWidth);
+  const { index, findingsByEntry, isPhone } = useLineup();
   const selected = useLineupUi((s) => s.selectedEntryId === entry.id);
   const flashing = useLineupUi((s) => s.flashEntryId === entry.id);
   const { openAndFocus } = useInspector();
@@ -185,13 +186,12 @@ export function EntryCard({ entry, showClass }: { entry: Entry; showClass?: bool
       onClick={onCardClick}
       data-flash={flashing || undefined}
       className={cn(
-        '@container flex scroll-mt-24 flex-col gap-3 rounded-card border bg-surface p-3 transition-shadow duration-300',
+        'flex min-w-0 scroll-mt-24 flex-col rounded-card border bg-surface p-3 transition-shadow duration-300',
         selected ? 'border-accent' : 'border-line',
         flashing && 'ring-4 ring-accent/35',
       )}
     >
-      {/* Narrow cards put the pickers on a second line, under label, status, and badges. */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <div className="flex h-8 min-w-0 items-center gap-2 pointer-coarse:h-11">
         <button
           type="button"
           onClick={(e) => {
@@ -208,29 +208,35 @@ export function EntryCard({ entry, showClass }: { entry: Entry; showClass?: bool
           {entry.label || entry.boatClass}
         </button>
         {showClass && <ClassBadge boatClass={entry.boatClass} />}
-        <StatusText status={entry.status} />
-        <div className="order-last flex w-full min-w-0 flex-wrap items-center gap-1 @[36rem]:order-none @[36rem]:w-auto">
-          <ShellPicker entry={entry} />
-          <OarPicker entry={entry} />
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <ConflictBadges findings={findings} />
+        <div className="-mr-1 ml-auto shrink-0">
           <EntryMenu entry={entry} />
         </div>
       </div>
-      {/* Scratched boats lose their color, not their contrast. */}
-      <div className={cn(scratched && 'grayscale')}>
-        {asList ? (
-          <EntrySeatList entry={entry} seatConflicts={conflicts} />
-        ) : (
-          <EntryStrip
-            entry={entry}
-            seatConflicts={conflicts}
-            conflict={worst === 'info' ? null : worst}
-          />
-        )}
+      <div className="flex h-6 min-w-0 items-center gap-2">
+        <StatusText status={entry.status} />
+        <ConflictBadges findings={findings} className="ml-auto flex-nowrap" />
       </div>
-      <Facts entry={entry} findings={findings} />
+      {/* Shell above oars, one per line whatever their names, so boats side by side stay level.
+          A phone shows one card per row and lets them share a line. */}
+      <div className={cn('mt-1.5 flex min-w-0', isPhone ? 'flex-wrap gap-x-2' : 'flex-col')}>
+        <div className="flex h-8 min-w-0 items-center pointer-coarse:h-11">
+          <ShellPicker entry={entry} />
+        </div>
+        <div className="flex h-8 min-w-0 items-center pointer-coarse:h-11">
+          <OarPicker entry={entry} />
+        </div>
+      </div>
+      {/* Scratched boats lose their color, not their contrast. */}
+      <div className={cn('mt-2.5', scratched && 'grayscale')}>
+        <EntryStrip
+          entry={entry}
+          seatConflicts={conflicts}
+          conflict={worst === 'info' ? null : worst}
+        />
+      </div>
+      <div className="mt-2 empty:hidden">
+        <Facts entry={entry} findings={findings} />
+      </div>
     </article>
   );
 }

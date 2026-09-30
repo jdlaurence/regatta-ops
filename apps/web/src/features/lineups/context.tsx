@@ -20,8 +20,6 @@ export interface LineupContextValue {
   isPhone: boolean;
   /** Room for the roster as a side column (otherwise it sits above the entries). */
   wide: boolean;
-  /** Width of the entries column in px (Infinity until measured); see stripFits. */
-  entriesWidth: number;
   weightUnit: 'kg' | 'lb';
   seasonYear: number;
   actions: LineupActions;

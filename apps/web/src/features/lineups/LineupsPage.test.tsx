@@ -67,7 +67,7 @@ describe('the lineup builder', () => {
     expect(screen.getByRole('button', { name: /^Borrowed\s*1$/ })).toBeInTheDocument();
   });
 
-  it('fills a seat by typing a name, then moves to the next seat', async () => {
+  it('fills a seat by typing a name, then moves down to the next seat', async () => {
     const { store, user } = renderBuilder();
     const eight = await card(L.boysEight);
     seatButton(eight, '3').focus();
@@ -76,8 +76,46 @@ describe('the lineup builder', () => {
     expect(search).toHaveValue('Dax');
     await user.keyboard('{Enter}');
     await waitFor(() => expect(occupant(store, L.boysEight, '3')).toBe(BOYS[3]));
-    await waitFor(() => expect(document.activeElement).toBe(seatButton(eight, '4')));
+    // Boats read cox, stroke, ... bow from the top: the seat below seat 3 is seat 2.
+    await waitFor(() => expect(document.activeElement).toBe(seatButton(eight, '2')));
     expect(boatedText()).toBe('5 of 11 boated');
+  });
+
+  it('draws each boat cox first, then stroke down to bow, with shell and oars above', async () => {
+    renderBuilder();
+    const eight = await card(L.boysEight);
+    const seats = [...eight.querySelectorAll('[data-lineup-seat]')].map(
+      (el) => el.getAttribute('data-lineup-seat')!.split(':')[1],
+    );
+    expect(seats).toEqual(['cox', '8', '7', '6', '5', '4', '3', '2', '1']);
+    const boat = within(eight).getByRole('group', { name: /^V8, 3 of 9 seats filled/ });
+    expect(boat).toHaveAttribute('data-orientation', 'vertical');
+    const shell = within(eight).getByRole('button', { name: 'Shell: none' });
+    expect(shell.compareDocumentPosition(boat) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('moves between seats with the arrow keys: up and down in a boat, left and right across', async () => {
+    const { user } = renderBuilder();
+    const eight = await card(L.boysEight);
+    const four = await card(IDS.entry1);
+    seatButton(eight, '3').focus();
+    await user.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(seatButton(eight, '4'));
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(document.activeElement).toBe(seatButton(eight, '2'));
+    await user.keyboard('{Home}');
+    expect(document.activeElement).toBe(seatButton(eight, 'cox'));
+    // Nothing above the cox.
+    await user.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(seatButton(eight, 'cox'));
+    // The boat before this one (the V4+ at 9:40), same row: its cox.
+    await user.keyboard('{ArrowLeft}');
+    expect(document.activeElement).toBe(seatButton(four, 'cox'));
+    await user.keyboard('{ArrowDown}{ArrowRight}');
+    expect(document.activeElement).toBe(seatButton(eight, '8'));
+    await user.keyboard('{End}{ArrowLeft}');
+    // The four is shorter: its bottom row, bow.
+    expect(document.activeElement).toBe(seatButton(four, '1'));
   });
 
   it('clears a seat with Delete and swaps two seats with Space', async () => {
