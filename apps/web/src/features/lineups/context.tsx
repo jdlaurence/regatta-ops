@@ -20,7 +20,6 @@ export interface LineupContextValue {
   isPhone: boolean;
   /** Room for the roster as a side column (otherwise it sits above the entries). */
   wide: boolean;
-  weightUnit: 'kg' | 'lb';
   seasonYear: number;
   actions: LineupActions;
 }

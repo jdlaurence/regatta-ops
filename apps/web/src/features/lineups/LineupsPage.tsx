@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ChevronDown, Keyboard, Plus, Printer, Rows3, Share2, Table2 } from 'lucide-react';
 import type { Finding, Id, Team } from '@srt/domain';
-import { useCan, useCurrentUser, useFindings, type RegattaWorkingSet } from '@/data';
+import { useCan, useFindings, type RegattaWorkingSet } from '@/data';
 import { useRegattaId, useTeamIdParam } from '@/app/params';
 import { regattaPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';
@@ -400,7 +400,6 @@ function Provider({
   input: LineupContextValue['input'];
   children: ReactNode;
 }) {
-  const user = useCurrentUser();
   const canEdit = useCan('regatta.edit');
   const isPhone = useMediaQuery('(max-width: 767px)');
   const index = useMemo(() => buildIndex(ws), [ws]);
@@ -437,11 +436,10 @@ function Provider({
       canEdit,
       isPhone,
       wide,
-      weightUnit: user?.preferences?.weightUnit ?? ws.clubSettings?.weightUnit ?? 'lb',
       seasonYear: Number(ws.regatta.startDate.slice(0, 4)),
       actions,
     };
-  }, [ws, index, input, team, findings, findingsByEntry, canEdit, isPhone, width, user, actions]);
+  }, [ws, index, input, team, findings, findingsByEntry, canEdit, isPhone, width, actions]);
 
   // A fresh builder for each team: no selection, picker, or move carried over. Reset on the way
   // out (cleanups run before the next team's effects, so a linked ?entry= survives).
