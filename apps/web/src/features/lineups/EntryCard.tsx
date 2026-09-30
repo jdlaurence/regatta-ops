@@ -150,14 +150,15 @@ function Facts({ entry, findings }: { entry: Entry; findings: Finding[] }) {
           {rerig}
         </span>
       )}
+      {/* Cards are narrow: plans wrap, notes get two lines (the details show them whole). */}
       {plans.map((p) => (
-        <span key={p} className="inline-flex min-w-0 items-center gap-1 text-ink">
-          <ConflictIcon severity="info" className="size-3.5" />
+        <span key={p} className="inline-flex min-w-0 items-start gap-1 text-ink">
+          <ConflictIcon severity="info" className="mt-px size-3.5" />
           <span className="sr-only">Hot seat plan: </span>
-          <span className="min-w-0 truncate">{p}</span>
+          <span className="min-w-0 break-words">{p}</span>
         </span>
       ))}
-      {notes && <span className="min-w-0 max-w-full truncate">Notes: {notes}</span>}
+      {notes && <span className="line-clamp-2 min-w-0 max-w-full break-words">Notes: {notes}</span>}
     </div>
   );
 }
