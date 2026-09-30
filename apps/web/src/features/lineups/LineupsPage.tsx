@@ -10,6 +10,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
@@ -23,7 +24,7 @@ import { regattaPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';
 import { BoatStripSkeleton } from '@/components/BoatStrip';
 import { TeamDot } from '@/components/chips';
-import { Inspector, useInspector } from '@/components/Inspector';
+import { Inspector, useInspector, useInspectorStore } from '@/components/Inspector';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState, Skeleton } from '@/components/states';
 import { Button } from '@/components/ui/button';
@@ -45,15 +46,16 @@ import { LineupDialogs } from './Dialogs';
 import { EntriesByEvent } from './EntriesByEvent';
 import { EntryDetails } from './EntryDetails';
 import { LineupDnd } from './LineupDnd';
-import { buildIndex } from './lib';
+import { buildIndex, stripNeed } from './lib';
 import { PublishSlot } from './PublishSlot';
 import { RosterColumn, RosterDrawer } from './RosterPanel';
 import { SEAT_HELP_ID } from './Seats';
 import { SeatSheet } from './SeatSheet';
 import { useLineupUi } from './store';
 
-const WIDE_MIN = 900;
 const ROSTER_COLUMN = 240;
+/** The grid's gap-6 between the roster and the entries. */
+const ROSTER_GAP = 24;
 const ALL_EVENTS_KEY = 'srt-lineups-all-events';
 
 function useMediaQuery(query: string): boolean {
@@ -381,6 +383,35 @@ function Builder({ regattaId }: { regattaId: string }) {
   );
 }
 
+/**
+ * Room for the builder (PLAN.md §5.3, §6.4). When the inspector column would squeeze the
+ * builder into its narrow layout (roster folded above the entries, eights as seat rows), the
+ * lineup page starts with the column closed, without changing the remembered choice. `]` and
+ * an entry's details open it again; leaving the page restores the remembered state. Decided
+ * once, on the first measurement, and never when arriving at a linked entry.
+ */
+function useRoomForBuilder(width: number, wideMin: number, isPhone: boolean) {
+  const decided = useRef(false);
+  const closed = useRef(false);
+  useEffect(() => {
+    if (decided.current || width === 0 || isPhone) return;
+    decided.current = true;
+    const inspector = useInspectorStore.getState();
+    const desktop = window.matchMedia?.('(min-width: 1024px)').matches ?? false;
+    if (!desktop || !inspector.columnOpen || width >= wideMin) return;
+    const linked = new URLSearchParams(window.location.search).has('entry');
+    if (linked || useLineupUi.getState().selectedEntryId) return;
+    inspector.setOpen(false, { remember: false });
+    closed.current = true;
+  }, [width, wideMin, isPhone]);
+  useEffect(
+    () => () => {
+      if (closed.current) useInspectorStore.getState().restoreOpen();
+    },
+    [],
+  );
+}
+
 function Provider({
   ws,
   team,
@@ -417,8 +448,15 @@ function Provider({
     canEdit,
   });
   const [measure, width] = useWidth();
+  // The roster sits beside the entries when there is room for it and for the team's longest
+  // boat as a strip (a 4+ at least): 960 px for a team racing eights, 712 px for fours.
+  const wideMin = useMemo(() => {
+    const classes = ws.entries.filter((e) => e.teamId === team.id).map((e) => e.boatClass);
+    return ROSTER_COLUMN + ROSTER_GAP + Math.max(stripNeed('4+'), ...classes.map(stripNeed));
+  }, [ws.entries, team.id]);
+  useRoomForBuilder(width, wideMin, isPhone);
   const value = useMemo<LineupContextValue>(() => {
-    const wide = !isPhone && (width === 0 || width >= WIDE_MIN);
+    const wide = !isPhone && (width === 0 || width >= wideMin);
     return {
       ws,
       index,
@@ -429,12 +467,25 @@ function Provider({
       canEdit,
       isPhone,
       wide,
-      entriesWidth: width === 0 ? Infinity : wide ? width - ROSTER_COLUMN - 24 : width,
+      entriesWidth: width === 0 ? Infinity : wide ? width - ROSTER_COLUMN - ROSTER_GAP : width,
       weightUnit: user?.preferences?.weightUnit ?? ws.clubSettings?.weightUnit ?? 'lb',
       seasonYear: Number(ws.regatta.startDate.slice(0, 4)),
       actions,
     };
-  }, [ws, index, input, team, findings, findingsByEntry, canEdit, isPhone, width, user, actions]);
+  }, [
+    ws,
+    index,
+    input,
+    team,
+    findings,
+    findingsByEntry,
+    canEdit,
+    isPhone,
+    width,
+    wideMin,
+    user,
+    actions,
+  ]);
 
   // A fresh builder for each team: no selection, picker, or move carried over. Reset on the way
   // out (cleanups run before the next team's effects, so a linked ?entry= survives).

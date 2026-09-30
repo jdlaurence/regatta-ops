@@ -977,9 +977,13 @@ const STRIP_CHROME_PX = 96;
  * show as rows. An eight needs about 700 px, a four with cox about 450, a double about 220.
  */
 export function stripFits(cls: BoatClass, columnWidth: number): boolean {
+  return columnWidth >= stripNeed(cls);
+}
+
+/** The column width an entry of this class needs to read as a strip. */
+export function stripNeed(cls: BoatClass): number {
   const spec = boatClassSpec(cls);
-  const need = STRIP_CHROME_PX + spec.rowers * MIN_SEAT_PX + (spec.coxed ? MIN_COX_PX : 0);
-  return columnWidth >= need;
+  return STRIP_CHROME_PX + spec.rowers * MIN_SEAT_PX + (spec.coxed ? MIN_COX_PX : 0);
 }
 
 /** Seats in the printed-sheet order the club reads: cox first, then stroke down to bow. */

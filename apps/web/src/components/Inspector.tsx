@@ -36,8 +36,14 @@ interface InspectorState {
   /** Mounted <Inspector> ids, most recent last. */
   stack: string[];
   titles: Record<string, string>;
-  setOpen: (open: boolean) => void;
+  /**
+   * Show or hide the panel. Desktop remembers the choice across visits unless `remember` is
+   * false (a page that closes the column for its own layout, then restores it on the way out).
+   */
+  setOpen: (open: boolean, opts?: { remember?: boolean }) => void;
   toggle: () => void;
+  /** Desktop: go back to the remembered column state (after a page closed it for itself). */
+  restoreOpen: () => void;
   setDesktop: (isDesktop: boolean) => void;
   setSlot: (el: HTMLElement | null) => void;
   push: (id: string, title: string) => void;
@@ -69,13 +75,14 @@ export const useInspectorStore = create<InspectorState>((set, get) => ({
   slot: null,
   stack: [],
   titles: {},
-  setOpen: (open) => {
+  setOpen: (open, { remember = true } = {}) => {
     if (get().isDesktop) {
-      saveOpen(open);
+      if (remember) saveOpen(open);
       set({ columnOpen: open });
     } else set({ sheetOpen: open });
   },
   toggle: () => get().setOpen(!selectOpen(get())),
+  restoreOpen: () => set({ columnOpen: initialOpen() }),
   setDesktop: (isDesktop) => set({ isDesktop, sheetOpen: false }),
   setSlot: (slot) => set({ slot }),
   push: (id, title) =>

@@ -31,6 +31,7 @@ import {
   sheetOrder,
   shellOptions,
   stripFits,
+  stripNeed,
   stripOrder,
   EMPTY_FILTERS,
 } from './lib';
@@ -471,6 +472,12 @@ describe('stripFits', () => {
     expect(stripFits('4+', 358)).toBe(false);
     expect(stripFits('2x', 358)).toBe(true);
     expect(stripFits('1x', 200)).toBe(true);
+  });
+
+  it('says how wide a column each class needs (the builder puts the roster beside it)', () => {
+    expect(stripNeed('8+')).toBe(696);
+    expect(stripNeed('4+')).toBe(448);
+    expect(stripNeed('1x')).toBeLessThan(stripNeed('2x'));
   });
 });
 
