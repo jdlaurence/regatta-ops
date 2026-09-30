@@ -84,7 +84,7 @@ export function PresenceAvatars({
           'inline-flex shrink-0 items-center rounded-control hover:bg-surface-2',
           compact
             ? 'h-11 min-w-11 justify-center gap-1.5 px-2 text-base font-medium text-ink-2 tabular-nums [&_svg]:size-4'
-            : 'h-9 px-1',
+            : 'h-9 px-1 pointer-coarse:h-11',
           className,
         )}
       >
