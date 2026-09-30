@@ -41,7 +41,7 @@ export function EventCommentsDialog({
       {event && (
         <DialogContent
           title={`Comments on ${eventTitle(event)}`}
-          description="Everyone signed in sees these. Type @ and a name to mention someone."
+          description="Everyone signed in sees these."
           className="max-w-xl"
         >
           <CommentsThread targetType="event" targetId={event.id} title={null} />
