@@ -959,34 +959,10 @@ export function clearAllOps(index: LineupIndex, entryId: Id): BatchOp[] {
 // ---------------------------------------------------------------------------
 // Seat order and findings on seats
 
-/** Seats in strip order: bow to stroke, cox at the stern (or first when bow-loaded). */
-export function stripOrder(cls: BoatClass, coxPosition?: 'stern' | 'bow' | null): Seat[] {
-  const rowing = seatsFor(cls).filter((s) => s !== 'cox');
-  if (!isCoxed(cls)) return rowing;
-  return coxPosition === 'bow' ? ['cox', ...rowing] : [...rowing, 'cox'];
-}
-
-/** Narrowest readable rowing seat on a md strip ("Lena K."), and the cox seat. */
-const MIN_SEAT_PX = 62;
-const MIN_COX_PX = 104;
-/** Bow cap, stern, borders, and the card's padding around the strip. */
-const STRIP_CHROME_PX = 96;
-
 /**
- * Whether an entry of this class reads as a strip in a column this wide; otherwise its seats
- * show as rows. An eight needs about 700 px, a four with cox about 450, a double about 220.
+ * Seats in the order the club reads them, on screen and on paper: cox first, then stroke down
+ * to bow (the builder's boats read top to bottom in this order).
  */
-export function stripFits(cls: BoatClass, columnWidth: number): boolean {
-  return columnWidth >= stripNeed(cls);
-}
-
-/** The column width an entry of this class needs to read as a strip. */
-export function stripNeed(cls: BoatClass): number {
-  const spec = boatClassSpec(cls);
-  return STRIP_CHROME_PX + spec.rowers * MIN_SEAT_PX + (spec.coxed ? MIN_COX_PX : 0);
-}
-
-/** Seats in the printed-sheet order the club reads: cox first, then stroke down to bow. */
 export function sheetOrder(cls: BoatClass): Seat[] {
   const rowing = seatsFor(cls)
     .filter((s) => s !== 'cox')

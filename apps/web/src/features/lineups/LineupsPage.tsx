@@ -1,24 +1,17 @@
 // The lineup builder, /regattas/:id/lineups/:teamId (PLAN.md §4.4, §6.4): the roster panel with
-// its crossed-off athletes, the team's entries as boat strips by event (or the by-athlete
-// matrix), shell and oar pickers with live conflict hints, and entry details in the inspector.
+// its crossed-off athletes, the team's entries by event as cards with their boats stood on end
+// (or the by-athlete matrix), shell and oar pickers with live conflict hints, and entry details
+// in the inspector.
 //
-// Layout: the roster is a sticky column when the builder has room (≥ 900 px); otherwise it is
-// a collapsible panel above the entries. Entries draw as strips, or as seat rows when the
-// column is narrower than a readable eight (phones and a squeezed desktop).
+// Layout: the roster is a sticky column when the builder has room for it and two columns of
+// boats (layout.ts); otherwise it is a collapsible panel above the entries. Entries fill a grid
+// of card columns: three across on a laptop, one on a phone.
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ChevronDown, Keyboard, Plus, Printer, Rows3, Share2, Table2 } from 'lucide-react';
 import type { Finding, Id, Team } from '@srt/domain';
-import { useCan, useCurrentUser, useFindings, type RegattaWorkingSet } from '@/data';
+import { useCan, useFindings, type RegattaWorkingSet } from '@/data';
 import { useRegattaId, useTeamIdParam } from '@/app/params';
 import { regattaPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';
@@ -47,50 +40,15 @@ import { LineupDialogs } from './Dialogs';
 import { EntriesByEvent } from './EntriesByEvent';
 import { EntryDetails } from './EntryDetails';
 import { LineupDnd } from './LineupDnd';
-import { buildIndex, stripNeed } from './lib';
+import { CARD_MIN, ROSTER_COLUMN, useMediaQuery, useWidth, WIDE_MIN } from './layout';
+import { buildIndex } from './lib';
 import { PublishSlot } from './PublishSlot';
 import { RosterColumn, RosterDrawer } from './RosterPanel';
 import { SEAT_HELP_ID } from './Seats';
 import { SeatSheet } from './SeatSheet';
 import { useLineupUi } from './store';
 
-const ROSTER_COLUMN = 240;
-/** The grid's gap-6 between the roster and the entries. */
-const ROSTER_GAP = 24;
 const ALL_EVENTS_KEY = 'srt-lineups-all-events';
-
-function useMediaQuery(query: string): boolean {
-  const subscribe = useCallback(
-    (cb: () => void) => {
-      if (typeof window.matchMedia !== 'function') return () => {};
-      const mq = window.matchMedia(query);
-      mq.addEventListener('change', cb);
-      return () => mq.removeEventListener('change', cb);
-    },
-    [query],
-  );
-  return useSyncExternalStore(
-    subscribe,
-    () => (typeof window.matchMedia === 'function' ? window.matchMedia(query).matches : false),
-    () => false,
-  );
-}
-
-/** Width of an element, from a ResizeObserver; 0 until the first measurement. */
-function useWidth(): [(el: HTMLElement | null) => void, number] {
-  const [el, setEl] = useState<HTMLElement | null>(null);
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width;
-      if (w != null) setWidth(Math.round(w));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [el]);
-  return [setEl, width];
-}
 
 function readAllEvents(): boolean {
   try {
@@ -157,7 +115,8 @@ const SHORTCUTS: [string, string][] = [
   ['Enter', 'Open the seat’s athlete list'],
   ['Space', 'Pick up an athlete; Space on another seat moves or swaps them'],
   ['Delete', 'Clear the seat'],
-  ['Arrow keys', 'Move between seats; up and down move between entries'],
+  ['Up, down', 'Move between the seats of a boat'],
+  ['Left, right', 'Move to the same seat in the boat before or after'],
   ['Escape', 'Cancel a move'],
   [']', 'Show or hide the inspector'],
 ];
@@ -361,7 +320,7 @@ function Builder({ regattaId }: { regattaId: string }) {
 
       <p id={SEAT_HELP_ID} className="sr-only">
         Press Enter or type a name to choose an athlete. Space picks the athlete up to move them.
-        Delete clears the seat. Arrow keys move between seats.
+        Delete clears the seat. Up and down move between seats, left and right between boats.
       </p>
 
       <div className="min-w-0">
@@ -401,8 +360,8 @@ function Builder({ regattaId }: { regattaId: string }) {
 
 /**
  * Room for the builder (PLAN.md §5.3, §6.4). When the inspector column would squeeze the
- * builder into its narrow layout (roster folded above the entries, eights as seat rows), the
- * lineup page starts with the column closed, without changing the remembered choice. `]` and
+ * builder into its narrow layout (roster folded above the entries), the lineup page starts
+ * with the column closed, without changing the remembered choice. `]` and
  * an entry's details open it again; leaving the page restores the remembered state. Decided
  * once, on the first measurement, and never when arriving at a linked entry.
  */
@@ -441,7 +400,6 @@ function Provider({
   input: LineupContextValue['input'];
   children: ReactNode;
 }) {
-  const user = useCurrentUser();
   const canEdit = useCan('regatta.edit');
   const isPhone = useMediaQuery('(max-width: 767px)');
   const index = useMemo(() => buildIndex(ws), [ws]);
@@ -464,15 +422,10 @@ function Provider({
     canEdit,
   });
   const [measure, width] = useWidth();
-  // The roster sits beside the entries when there is room for it and for the team's longest
-  // boat as a strip (a 4+ at least): 960 px for a team racing eights, 712 px for fours.
-  const wideMin = useMemo(() => {
-    const classes = ws.entries.filter((e) => e.teamId === team.id).map((e) => e.boatClass);
-    return ROSTER_COLUMN + ROSTER_GAP + Math.max(stripNeed('4+'), ...classes.map(stripNeed));
-  }, [ws.entries, team.id]);
-  useRoomForBuilder(width, wideMin, isPhone);
+  // The roster sits beside the entries when two columns of boats still fit next to it.
+  useRoomForBuilder(width, WIDE_MIN, isPhone);
   const value = useMemo<LineupContextValue>(() => {
-    const wide = !isPhone && (width === 0 || width >= wideMin);
+    const wide = !isPhone && (width === 0 || width >= WIDE_MIN);
     return {
       ws,
       index,
@@ -483,25 +436,10 @@ function Provider({
       canEdit,
       isPhone,
       wide,
-      entriesWidth: width === 0 ? Infinity : wide ? width - ROSTER_COLUMN - ROSTER_GAP : width,
-      weightUnit: user?.preferences?.weightUnit ?? ws.clubSettings?.weightUnit ?? 'lb',
       seasonYear: Number(ws.regatta.startDate.slice(0, 4)),
       actions,
     };
-  }, [
-    ws,
-    index,
-    input,
-    team,
-    findings,
-    findingsByEntry,
-    canEdit,
-    isPhone,
-    width,
-    wideMin,
-    user,
-    actions,
-  ]);
+  }, [ws, index, input, team, findings, findingsByEntry, canEdit, isPhone, width, actions]);
 
   // A fresh builder for each team: no selection, picker, or move carried over. Reset on the way
   // out (cleanups run before the next team's effects, so a linked ?entry= survives).
@@ -522,14 +460,20 @@ function LineupsSkeleton() {
       <Skeleton className="h-8 w-80" />
       <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
         <Skeleton className="hidden h-[420px] rounded-card lg:block" />
-        <div className="flex flex-col gap-6">
-          {[8, 4, 8].map((n, i) => (
-            <div
-              key={i}
-              className="flex flex-col gap-3 rounded-card border border-line bg-surface p-3"
-            >
-              <Skeleton className="h-5 w-48" />
-              <BoatStripSkeleton size="md" seats={n} />
+        <div
+          className="grid items-start gap-x-4 gap-y-6"
+          style={{
+            gridTemplateColumns: `repeat(auto-fill, minmax(min(${CARD_MIN}px, 100%), 1fr))`,
+          }}
+        >
+          {[9, 5, 9].map((n, i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <Skeleton className="h-11 w-40" />
+              <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-3">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-14 w-36" />
+                <BoatStripSkeleton size="md" orientation="vertical" seats={n} />
+              </div>
             </div>
           ))}
         </div>

@@ -20,13 +20,22 @@ function focusWithin(page: Page, selector: string): Promise<boolean> {
   return page.evaluate((sel) => !!document.activeElement?.closest(sel), selector);
 }
 
+/** The id of the entry card holding keyboard focus. */
+function focusedEntry(page: Page): Promise<string | null> {
+  return page.evaluate(
+    () =>
+      document.activeElement?.closest('[data-lineup-entry]')?.getAttribute('data-lineup-entry') ??
+      null,
+  );
+}
+
 /** Focus a control the way a keyboard user would land on it, then check it took focus. */
 async function focusOn(target: Locator) {
   await target.focus();
   await expect(target).toBeFocused();
 }
 
-/** The seat buttons of one entry card, bow to stroke (and the cox). */
+/** A seat button of one entry card (the boat reads cox, then stroke down to bow). */
 function seat(card: Locator, n: number | 'cox') {
   return card.getByRole('button', { name: new RegExp(`^${n === 'cox' ? 'Cox' : `Seat ${n}`},`) });
 }
@@ -55,53 +64,61 @@ test.describe('lineup builder', () => {
     await page.keyboard.press('Enter');
     await expect(dialog).toBeHidden();
 
-    // Focus lands on the new entry's first seat.
-    await expect(focused(page)).toHaveAccessibleName('Seat 1, empty');
-    const card = page.locator('article', { has: focused(page) });
+    // Focus lands on the new entry's top seat: a double reads stroke (2), then bow (1).
+    await expect(focused(page)).toHaveAccessibleName('Seat 2, empty');
+    const entryId = await focusedEntry(page);
+    const card = page.locator(`[data-lineup-entry="${entryId}"]`);
 
-    // Type to search, Enter to seat; focus moves on to the next seat.
+    // Type to search, Enter to seat; focus moves down to the next seat.
     await page.keyboard.type('a');
-    const picker = page.getByRole('combobox', { name: 'Search seat 1' });
+    const picker = page.getByRole('combobox', { name: 'Search seat 2' });
     await expect(picker).toBeFocused();
     await expect(picker).toHaveValue('a');
     await page.keyboard.press('Enter');
-    await expect(seat(card, 1)).not.toHaveAccessibleName('Seat 1, empty');
-    await expect(seat(card, 2)).toBeFocused();
-    const first = (await seat(card, 1).getAttribute('aria-label'))!.split(', ')[1]!;
+    await expect(seat(card, 2)).not.toHaveAccessibleName('Seat 2, empty');
+    await expect(seat(card, 1)).toBeFocused();
+    const first = (await seat(card, 2).getAttribute('aria-label'))!.split(', ')[1]!;
 
     // Enter opens the list; arrows pick someone else; Enter seats them.
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('listbox', { name: 'Seat 2' })).toBeVisible();
+    await expect(page.getByRole('listbox', { name: 'Seat 1' })).toBeVisible();
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
-    await expect(seat(card, 2)).not.toHaveAccessibleName('Seat 2, empty');
-    await expect(seat(card, 2)).toBeFocused();
-    const second = (await seat(card, 2).getAttribute('aria-label'))!.split(', ')[1]!;
+    await expect(seat(card, 1)).not.toHaveAccessibleName('Seat 1, empty');
+    await expect(seat(card, 1)).toBeFocused();
+    const second = (await seat(card, 1).getAttribute('aria-label'))!.split(', ')[1]!;
     expect(second).not.toBe(first);
 
-    // Arrow keys move between seats.
-    await page.keyboard.press('ArrowLeft');
-    await expect(seat(card, 1)).toBeFocused();
+    // Up and down move between the seats of a boat.
+    await page.keyboard.press('ArrowUp');
+    await expect(seat(card, 2)).toBeFocused();
 
     // Space picks up, Escape cancels.
     await page.keyboard.press(' ');
     await expect(page.getByText(`Moving ${first}.`)).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByText(`Moving ${first}.`)).toBeHidden();
-    await expect(seat(card, 1)).toHaveAccessibleName(new RegExp(`^Seat 1, ${first}`));
+    await expect(seat(card, 2)).toHaveAccessibleName(new RegExp(`^Seat 2, ${first}`));
 
     // Space, arrow, Space swaps the two.
     await page.keyboard.press(' ');
-    await page.keyboard.press('ArrowRight');
-    await expect(seat(card, 2)).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(seat(card, 1)).toBeFocused();
     await page.keyboard.press(' ');
-    await expect(seat(card, 1)).toHaveAccessibleName(new RegExp(`^Seat 1, ${second}`));
-    await expect(seat(card, 2)).toHaveAccessibleName(new RegExp(`^Seat 2, ${first}`));
+    await expect(seat(card, 2)).toHaveAccessibleName(new RegExp(`^Seat 2, ${second}`));
+    await expect(seat(card, 1)).toHaveAccessibleName(new RegExp(`^Seat 1, ${first}`));
+
+    // Left and right move to the same row of the boat after or before this one.
+    await page.keyboard.press('ArrowRight');
+    await expect(focused(page)).toHaveAccessibleName(/^(Seat \d|Cox),/);
+    expect(await focusedEntry(page)).not.toBe(entryId);
+    await page.keyboard.press('ArrowLeft');
+    await expect(seat(card, 1)).toBeFocused();
 
     // Delete clears.
-    await focusOn(seat(card, 2));
+    await focusOn(seat(card, 1));
     await page.keyboard.press('Delete');
-    await expect(seat(card, 2)).toHaveAccessibleName('Seat 2, empty');
+    await expect(seat(card, 1)).toHaveAccessibleName('Seat 1, empty');
 
     // The shell picker: Enter opens, Escape closes, focus stays on the picker's button.
     const shell = card.getByRole('button', { name: /^Shell: / });

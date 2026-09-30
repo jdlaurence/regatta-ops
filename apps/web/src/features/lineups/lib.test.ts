@@ -30,9 +30,6 @@ import {
   seatConflicts,
   sheetOrder,
   shellOptions,
-  stripFits,
-  stripNeed,
-  stripOrder,
   EMPTY_FILTERS,
 } from './lib';
 import {
@@ -465,26 +462,9 @@ describe('hotSeatPlans', () => {
   });
 });
 
-describe('stripFits', () => {
-  it('keeps an eight as a strip only where short names still fit', () => {
-    expect(stripFits('8+', 720)).toBe(true);
-    expect(stripFits('8+', 648)).toBe(false);
-    expect(stripFits('4+', 358)).toBe(false);
-    expect(stripFits('2x', 358)).toBe(true);
-    expect(stripFits('1x', 200)).toBe(true);
-  });
-
-  it('says how wide a column each class needs (the builder puts the roster beside it)', () => {
-    expect(stripNeed('8+')).toBe(696);
-    expect(stripNeed('4+')).toBe(448);
-    expect(stripNeed('1x')).toBeLessThan(stripNeed('2x'));
-  });
-});
-
 describe('seat order and seat findings', () => {
-  it('orders strips bow to stroke and sheets cox then stroke to bow', () => {
-    expect(stripOrder('4+')).toEqual(['1', '2', '3', '4', 'cox']);
-    expect(stripOrder('4+', 'bow')).toEqual(['cox', '1', '2', '3', '4']);
+  it('orders seats cox first, then stroke down to bow', () => {
+    expect(sheetOrder('8+')).toEqual(['cox', '8', '7', '6', '5', '4', '3', '2', '1']);
     expect(sheetOrder('4+')).toEqual(['cox', '4', '3', '2', '1']);
     expect(sheetOrder('2x')).toEqual(['2', '1']);
   });

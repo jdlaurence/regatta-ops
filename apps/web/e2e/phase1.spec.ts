@@ -50,6 +50,9 @@ const GIRLS = SEED_TEAM_IDS.girls;
 
 const PLAN = 'Girls cox meets Boys V8 at dock B with the slings';
 
+/** Seats of an eight from stroke down, the order the keyboard fills them in. */
+const STROKE_DOWN = ['8', '7', '6', '5'];
+
 /** Four boys who row (not coxswains), and one more for the drag. */
 function boysCrew() {
   const rowers = teamAthletes(BOYS).filter((a) => a.side !== 'none');
@@ -81,7 +84,7 @@ async function addEvent(
 }
 
 test.describe('desktop', () => {
-  // Wide enough for the roster column and an eight's full boat strip beside the inspector.
+  // Wide enough for the roster column and two columns of boats beside the inspector.
   test.use({ viewport: { width: 1600, height: 1000 } });
 
   test('two coaches, one shell, a hot seat acknowledged and printed on both sheets', async ({
@@ -105,16 +108,18 @@ test.describe('desktop', () => {
       expect(boysLabel).toBe('V8');
       await expect(card.getByRole('group', { name: /0 of 9 seats filled/ })).toBeVisible();
 
-      // Keyboard: the new entry's first seat has focus; type a name and press Enter, and the
-      // next seat takes focus.
-      await expect(seat(card, '1')).toBeFocused();
+      // Keyboard: the boat reads cox, stroke, ... bow from the top, and the new entry's top
+      // seat (the cox) has focus. Down to stroke; type a name and press Enter, and the seat
+      // below takes focus.
+      await expect(seat(card, 'cox')).toBeFocused();
+      await page.keyboard.press('ArrowDown');
       for (const [i, name] of crew.keyboard.entries()) {
-        const n = String(i + 1);
+        const n = STROKE_DOWN[i]!;
         await expect(seat(card, n)).toBeFocused();
         await typeIntoFocusedSeat(page, `Seat ${n}`, name);
         await expectSeat(card, n, name);
       }
-      await expect(seat(card, '5')).toBeFocused();
+      await expect(seat(card, '4')).toBeFocused();
       await expectBoated(page, 4, crew.total);
 
       // The roster crosses boated athletes off.
@@ -129,8 +134,8 @@ test.describe('desktop', () => {
       const source = roster.getByRole('button', {
         name: exact(`${crew.dragged}, not in a boat`, { prefix: true }),
       });
-      await dragAndDrop(page, source, seat(card, '5'));
-      await expectSeat(card, '5', crew.dragged);
+      await dragAndDrop(page, source, seat(card, '4'));
+      await expectSeat(card, '4', crew.dragged);
       await expectBoated(page, 5, crew.total);
       await expect(
         roster.getByRole('button', {
@@ -139,11 +144,11 @@ test.describe('desktop', () => {
       ).toBeVisible();
 
       // Drag one seat onto another that is taken: the overlay says "Swap", and they swap.
-      await dragAndDrop(page, seat(card, '1'), seat(card, '2'), async () => {
+      await dragAndDrop(page, seat(card, '8'), seat(card, '7'), async () => {
         await expect(page.getByText('Swap', { exact: true })).toBeVisible();
       });
-      await expectSeat(card, '1', crew.keyboard[1]!);
-      await expectSeat(card, '2', crew.keyboard[0]!);
+      await expectSeat(card, '8', crew.keyboard[1]!);
+      await expectSeat(card, '7', crew.keyboard[0]!);
       await expectBoated(page, 5, crew.total);
 
       // Pick the shell.
@@ -170,8 +175,8 @@ test.describe('desktop', () => {
 
       await page.goto(lineupsUrl(TOTL, BOYS));
       await expect(pageHeading(page, 'Junior boys lineups')).toBeVisible();
-      await expect(seat(card, '3')).toHaveAccessibleName(
-        new RegExp(`^Seat 3, ${name}.*, has an error$`),
+      await expect(seat(card, '6')).toHaveAccessibleName(
+        new RegExp(`^Seat 6, ${name}.*, has an error$`),
       );
       await card.getByRole('button', { name: '1 error' }).click();
       await expect(
@@ -196,7 +201,7 @@ test.describe('desktop', () => {
         .getByRole('radio', { name: 'Available', exact: true })
         .click();
       await page.goto(lineupsUrl(TOTL, BOYS));
-      await expect(seat(card, '3')).not.toHaveAccessibleName(/has an error/);
+      await expect(seat(card, '6')).not.toHaveAccessibleName(/has an error/);
       await expect(card.getByRole('button', { name: /error/ })).toHaveCount(0);
       await expectBoated(page, 5, crew.total);
     });
@@ -207,7 +212,7 @@ test.describe('desktop', () => {
       await expect(accountButton(page)).toHaveAccessibleName(
         `Account: ${userName(SEED_EMAILS.coachGirls)}`,
       );
-      // A laptop at 1280 px: the roster collapses above the entries and eights show as rows.
+      // A laptop at 1280 px: the inspector starts closed so three boats fit beside the roster.
       await page.setViewportSize({ width: 1280, height: 900 });
 
       await page.goto(regattaUrl(TOTL, 'schedule'));
