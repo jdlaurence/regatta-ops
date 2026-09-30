@@ -18,6 +18,7 @@
 //   /print/regattas/:id/schedule        features/print/PrintSchedulePage (no shell)
 //   /print/regattas/:id/load/:trailerId features/print/PrintLoadPage (no shell)
 //   /sign-in                            app/auth/SignInPage
+//   /share/:token[/load]                features/share/SharePage (public: no sign-in, no shell)
 //   /dev/components                     app/dev/ComponentGallery (dev and demo only)
 
 import type { ComponentType } from 'react';
@@ -102,6 +103,7 @@ export function buildRoutes({ queryClient, store }: RouterDeps): RouteObject[] {
       ),
       children: [
         { path: 'sign-in', lazy: page(() => import('./auth/SignInPage')) },
+        { path: 'share/:token/*', lazy: page(() => import('@/features/share/SharePage')) },
         {
           element: <RequireAuth />,
           children: [
