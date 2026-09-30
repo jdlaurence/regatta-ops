@@ -97,6 +97,29 @@ describe('SchedulePage list', () => {
     expect(within(entryRow(ENTRY2)).getByText('Hot seat')).toBeInTheDocument();
   });
 
+  it('hides and shows the crews, and remembers the choice', async () => {
+    const user = userEvent.setup();
+    const { router } = renderSchedule();
+    await screen.findByRole('list', { name: 'Races and logistics' });
+    const strips = () => entryRow(IDS.entry1).querySelectorAll('[data-boat-class]');
+    const toggle = () => screen.getByRole('switch', { name: 'Show crews' });
+    expect(strips()).toHaveLength(1);
+    expect(toggle()).toBeChecked();
+    const before = toggle();
+    await user.click(before);
+    await waitFor(() => expect(strips()).toHaveLength(0));
+    // The switch keeps its place and keyboard focus.
+    expect(toggle()).toBe(before);
+    expect(toggle()).toHaveFocus();
+    // The rest of the row stays: team, label, shell, oars.
+    expect(within(entryRow(IDS.entry1)).getByText('Spencer')).toBeInTheDocument();
+    expect(router.state.location.search).toContain('crews=hide');
+    expect(localStorage.getItem('srt-schedule-crews')).toBe('hide');
+    await user.click(toggle());
+    await waitFor(() => expect(strips()).toHaveLength(1));
+    expect(localStorage.getItem('srt-schedule-crews')).toBeNull();
+  });
+
   it('edits an event time inline, and conflicts follow at once', async () => {
     const user = userEvent.setup();
     const { store } = renderSchedule();
