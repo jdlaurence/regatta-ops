@@ -6,3 +6,4 @@ export * from './adapters';
 export { effectiveShelvesFor, shelfSettingRuleId, type EffectiveShelf } from './model';
 export { meters, classNoun } from './format';
 export * from './sra';
+export * from './zones';

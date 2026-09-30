@@ -10,6 +10,7 @@ import {
   SRA_GIRLS_TRAILER,
   THREE_WIDE_EXAMPLE_RULE,
   lbToKg,
+  trailerDefFromRecords,
   parseCsvObjects,
 } from '@srt/domain';
 import {
@@ -198,6 +199,18 @@ describe('trailers', () => {
       const compartments = world.trailer_compartments.filter((c) => c.trailerId === id);
       expect(compartments.map((c) => c.id)).toEqual(
         def.compartments.map((c) => COMPARTMENT_IDS[c.id]),
+      );
+      // The bed as zones along the frame, riggers at the back; the stored records read back as
+      // the same packer definition (a start of 0 is stored blank, as PocketBase keeps it).
+      expect(compartments.map((c) => [c.label, c.capacityUnit])).toEqual([
+        ['Slings', 'pairs'],
+        ['Oars', 'oars'],
+        ['Riggers', 'riggers'],
+      ]);
+      expect(compartments[0]).toMatchObject({ startCm: null, endCm: def.compartments[0]!.endCm });
+      expect(compartments[2]).toMatchObject({ endCm: def.frameLengthCm });
+      expect(trailerDefFromRecords(trailer, shelves, compartments).compartments).toEqual(
+        def.compartments.map((c) => ({ ...c, id: COMPARTMENT_IDS[c.id] })),
       );
     }
   });

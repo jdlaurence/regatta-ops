@@ -13,7 +13,7 @@ import type {
   TrailerCompartment,
   TrailerShelf,
 } from '../types';
-import type { PackBoat, Placement, ShelfDef, TrailerDef } from './types';
+import type { CompartmentDef, PackBoat, Placement, ShelfDef, TrailerDef } from './types';
 
 function byShelfOrder(a: TrailerShelf, b: TrailerShelf): number {
   return (
@@ -69,8 +69,22 @@ export function trailerDefFromRecords(
       .map(shelfDefFromRecord),
     compartments: compartments
       .filter((c) => c.trailerId === trailer.id)
-      .map((c) => ({ id: c.id, kind: c.kind, label: c.label, capacity: c.capacity })),
+      .map((c) => compartmentDefFromRecord(c, trailer.frameLengthCm)),
   };
+}
+
+/**
+ * A packer compartment from its record. A zone along the frame gets both ends: a blank start is
+ * the front (PocketBase stores 0 as blank) and a blank end the back of this frame. With neither,
+ * the compartment runs the whole length and carries no position.
+ */
+export function compartmentDefFromRecord(
+  c: TrailerCompartment,
+  frameLengthCm: number,
+): CompartmentDef {
+  const def: CompartmentDef = { id: c.id, kind: c.kind, label: c.label, capacity: c.capacity };
+  if (c.startCm == null && c.endCm == null) return def;
+  return { ...def, startCm: c.startCm ?? 0, endCm: c.endCm ?? frameLengthCm };
 }
 
 /** A packer boat for a shell: its own dimensions, else the class defaults (§16.1). */

@@ -49,10 +49,20 @@ export const oarSetInputSchema = oarSetSchema.omit(BASE_KEYS);
 export const gearItemInputSchema = gearItemSchema.omit(BASE_KEYS);
 export const trailerInputSchema = trailerSchema.omit(BASE_KEYS);
 export const trailerShelfInputSchema = trailerShelfSchema.omit(BASE_KEYS);
-export const trailerCompartmentInputSchema = trailerCompartmentSchema.omit(BASE_KEYS);
 export const loadItemInputSchema = loadItemSchema.omit(BASE_KEYS);
 export const commentInputSchema = commentSchema.omit(BASE_KEYS);
 export const clubSettingsInputSchema = clubSettingsSchema.omit(BASE_KEYS);
+
+/**
+ * A compartment: a zone along the frame starts before it ends (PLAN.md §4.9). A blank start is
+ * the front, so an end alone is fine.
+ */
+export const trailerCompartmentInputSchema = trailerCompartmentSchema
+  .omit(BASE_KEYS)
+  .refine((c) => c.startCm == null || c.endCm == null || c.startCm < c.endCm, {
+    message: 'Make the zone start before it ends',
+    path: ['endCm'],
+  });
 
 /** A regatta form: the end date may not come before the start date. */
 export const regattaInputSchema = regattaSchema

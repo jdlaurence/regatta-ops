@@ -360,6 +360,13 @@ export interface TrailerCompartment extends BaseRecord {
   label: string;
   capacity: number;
   capacityUnit?: string;
+  /**
+   * Where the compartment sits along the frame (PLAN.md §4.9): a zone of the bed from `startCm`
+   * to `endCm`, cm from the front of the frame, across the bed's full width. A blank start is
+   * the front and a blank end the back; both blank means the whole length.
+   */
+  startCm?: number | null;
+  endCm?: number | null;
 }
 
 export interface LoadPlan extends BaseRecord {

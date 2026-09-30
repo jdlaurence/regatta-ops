@@ -336,6 +336,8 @@ export const trailerCompartmentSchema = z.object({
   label: requiredText('Enter a label'),
   capacity: countSchema,
   capacityUnit: optionalText,
+  startCm: z.number().min(0, 'Enter zero or more').nullable().optional(),
+  endCm: z.number().positive('Enter a number above zero').nullable().optional(),
 });
 
 export const loadPlanSchema = z.object({

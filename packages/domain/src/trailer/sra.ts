@@ -7,7 +7,7 @@
 // a little slack. The 2026 layout puts an eight on level 3 of the boys' trailer and on level 2
 // of the girls', so those levels get the long overhang too. Revisit once measured (§15 Q1).
 
-import type { Rule, ShelfDef, TrailerDef } from './types';
+import type { CompartmentDef, Rule, ShelfDef, TrailerDef } from './types';
 
 interface LevelOverhang {
   front: number;
@@ -53,13 +53,60 @@ function offsetPostShelves(
   return shelves;
 }
 
+/** Where each load starts along the bed, cm from the front, and how much the zone holds. */
+interface BedLayout {
+  oarsFromCm: number;
+  riggersFromCm: number;
+  slings: number;
+  oars: number;
+  riggers: number;
+}
+
+/**
+ * SRA's bed as zones along the frame, front to back (PLAN.md §4.9, §16.4): slings, then oars
+ * (a zone of at least 380 cm, for 3.7 m sweeps), then riggers filling the back of the bed
+ * across its full width to the rear end. The owner said riggers take the back of the bed and
+ * slings run along it too; the order and the lengths are placeholders until measured (§15 Q1).
+ */
+function bedZonesAlong(prefix: string, frameLengthCm: number, bed: BedLayout): CompartmentDef[] {
+  return [
+    {
+      id: `${prefix}slings`,
+      kind: 'storage',
+      label: 'Slings',
+      capacity: bed.slings,
+      startCm: 0,
+      endCm: bed.oarsFromCm,
+    },
+    {
+      id: `${prefix}oars`,
+      kind: 'oar_rack',
+      label: 'Oars',
+      capacity: bed.oars,
+      startCm: bed.oarsFromCm,
+      endCm: bed.riggersFromCm,
+    },
+    {
+      id: `${prefix}riggers`,
+      kind: 'rigger_rack',
+      label: 'Riggers',
+      capacity: bed.riggers,
+      startCm: bed.riggersFromCm,
+      endCm: frameLengthCm,
+    },
+  ];
+}
+
 const LOW: LevelOverhang = { front: 250, rear: 300 };
 /** Boys: 1220 + 500 + 300 = 2020 cm usable, fits a 1990 cm eight. */
 const BOYS_HIGH: LevelOverhang = { front: 500, rear: 300 };
 /** Girls: 1070 + 600 + 350 = 2020 cm usable. */
 const GIRLS_HIGH: LevelOverhang = { front: 600, rear: 350 };
 
-/** Seeded "Boys trailer" (§17.1). Shelf ids: l1..l5 (narrow), r1..r5 (wide). */
+/**
+ * Seeded "Boys trailer" (§17.1). Shelf ids: l1..l5 (narrow), r1..r5 (wide); bed zones slings,
+ * oars, riggers.
+ */
 export const SRA_BOYS_TRAILER: TrailerDef = {
   id: 'trl_boys',
   name: 'Boys trailer',
@@ -75,13 +122,20 @@ export const SRA_BOYS_TRAILER: TrailerDef = {
     4: BOYS_HIGH,
     5: BOYS_HIGH,
   }),
-  compartments: [
-    { id: 'bed', kind: 'bed', label: 'Trailer bed: riggers, oars, slings', capacity: 1 },
-    { id: 'oars', kind: 'oar_rack', label: 'Oar rack', capacity: 64 },
-  ],
+  // Slings 3.0 m, oars 4.0 m, riggers the last 5.2 m.
+  compartments: bedZonesAlong('', 1220, {
+    oarsFromCm: 300,
+    riggersFromCm: 700,
+    slings: 16,
+    oars: 64,
+    riggers: 96,
+  }),
 };
 
-/** Seeded "Girls trailer": same geometry, shorter frame (1070 cm). Shelf ids gl1..gl5, gr1..gr5. */
+/**
+ * Seeded "Girls trailer": same geometry, shorter frame (1070 cm). Shelf ids gl1..gl5, gr1..gr5;
+ * bed zones gslings, goars, griggers.
+ */
 export const SRA_GIRLS_TRAILER: TrailerDef = {
   id: 'trl_girls',
   name: 'Girls trailer',
@@ -97,10 +151,14 @@ export const SRA_GIRLS_TRAILER: TrailerDef = {
     4: GIRLS_HIGH,
     5: GIRLS_HIGH,
   }),
-  compartments: [
-    { id: 'gbed', kind: 'bed', label: 'Trailer bed: riggers, oars, slings', capacity: 1 },
-    { id: 'goars', kind: 'oar_rack', label: 'Oar rack', capacity: 48 },
-  ],
+  // Slings 2.5 m, oars 3.9 m, riggers the last 4.3 m.
+  compartments: bedZonesAlong('g', 1070, {
+    oarsFromCm: 250,
+    riggersFromCm: 640,
+    slings: 12,
+    oars: 48,
+    riggers: 80,
+  }),
 };
 
 /** Default rule set for SRA's trailers (§9.3.3, §17.2 without the regatta-only override). */

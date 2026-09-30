@@ -5,6 +5,7 @@ import {
   SRA_BOYS_TRAILER,
   SRA_DEFAULT_RULES,
   SRA_GIRLS_TRAILER,
+  type CompartmentDef,
   type TrailerDef,
   type World,
 } from '@srt/domain';
@@ -52,9 +53,20 @@ function addTrailer(w: World, def: TrailerDef, id: string): void {
       kind: c.kind,
       label: c.label,
       capacity: c.capacity,
-      capacityUnit: c.kind === 'oar_rack' ? 'oars' : 'loads',
+      capacityUnit: unitOf(c),
+      // Zones along the frame (§4.9). PocketBase keeps a start of 0 as blank, which reads as the
+      // front, so the seed stores it that way too.
+      startCm: c.startCm ? c.startCm : null,
+      endCm: c.endCm ?? null,
     });
   }
+}
+
+function unitOf(c: CompartmentDef): string {
+  if (c.kind === 'oar_rack' || c.kind === 'oar_box' || c.kind === 'oar_tube') return 'oars';
+  if (c.kind === 'rigger_rack') return 'riggers';
+  if (/\bslings?\b/i.test(c.label)) return 'pairs';
+  return 'loads';
 }
 
 export function addTrailers(w: World): void {
