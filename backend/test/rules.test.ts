@@ -476,6 +476,34 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
       expect((await latestActivity(item.id))?.summary).toBe('checked off Cox boxes as loaded');
     });
 
+    it('describes regatta and participating-team changes', async () => {
+      await coach.collection('regattas').update(IDS.regatta, {
+        status: 'final',
+        settings: { launchLeadMin: 75 },
+      });
+      expect((await latestActivity(IDS.regatta))?.summary).toBe(
+        'marked the regatta final; changed timing (launch lead default → 75 min)',
+      );
+      await coach.collection('regattas').update(IDS.regatta, { status: 'planning' });
+      const rt = await coach
+        .collection('regatta_teams')
+        .create({ regatta: IDS.regatta, team: IDS.girls });
+      const added = await latestActivity(rt.id);
+      expect(added?.summary).toBe('added Junior girls to the regatta');
+      expect(added?.regatta).toBe(IDS.regatta);
+      await coach.collection('regatta_teams').update(rt.id, {
+        published_at: '2026-05-15T20:00:00.000Z',
+        published_snapshot: { publishedAt: '2026-05-15T20:00:00.000Z', entries: [] },
+      });
+      const published = await latestActivity(rt.id);
+      // An earlier test renames the girls' short name, so read it back.
+      const girls = await coach.collection('teams').getOne(IDS.girls);
+      expect(published?.summary).toBe(`published ${girls.short_name} lineups`);
+      expect(Object.keys(published?.diff ?? {})).not.toContain('published_snapshot');
+      await coach.collection('regatta_teams').delete(rt.id);
+      expect((await latestActivity(rt.id))?.summary).toBe('removed Junior girls from the regatta');
+    });
+
     it('skips updates that change nothing', async () => {
       const before = await latestActivity(IDS.shellFour);
       await coach.collection('shells').update(IDS.shellFour, { name: 'Spencer' });
