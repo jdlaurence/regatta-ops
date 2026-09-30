@@ -1,0 +1,24 @@
+{
+  "name": "@srt/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SRT's PocketBase backend: migrations, hooks, seed script, and rule tests. See README.md.",
+  "scripts": {
+    "download": "sh scripts/download.sh",
+    "serve": "sh scripts/pb.sh serve --http 127.0.0.1:8090 --publicDir pb_public",
+    "migrate": "sh scripts/pb.sh migrate up",
+    "seed": "tsx seed/seed.ts",
+    "reset": "tsx scripts/reset.ts",
+    "types": "tsx scripts/typegen.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@srt/domain": "workspace:*",
+    "@srt/seed": "workspace:*",
+    "pocketbase": "^0.28.1",
+    "pocketbase-typegen": "^1.5.0",
+    "vitest": "^5.0.2"
+  }
+}
