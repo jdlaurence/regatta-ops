@@ -21,6 +21,8 @@ export type Lookup = <C extends CollectionName>(
 ) => RecordOf<C> | undefined;
 
 export const LOGGED_COLLECTIONS = [
+  'regattas',
+  'regatta_teams',
   'entries',
   'entry_seats',
   'events',
@@ -99,7 +101,12 @@ export function describeChange(
   const before = beforeRec as AnyRecord | null;
   const after = afterRec as AnyRecord | null;
   const rec = (after ?? before)!;
-  const diff = action === 'update' ? diffRecords(before, after) : null;
+  let diff = action === 'update' ? diffRecords(before, after) : null;
+  // A published snapshot is the whole lineup; the summary says "published" instead.
+  if (diff && collection === 'regatta_teams') {
+    delete diff.publishedSnapshot;
+    if (Object.keys(diff).length === 0) diff = null;
+  }
   if (action === 'update' && !diff) return null;
   const base = {
     action,
@@ -115,6 +122,10 @@ export function describeChange(
 
 function regattaOf(lookup: Lookup, collection: LoggedCollection, rec: AnyRecord): string | null {
   switch (collection) {
+    case 'regattas':
+      // A deleted regatta takes its activity with it, so its delete line belongs to no regatta.
+      return rec.id;
+    case 'regatta_teams':
     case 'entries':
     case 'events':
     case 'availability':
@@ -275,6 +286,35 @@ function summarize(
         );
       }
       return text(`edited ${label} on the load list`);
+    }
+    case 'regattas': {
+      const rec = (after ?? before)!;
+      const name = String(rec.name ?? 'a regatta');
+      if (action === 'create') return text(`created regatta ${name}`);
+      if (action === 'delete') return text(`deleted regatta ${name}`);
+      if (changed(diff, 'status')) {
+        const words: Record<string, string> = {
+          planning: 'back to planning',
+          final: 'final',
+          archived: 'archived',
+        };
+        return text(`marked the regatta ${words[String(after?.status)] ?? String(after?.status)}`);
+      }
+      if (changed(diff, 'name')) return text(`renamed regatta ${String(before?.name)} to ${name}`);
+      if (changed(diff, 'settings')) return text('changed the timing settings');
+      return text('edited the regatta');
+    }
+    case 'regatta_teams': {
+      const rec = (after ?? before)!;
+      const team = lookup('teams', rec.teamId as string);
+      const teamName = team?.name ?? 'a team';
+      if (action === 'create') return text(`added ${teamName} to the regatta`);
+      if (action === 'delete') return text(`removed ${teamName} from the regatta`);
+      if (changed(diff, 'publishedAt') && after?.publishedAt) {
+        return text(`published ${team?.shortName || teamName} lineups`);
+      }
+      if (changed(diff, 'notes')) return text(`edited notes for ${teamName}`);
+      return null;
     }
     case 'shells':
     case 'oar_sets': {

@@ -1,6 +1,10 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
+
+// Page tests render the whole seed world; under `pnpm test` (every package at once) the default
+// 1 s wait for findBy* is too tight on a laptop.
+configure({ asyncUtilTimeout: 5000 });
 
 afterEach(() => {
   cleanup();

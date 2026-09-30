@@ -1,10 +1,9 @@
 // Helpers shared by the regatta builders: events, entries, seats, availability, crews, snapshots.
 
 import {
-  athleteName,
+  buildPublishedSnapshot,
   effectiveSettings,
   entrySeatSides,
-  shellLabel,
   stableId,
   toMs,
   zonedToInstant,
@@ -184,55 +183,28 @@ export function entryLabel(prefix: string, cls: BoatClass, crew: string | null):
   return `${prefix}${sep}${boat}${crew ? ` ${crew}` : ''}`;
 }
 
-/** Snapshot of a team's entries in a regatta, as Publish lineups would store it (§4.1). */
+/** Snapshot of a team's entries in a regatta, as Publish lineups stores it (§4.1). */
 export function snapshotFor(
   w: World,
   regattaId: Id,
   teamKey: TeamKey,
   publishedAt: string,
 ): PublishedSnapshot {
-  const tid = teamId(teamKey);
-  const events = new Map(w.events.map((e) => [e.id, e]));
-  const athletes = new Map<Id, Athlete>(w.athletes.map((a) => [a.id, a]));
-  const shells = new Map(w.shells.map((s) => [s.id, s]));
-  const oars = new Map(w.oar_sets.map((o) => [o.id, o]));
-  const entries = w.entries
-    .filter((e) => e.regattaId === regattaId && e.teamId === tid)
-    .map((e) => {
-      const ev = e.eventId ? events.get(e.eventId) : undefined;
-      const shell = e.shellId ? shells.get(e.shellId) : undefined;
-      const oarSet = e.oarSetId ? oars.get(e.oarSetId) : undefined;
-      return {
-        entryId: e.id,
-        label: e.label,
-        boatClass: e.boatClass,
-        status: e.status,
-        eventId: e.eventId ?? null,
-        eventName: ev?.name,
-        eventNumber: ev?.eventNumber,
-        day: ev?.day,
-        scheduledAt: ev?.scheduledAt ?? null,
-        stage: ev?.stage ?? null,
-        shellId: e.shellId ?? null,
-        shellName: shell ? shellLabel(shell) : undefined,
-        oarSetId: e.oarSetId ?? null,
-        oarSetName: oarSet?.name,
-        seats: w.entry_seats
-          .filter((s) => s.entryId === e.id)
-          .map((s) => {
-            const a = s.athleteId ? athletes.get(s.athleteId) : undefined;
-            return {
-              seat: s.seat,
-              athleteId: s.athleteId ?? null,
-              athleteName: a ? athleteName(a) : undefined,
-            };
-          }),
-      };
-    });
+  const entries = w.entries.filter((e) => e.regattaId === regattaId);
+  const entryIds = new Set(entries.map((e) => e.id));
+  const snapshot = buildPublishedSnapshot({
+    teamId: teamId(teamKey),
+    entries,
+    seats: w.entry_seats.filter((s) => entryIds.has(s.entryId)),
+    events: w.events.filter((e) => e.regattaId === regattaId),
+    shells: w.shells,
+    oarSets: w.oar_sets,
+    athletes: w.athletes,
+    publishedAt,
+    publishedBy: SEED_USER_IDS[TEAM_COACH[teamKey]],
+  });
   // JSON round trip drops undefined keys, as PocketBase's json field would.
-  return JSON.parse(
-    JSON.stringify({ publishedAt, publishedBy: SEED_USER_IDS[TEAM_COACH[teamKey]], entries }),
-  ) as PublishedSnapshot;
+  return JSON.parse(JSON.stringify(snapshot)) as PublishedSnapshot;
 }
 
 export function athletesOf(w: World, team: TeamKey): Athlete[] {

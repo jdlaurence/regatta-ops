@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Activity log (PLAN.md §8.3): after a create, update, or delete on the collections below, write
+// Activity log (PLAN.md §8.3, §18): after a create, update, or delete on the collections below, write
 // an activity_log record with a human sentence and a compact diff. Sentences are built in
 // srt/activity.js. Superuser writes (seed, dashboard) are not logged. Entry and seat changes are
 // also queued for change emails (srt/notify.js). Share-link check-offs are logged by srt/share.js.
@@ -11,6 +11,8 @@ onRecordCreateRequest(
   (e) => {
     require(`${__hooks}/srt/activity.js`).handle(e, 'create');
   },
+  'regattas',
+  'regatta_teams',
   'entries',
   'entry_seats',
   'events',
@@ -26,6 +28,8 @@ onRecordUpdateRequest(
   (e) => {
     require(`${__hooks}/srt/activity.js`).handle(e, 'update');
   },
+  'regattas',
+  'regatta_teams',
   'entries',
   'entry_seats',
   'events',
@@ -41,6 +45,8 @@ onRecordDeleteRequest(
   (e) => {
     require(`${__hooks}/srt/activity.js`).handle(e, 'delete');
   },
+  'regattas',
+  'regatta_teams',
   'entries',
   'entry_seats',
   'events',

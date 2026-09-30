@@ -8,6 +8,7 @@
 import { COLLECTION_NAMES, type CollectionName, type User, type World } from '@srt/domain';
 import { describeChange, type Lookup } from './activity';
 import { isGuarded, sameStamp } from './concurrency';
+import { parseMentions, type MentionUser } from './mentions';
 import { RELATIONS, STAMPED, UNIQUE, type RelationDef } from './schema';
 import {
   applyQuery,
@@ -94,6 +95,8 @@ export class MemoryStore implements DataStore {
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   /** Change events held back while a batch is running. */
   private held: (() => void)[] | null = null;
+  /** Appended to activity summaries while a share-link write runs (updateViaShareLink). */
+  private activitySuffix = '';
   private readonly opts: MemoryStoreOptions;
 
   constructor(opts: MemoryStoreOptions) {
@@ -180,6 +183,28 @@ export class MemoryStore implements DataStore {
     return results;
   }
 
+  /**
+   * A write made through a public share link (share.pb.js): nobody is signed in for it, so
+   * nothing is stamped from a user and the activity line has no actor and ends with
+   * "(via share link, Sam)". Used by the demo-mode ShareApi (data/share.ts).
+   */
+  async updateViaShareLink<C extends CollectionName>(
+    collection: C,
+    id: string,
+    patch: Patch<RecordOf<C>>,
+    by: string,
+  ): Promise<RecordOf<C>> {
+    const userId = this.userId;
+    this.userId = null;
+    this.activitySuffix = ` (via share link${by ? `, ${by}` : ''})`;
+    try {
+      return clone(this.updateNow(collection, id, patch)) as unknown as RecordOf<C>;
+    } finally {
+      this.userId = userId;
+      this.activitySuffix = '';
+    }
+  }
+
   private createNow(collection: CollectionName, data: object): AnyRecord {
     const table = this.table(collection);
     const input = clone(data) as Record<string, unknown>;
@@ -189,6 +214,7 @@ export class MemoryStore implements DataStore {
     const rec: AnyRecord = { ...stripUndefined(input), id, created: now, updated: now };
     this.stamp(collection, rec, 'create');
     this.syncEntry(collection, rec, null);
+    this.syncServerOwned(collection, rec, null);
     this.checkUnique(collection, rec);
     table.set(id, rec);
     this.afterChange(collection, 'create', null, rec);
@@ -218,6 +244,7 @@ export class MemoryStore implements DataStore {
     const next: AnyRecord = { ...prev, ...changes, id, updated: this.now() };
     this.stamp(collection, next, 'update');
     this.syncEntry(collection, next, prev);
+    this.syncServerOwned(collection, next, prev);
     this.checkUnique(collection, next);
     table.set(id, next);
     this.afterChange(collection, 'update', prev, next);
@@ -277,6 +304,38 @@ export class MemoryStore implements DataStore {
     if (prev && prev.eventId === eventId) return;
     const event = this.table('events').get(eventId);
     if (event?.boatClass) rec.boatClass = event.boatClass;
+  }
+
+  /**
+   * Fields the server owns on Phase 3 collections. share.pb.js: a new share link gets a token
+   * (one passed in is kept, for tests; the server always makes its own), `createdBy`, and no
+   * revocation; token, regatta, team, and creator never change; revoking stamps the time and
+   * is permanent. stamp.pb.js and comments.pb.js: a comment's author is the signed-in user and
+   * its `mentions` are resolved from the body on every write.
+   */
+  private syncServerOwned(collection: CollectionName, rec: AnyRecord, prev: AnyRecord | null) {
+    if (collection === 'share_links') {
+      if (!prev) {
+        if (!rec.token) rec.token = newShareToken();
+        rec.createdBy = this.userId ?? rec.createdBy ?? null;
+        rec.revokedAt = null;
+        return;
+      }
+      for (const k of ['token', 'regattaId', 'teamId', 'createdBy']) rec[k] = prev[k];
+      if (prev.revokedAt && rec.revokedAt !== prev.revokedAt) {
+        throw new StoreError(
+          'validation',
+          'A revoked link stays revoked. Create a new link instead.',
+          400,
+        );
+      }
+      if (!prev.revokedAt && rec.revokedAt) rec.revokedAt = this.now();
+    }
+    if (collection === 'comments') {
+      if (!prev && this.userId) rec.authorId = this.userId;
+      const users = [...this.table('users').values()] as unknown as MentionUser[];
+      rec.mentions = parseMentions(String(rec.body ?? ''), users);
+    }
   }
 
   private checkUnique(collection: CollectionName, rec: AnyRecord) {
@@ -350,6 +409,7 @@ export class MemoryStore implements DataStore {
       updated: now,
       actorId: this.userId,
       ...draft,
+      summary: draft.summary + this.activitySuffix,
     };
     this.table('activity_log').set(rec.id, rec);
     this.emit({ action: 'create', collection: 'activity_log', record: rec });
@@ -497,6 +557,18 @@ export class MemoryStore implements DataStore {
       this.save(true);
     }
   }
+}
+
+const TOKEN_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+/** A share-link token like the server's: 40 characters from a 62-letter alphabet. */
+function newShareToken(): string {
+  const bytes = new Uint8Array(40);
+  crypto.getRandomValues(bytes);
+  let out = '';
+  // `b % 62` is slightly biased; that does not matter for demo-mode tokens.
+  for (const b of bytes) out += TOKEN_ALPHABET[b % TOKEN_ALPHABET.length];
+  return out;
 }
 
 function stripUndefined(obj: Record<string, unknown>): Record<string, unknown> {

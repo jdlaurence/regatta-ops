@@ -7,6 +7,7 @@ import { Outlet } from 'react-router';
 import { cn } from '@/lib/cn';
 import { PageSkeleton } from '@/components/states';
 import { useInspectorClaimed } from '@/components/Inspector';
+import { OfflineBanner } from '@/pwa/OfflineBanner';
 import { InspectorPanel, useDesktopSync, useInspectorShortcut } from './InspectorPanel';
 import { RailNav, SideNav, useCurrentRegattaId } from './Nav';
 import { PhoneTabBar, PhoneTopBar } from './PhoneBars';
@@ -39,6 +40,7 @@ export function AppShell() {
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <PhoneTopBar regattaId={regattaId} />
+        <OfflineBanner />
         <main
           id="main"
           tabIndex={-1}

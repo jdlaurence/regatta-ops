@@ -12,6 +12,8 @@
 const time = require(`${__hooks}/srt/time.js`);
 
 const LOGGED = [
+  'regattas',
+  'regatta_teams',
   'entries',
   'entry_seats',
   'events',
@@ -35,6 +37,8 @@ const IGNORED = [
   'updated_by',
 ];
 const QUIET = {
+  // A published snapshot is the whole lineup; the summary says "published" instead.
+  regatta_teams: ['published_snapshot'],
   entries: ['hot_seat_fingerprint'],
   load_placements: ['reasons'],
   load_items: ['loaded_by', 'returned_by', 'loaded_by_name', 'returned_by_name'],
@@ -486,6 +490,71 @@ function equipment(noun, nameOf) {
   };
 }
 
+const REGATTA_STATUS_WORDS = { planning: 'back to planning', final: 'final', archived: 'archived' };
+const TIMING_WORDS = {
+  launchLeadMin: 'launch lead',
+  raceDurationMin: 'race duration',
+  returnMin: 'return time',
+  hotSeatMinGapMin: 'hot seat minimum',
+  athleteMinGapMin: 'athlete minimum gap',
+  rerigMin: 're-rig time',
+};
+
+function regattas(_find, action, before, after) {
+  const rec = after || before;
+  const name = rec.name || 'a regatta';
+  // A deleted regatta takes its activity rows with it, so the delete row belongs to no regatta.
+  if (action === 'create') return { regatta: rec.id, summary: 'created regatta ' + name };
+  if (action === 'delete') return { regatta: '', summary: 'deleted regatta ' + name };
+  const changed = changedKeys(before, after, 'regattas');
+  const has = (k) => changed.indexOf(k) !== -1;
+  const clauses = [];
+  const handled = [];
+  if (has('name')) {
+    clauses.push('renamed regatta ' + before.name + ' to ' + name);
+    handled.push('name');
+  }
+  if (has('status')) {
+    clauses.push('marked the regatta ' + (REGATTA_STATUS_WORDS[rec.status] || rec.status));
+    handled.push('status');
+  }
+  if (has('settings')) {
+    const was = before.settings || {};
+    const now = after.settings || {};
+    const keys = Object.keys(TIMING_WORDS).filter((k) => !same(was[k], now[k]));
+    const parts = keys.map((k) => {
+      const w = TIMING_WORDS[k];
+      if (now[k] == null) return 'reset ' + w + ' to the club default';
+      return w + ' ' + (was[k] == null ? 'default' : was[k]) + ' → ' + now[k] + ' min';
+    });
+    if (parts.length) clauses.push('changed timing (' + parts.join(', ') + ')');
+    handled.push('settings');
+  }
+  const rest = changed.filter((k) => handled.indexOf(k) === -1);
+  if (rest.length) clauses.push(editedClause('the regatta', rest));
+  return clauses.length ? { regatta: rec.id, summary: clauses.join('; ') } : null;
+}
+
+function regattaTeams(find, action, before, after) {
+  const rec = after || before;
+  const teamRec = find('teams', rec.team);
+  const teamName = teamRec ? teamRec.name : 'a team';
+  const base = { regatta: rec.regatta, team: rec.team || '' };
+  if (action === 'create')
+    return Object.assign(base, { summary: 'added ' + teamName + ' to the regatta' });
+  if (action === 'delete') {
+    return Object.assign(base, { summary: 'removed ' + teamName + ' from the regatta' });
+  }
+  const changed = changedKeys(before, after, 'regatta_teams');
+  const has = (k) => changed.indexOf(k) !== -1;
+  const clauses = [];
+  if (has('published_at') && after.published_at) {
+    clauses.push('published ' + ((teamRec && teamRec.short_name) || teamName) + ' lineups');
+  }
+  if (has('notes')) clauses.push('edited notes for ' + teamName);
+  return clauses.length ? Object.assign(base, { summary: clauses.join('; ') }) : null;
+}
+
 function shareLinks(find, action, before, after) {
   const rec = after || before;
   const regatta = rec.regatta;
@@ -515,6 +584,8 @@ function shareLinks(find, action, before, after) {
 }
 
 const DESCRIBERS = {
+  regattas: regattas,
+  regatta_teams: regattaTeams,
   entries: entries,
   entry_seats: entrySeats,
   events: events,

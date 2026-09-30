@@ -41,6 +41,7 @@ import {
   PopoverTrigger,
   Tooltip,
 } from '@/components/ui/menu';
+import { ShareGallery } from '@/features/share/ShareGallery';
 import { TEAM_COLOR_LABELS } from '@/lib/team-colors';
 import { useTheme, type ThemeChoice } from '../theme';
 
@@ -493,6 +494,8 @@ export default function ComponentGallery() {
           <Button onClick={() => toast('Updated by Sam just now')}>Plain</Button>
         </Row>
       </Section>
+
+      <ShareGallery />
 
       <Section title="States">
         <EmptyState

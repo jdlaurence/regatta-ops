@@ -33,3 +33,58 @@
     display: none !important;
   }
 }
+
+/*
+ * Print views (WP-K, features/print). Each .print-sheet is one printed page or run of pages:
+ * no card chrome on paper and a page break after it. Landscape sheets (the lineup grid, the day
+ * schedule) use a named page, so the browser rotates just those pages on A4 or Letter.
+ */
+@media print {
+  @page srt-landscape {
+    size: landscape;
+  }
+
+  .print-sheet {
+    max-width: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    break-after: page;
+  }
+
+  .print-sheet:last-child {
+    break-after: auto;
+  }
+
+  .print-sheet[data-orientation='landscape'] {
+    page: srt-landscape;
+  }
+
+  /* Column headings repeat on each page; totals and footers do not. */
+  .print-sheet thead {
+    display: table-header-group;
+  }
+
+  .print-sheet tfoot {
+    display: table-row-group;
+  }
+
+  .print-sheet tr {
+    break-inside: avoid;
+  }
+
+  /* Team accents print in the light-theme hues whatever the screen theme; warnings in ink. */
+  :root,
+  :root:not([data-theme='light']),
+  :root[data-theme='dark'] {
+    --warn: #000000;
+    --team-navy: #2f5da8;
+    --team-raspberry: #b23a6e;
+    --team-ochre: #c9791c;
+    --team-green: #3c8d5b;
+    --team-violet: #7a4fb5;
+    --team-cyan: #1f8a9e;
+    --team-bronze: #8c6a2e;
+    --team-slate: #5b6b7c;
+  }
+}

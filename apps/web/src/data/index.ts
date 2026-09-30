@@ -88,3 +88,38 @@ export { capitalize, initialsOf, shortUserName, targetCollection } from './colla
 export { useNow } from './use-now';
 export { StoreProvider } from './context';
 export { can, ROLE_LABELS, type Action } from './permissions';
+export { useOnline, isNetworkError, OFFLINE_EDIT_MESSAGE } from './online';
+export {
+  useShare,
+  useShareApi,
+  useTickShareItem,
+  ShareApiProvider,
+  shareApiFor,
+  httpShareApi,
+  memoryShareApi,
+  projectShare,
+  applyTick,
+  cleanShareName,
+  isShareGone,
+  isTransientShareError,
+  setShareItem,
+  updateShareData,
+  shareQueryKey,
+  sharePath,
+  SHARE_LINK_GONE,
+  type ShareApi,
+  type ShareData,
+  type ShareEntry,
+  type ShareLinkInfo,
+  type ShareLoadItem,
+  type ShareRegatta,
+  type ShareScheduleItem,
+  type ShareSeat,
+  type ShareSource,
+  type ShareTeam,
+  type ShareTickInput,
+  type ShareTickVars,
+  type ShareView,
+  type UseTickShareItemOptions,
+} from './share';
+export { findMentions, parseMentions, type MentionMatch, type MentionUser } from './mentions';
