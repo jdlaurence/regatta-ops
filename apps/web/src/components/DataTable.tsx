@@ -9,12 +9,30 @@ import {
   type RowSelectionState,
   type SortingState,
   type Row,
+  type RowData,
 } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Checkbox } from '@/components/ui/controls';
 
 export type { ColumnDef } from '@tanstack/react-table';
+
+declare module '@tanstack/react-table' {
+  // Type parameters must match TanStack's declaration to merge.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Extra classes on this column's cells (alignment, width, sticky). */
+    className?: string;
+    /** Extra classes on this column's header cell. */
+    headerClassName?: string;
+  }
+}
+
+/** A group heading row: rows with the same key render together under the label. */
+export interface RowGroup {
+  key: string;
+  label: ReactNode;
+}
 
 export interface DataTableProps<T> {
   data: T[];
@@ -38,6 +56,11 @@ export interface DataTableProps<T> {
   className?: string;
   /** Extra classes per row. */
   rowClassName?: (row: Row<T>) => string | undefined;
+  /**
+   * Group rows under heading rows. Groups keep the order in which they first appear in `data`;
+   * rows inside a group follow the table's sorting.
+   */
+  groupBy?: (row: T) => RowGroup;
 }
 
 /**
@@ -60,6 +83,7 @@ export function DataTable<T>({
   empty,
   className,
   rowClassName,
+  groupBy,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -114,6 +138,35 @@ export function DataTable<T>({
   });
 
   const rows = table.getRowModel().rows;
+  const columnCount = table.getAllLeafColumns().length;
+  const groups = groupBy ? groupRows(rows, data, groupBy) : null;
+
+  const renderRow = (row: Row<T>) => (
+    <tr
+      key={row.id}
+      onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+      aria-selected={activeRowId === row.id || undefined}
+      className={cn(
+        'border-b border-line last:border-b-0 hover:bg-surface-2',
+        onRowClick && 'cursor-pointer',
+        activeRowId === row.id && 'bg-accent-tint hover:bg-accent-tint',
+        isMuted?.(row.original) && 'text-ink-2',
+        rowClassName?.(row),
+      )}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <td
+          key={cell.id}
+          className={cn(
+            'h-10 px-3 align-middle pointer-coarse:h-12',
+            cell.column.columnDef.meta?.className,
+          )}
+        >
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
+      ))}
+    </tr>
+  );
 
   return (
     <div className={cn('overflow-x-auto rounded-card border border-line bg-surface', className)}>
@@ -131,7 +184,10 @@ export function DataTable<T>({
                     aria-sort={
                       dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined
                     }
-                    className="h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2"
+                    className={cn(
+                      'h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2',
+                      header.column.columnDef.meta?.headerClassName,
+                    )}
                     style={header.column.columnDef.size ? { width: header.getSize() } : undefined}
                   >
                     {header.isPlaceholder ? null : canSort ? (
@@ -158,37 +214,56 @@ export function DataTable<T>({
             </tr>
           ))}
         </thead>
-        <tbody>
-          {rows.length === 0 ? (
+        {rows.length === 0 ? (
+          <tbody>
             <tr>
-              <td colSpan={table.getAllLeafColumns().length} className="px-3 py-8">
+              <td colSpan={columnCount} className="px-3 py-8">
                 {empty ?? <p className="text-center text-ink-2">Nothing to show.</p>}
               </td>
             </tr>
-          ) : (
-            rows.map((row) => (
-              <tr
-                key={row.id}
-                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                aria-selected={activeRowId === row.id || undefined}
-                className={cn(
-                  'border-b border-line last:border-b-0 hover:bg-surface-2',
-                  onRowClick && 'cursor-pointer',
-                  activeRowId === row.id && 'bg-accent-tint hover:bg-accent-tint',
-                  isMuted?.(row.original) && 'text-ink-2',
-                  rowClassName?.(row),
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="h-10 px-3 align-middle pointer-coarse:h-12">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+          </tbody>
+        ) : groups ? (
+          groups.map((g) => (
+            <tbody key={g.key}>
+              <tr className="border-y border-line bg-surface-2">
+                <th
+                  scope="colgroup"
+                  colSpan={columnCount}
+                  className="h-8 px-3 text-left text-sm font-medium text-ink"
+                >
+                  {g.label}
+                </th>
               </tr>
-            ))
-          )}
-        </tbody>
+              {g.rows.map(renderRow)}
+            </tbody>
+          ))
+        ) : (
+          <tbody>{rows.map(renderRow)}</tbody>
+        )}
       </table>
     </div>
+  );
+}
+
+/** Sorted rows split into groups, groups in order of first appearance in `data`. */
+function groupRows<T>(
+  rows: Row<T>[],
+  data: T[],
+  groupBy: (row: T) => RowGroup,
+): (RowGroup & { rows: Row<T>[] })[] {
+  const order = new Map<string, number>();
+  for (const d of data) {
+    const key = groupBy(d).key;
+    if (!order.has(key)) order.set(key, order.size);
+  }
+  const byKey = new Map<string, RowGroup & { rows: Row<T>[] }>();
+  for (const row of rows) {
+    const g = groupBy(row.original);
+    const bucket = byKey.get(g.key) ?? { ...g, rows: [] };
+    bucket.rows.push(row);
+    byKey.set(g.key, bucket);
+  }
+  return [...byKey.values()].sort(
+    (a, b) => (order.get(a.key) ?? Infinity) - (order.get(b.key) ?? Infinity),
   );
 }
