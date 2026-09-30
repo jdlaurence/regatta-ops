@@ -1,11 +1,12 @@
-// Placeholder from WP-D. WP-I replaces this file (PLAN.md §6.8). Keep the default export: the
-// router lazy-loads it for /fleet/:tab, where tab is shells, oars, or gear.
+// Fleet (PLAN.md §4.7, §6.8): shells, oar sets, and gear as three tabs, each its own route
+// (/fleet/shells, /fleet/oars, /fleet/gear). The router lazy-loads this file's default export.
 
 import { NavLink, useParams } from 'react-router';
 import { cn } from '@/lib/cn';
 import { NotFoundPage } from '@/app/pages';
-import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/states';
+import { GearTab } from './GearTab';
+import { OarsTab } from './OarsTab';
+import { ShellsTab } from './ShellsTab';
 
 export const FLEET_TABS = [
   { tab: 'shells', label: 'Shells' },
@@ -15,36 +16,32 @@ export const FLEET_TABS = [
 
 export type FleetTab = (typeof FLEET_TABS)[number]['tab'];
 
+function FleetNav() {
+  return (
+    <nav aria-label="Fleet" className="flex gap-1 border-b border-line">
+      {FLEET_TABS.map((t) => (
+        <NavLink
+          key={t.tab}
+          to={`/fleet/${t.tab}`}
+          className={({ isActive }) =>
+            cn(
+              '-mb-px flex h-10 items-center border-b-2 px-2.5 text-base font-medium pointer-coarse:h-11',
+              isActive ? 'border-accent text-ink' : 'border-transparent text-ink-2 hover:text-ink',
+            )
+          }
+        >
+          {t.label}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
 export default function FleetPage() {
   const { tab } = useParams();
-  const current = FLEET_TABS.find((t) => t.tab === tab);
-  if (!current) return <NotFoundPage />;
-  return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title="Fleet">
-        <nav aria-label="Fleet" className="flex gap-1 border-b border-line">
-          {FLEET_TABS.map((t) => (
-            <NavLink
-              key={t.tab}
-              to={`/fleet/${t.tab}`}
-              className={({ isActive }) =>
-                cn(
-                  '-mb-px flex h-10 items-center border-b-2 px-2.5 text-base font-medium',
-                  isActive
-                    ? 'border-accent text-ink'
-                    : 'border-transparent text-ink-2 hover:text-ink',
-                )
-              }
-            >
-              {t.label}
-            </NavLink>
-          ))}
-        </nav>
-      </PageHeader>
-      <EmptyState
-        title={`The ${current.label.toLowerCase()} table is not built yet`}
-        description="It will be an editable table with filters, CSV import and export, and a detail drawer showing upcoming use."
-      />
-    </div>
-  );
+  const nav = <FleetNav />;
+  if (tab === 'shells') return <ShellsTab nav={nav} />;
+  if (tab === 'oars') return <OarsTab nav={nav} />;
+  if (tab === 'gear') return <GearTab nav={nav} />;
+  return <NotFoundPage />;
 }
