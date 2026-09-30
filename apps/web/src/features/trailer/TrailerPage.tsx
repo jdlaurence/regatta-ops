@@ -148,7 +148,7 @@ function TrailerTab({
       to={regattaPath(regattaId, `trailer/${tm.trailer.id}`)}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex min-h-11 min-w-0 items-center gap-2 rounded-control border px-3 py-1.5 text-base font-medium md:min-h-10',
+        'flex min-h-11 min-w-0 items-center gap-1.5 rounded-control border px-3 py-1.5 text-base font-medium sm:gap-2 md:min-h-10',
         active
           ? 'border-accent bg-accent-tint text-ink'
           : 'border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink',
@@ -156,7 +156,7 @@ function TrailerTab({
         isOver && 'border-accent bg-accent-tint text-ink',
       )}
     >
-      <Truck aria-hidden className="size-4 shrink-0" />
+      <Truck aria-hidden className="hidden size-4 shrink-0 sm:block" />
       <span className="min-w-0 truncate">{tm.trailer.name}</span>
       <span className="shrink-0 text-sm font-normal text-ink-2 tabular-nums">
         {tm.plan ? `${n} ${n === 1 ? 'boat' : 'boats'}` : 'No plan'}

@@ -3,7 +3,7 @@
 // then the gear checklist summary with a link to the load list. Dropping a boat from the racks
 // here takes it off the trailer.
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronRight, ClipboardList } from 'lucide-react';
@@ -110,6 +110,8 @@ export function ToLoadPanel({
     data: { type: 'to-load' },
     disabled: !dragEnabled,
   });
+  // Boats headed for another trailer fold away; drag one out to put it here instead.
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const tz = ws.regatta.timezone;
   const multiDay = ws.regatta.endDate !== ws.regatta.startDate && !!ws.regatta.endDate;
   const groups = useMemo(() => {
@@ -169,28 +171,66 @@ export function ToLoadPanel({
               : 'Tap a boat to see where it fits.'}{' '}
             Pack trailer loads the boats listed under this trailer.
           </p>
-          {groups.map((g) => (
-            <div key={g.id || 'none'} className="flex flex-col gap-1">
-              <h3 className="flex items-baseline justify-between gap-2 text-sm font-medium text-ink">
-                <span>{g.id === trailerId ? `For this trailer` : `For ${g.name}`}</span>
-                <span className="font-normal text-ink-2 tabular-nums">{g.boats.length}</span>
-              </h3>
-              <ul className="flex flex-col gap-0.5">
-                {g.boats.map((b) => (
-                  <ToLoadItem
-                    key={b.shellId}
-                    boat={b}
-                    teams={ws.byId.teams}
-                    timeZone={tz}
-                    multiDay={multiDay}
-                    selected={selectedId === b.shellId}
-                    onSelect={onSelect}
-                    dragEnabled={dragEnabled}
-                  />
-                ))}
-              </ul>
-            </div>
-          ))}
+          {groups.map((g) => {
+            const here = g.id === trailerId;
+            const open = here || expanded.has(g.id);
+            const listId = `to-load-${g.id || 'none'}`;
+            return (
+              <div key={g.id || 'none'} className="flex flex-col gap-1">
+                <h3 className="text-sm font-medium text-ink">
+                  {here ? (
+                    <span className="flex items-baseline justify-between gap-2">
+                      For this trailer
+                      <span className="font-normal text-ink-2 tabular-nums">{g.boats.length}</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      aria-expanded={open}
+                      aria-controls={listId}
+                      onClick={() =>
+                        setExpanded((f) => {
+                          const next = new Set(f);
+                          if (next.has(g.id)) next.delete(g.id);
+                          else next.add(g.id);
+                          return next;
+                        })
+                      }
+                      className="-mx-1 flex min-h-8 w-[calc(100%+8px)] items-center justify-between gap-2 rounded-control px-1 text-left hover:bg-surface-2 pointer-coarse:min-h-11"
+                    >
+                      <span className="flex items-center gap-1">
+                        <ChevronRight
+                          aria-hidden
+                          className={cn(
+                            'size-4 text-ink-2 transition-transform',
+                            open && 'rotate-90',
+                          )}
+                        />
+                        {g.id ? `For the ${g.name}` : 'No trailer'}
+                      </span>
+                      <span className="font-normal text-ink-2 tabular-nums">{g.boats.length}</span>
+                    </button>
+                  )}
+                </h3>
+                {open && (
+                  <ul id={listId} className="grid grid-cols-1 gap-x-3 gap-y-0.5 @md:grid-cols-2">
+                    {g.boats.map((b) => (
+                      <ToLoadItem
+                        key={b.shellId}
+                        boat={b}
+                        teams={ws.byId.teams}
+                        timeZone={tz}
+                        multiDay={multiDay}
+                        selected={selectedId === b.shellId}
+                        onSelect={onSelect}
+                        dragEnabled={dragEnabled}
+                      />
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </>
       )}
 

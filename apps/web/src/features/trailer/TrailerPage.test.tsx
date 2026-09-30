@@ -195,6 +195,18 @@ describe('Trailer page', () => {
     ).toBeInTheDocument();
   });
 
+  it('takes a boat off the trailer and back onto the list to load', async () => {
+    const user = userEvent.setup();
+    const { store } = renderTrailer(`/regattas/${NW}/trailer`);
+    await endView();
+    await user.click(screen.getByRole('button', { name: /^Level 5, narrow side: Peggy, 8\+/ }));
+    const panel = await screen.findByRole('complementary', { name: 'Why here?' });
+    await user.click(within(panel).getByRole('button', { name: 'Remove from trailer' }));
+    await waitFor(async () => expect(await placementOf(store, PEGGY)).toBeNull());
+    const toLoad = screen.getByRole('region', { name: 'To load' });
+    expect(await within(toLoad).findByRole('button', { name: /^Peggy, 8\+/ })).toBeInTheDocument();
+  });
+
   it('offers to start a load plan per trailer when there is none', async () => {
     const user = userEvent.setup();
     const { store } = renderTrailer(`/regattas/${HOTL}/trailer`);
