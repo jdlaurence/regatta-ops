@@ -164,7 +164,6 @@ export function EntryBlock({
             <div className="hidden sm:block print:block">
               <BoatStrip
                 size="print"
-                stretch
                 boatClass={entry.boatClass}
                 seats={occupants(entry)}
                 coxPosition={shell?.coxPosition}

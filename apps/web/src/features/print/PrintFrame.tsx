@@ -27,6 +27,7 @@ export function PrintFrame({
   backTo,
   controls,
   status,
+  actions,
   state,
   children,
 }: {
@@ -38,6 +39,8 @@ export function PrintFrame({
   controls?: ReactNode;
   /** A short on-screen note next to the options ("1 change since publishing"). */
   status?: ReactNode;
+  /** Buttons beside Print ("Export entries"). */
+  actions?: ReactNode;
   state?: PrintFrameState;
   children?: ReactNode;
 }) {
@@ -76,6 +79,7 @@ export function PrintFrame({
             </Link>
           </Button>
           <h1 className="min-w-0 flex-1 truncate font-display text-md font-semibold">{title}</h1>
+          {actions}
           <Button variant="primary" size="sm" onClick={() => window.print()}>
             <Printer aria-hidden />
             Print

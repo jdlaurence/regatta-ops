@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
+import { zonedToInstant } from '@srt/domain';
 import { SEED_REGATTA_IDS, SEED_TEAM_IDS, SEED_TRAILER_IDS } from '@srt/seed';
 import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
@@ -181,11 +182,37 @@ describe('print routes', () => {
     expect(sheet.querySelector('[data-slot="trailer-end-view"]')).not.toBeNull();
   });
 
-  it('keeps the fixture schedule heading and handles unknown teams and trailers', async () => {
+  it('keeps the schedule heading the app shell test expects', async () => {
     renderAt(`/print/regattas/${IDS.regatta}/schedule`, fixtureStore());
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Head of the Lake schedule' }),
     ).toBeInTheDocument();
+  });
+
+  it("prints an acknowledged hot seat plan on both teams' sheets", async () => {
+    const store = fixtureStore();
+    const at = (hhmm: string) => zonedToInstant('2026-11-01', hhmm, 'America/Los_Angeles');
+    await store.create('entries', {
+      id: 'girlsentry00001',
+      regattaId: IDS.regatta,
+      eventId: IDS.event2,
+      teamId: IDS.girls,
+      label: 'W4+',
+      boatClass: '4+',
+      shellId: IDS.shell,
+      status: 'planned',
+      hotSeatAckBy: IDS.coach,
+      hotSeatPlan: 'Girls cox meets Boys V4+ at dock B',
+      hotSeatFingerprint: `shell:${IDS.shell}|${IDS.entry1}@${at('09:40')}|girlsentry00001@${at('10:20')}`,
+    });
+    renderAt(printLineupsPath(IDS.regatta, 'all'), store);
+    const boys = await screen.findByRole('region', { name: 'Junior boys lineups, Sun, Nov 1' });
+    const girls = screen.getByRole('region', { name: 'Junior girls lineups, Sun, Nov 1' });
+    for (const sheet of [boys, girls]) {
+      expect(within(sheet).getByText('Hot seat:').parentElement).toHaveTextContent(
+        'Hot seat: Girls cox meets Boys V4+ at dock B',
+      );
+    }
   });
 
   it('says so when the team does not exist', async () => {

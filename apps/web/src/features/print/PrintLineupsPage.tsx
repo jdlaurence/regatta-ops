@@ -28,6 +28,7 @@ import {
   type PrintSource,
 } from './derive';
 import { dayHeading, oarText } from './format';
+import { ExportEntriesButton } from './ExportEntriesButton';
 import { LineupGridSheet } from './LineupGrid';
 import { LineupSheetPage, type BoatsStyle } from './LineupSheet';
 import { usePrintedAt } from './parts';
@@ -171,6 +172,14 @@ export default function PrintLineupsPage() {
       backTo={regattaPath(regattaId, teamId ? `lineups/${teamId}` : 'lineups')}
       controls={controls}
       status={status}
+      actions={
+        <ExportEntriesButton
+          regattaId={regattaId}
+          teamId={teamId}
+          variant="ghost"
+          className="max-sm:hidden"
+        />
+      }
       state={ws}
     >
       {sheets}

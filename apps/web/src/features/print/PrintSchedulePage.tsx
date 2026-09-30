@@ -24,6 +24,7 @@ import {
   scheduleDays,
   type PrintSource,
 } from './derive';
+import { ExportEntriesButton } from './ExportEntriesButton';
 import { usePrintedAt } from './parts';
 import { DayScheduleSheet, MasterScheduleSheet } from './ScheduleSheets';
 
@@ -131,6 +132,9 @@ export default function PrintSchedulePage() {
       title={title}
       backTo={regattaPath(regattaId, 'schedule')}
       controls={controls}
+      actions={
+        <ExportEntriesButton regattaId={regattaId} variant="ghost" className="max-sm:hidden" />
+      }
       state={ws}
     >
       {sheets}
