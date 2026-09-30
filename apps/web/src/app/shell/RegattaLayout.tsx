@@ -3,12 +3,12 @@
 
 import { Suspense } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
-import { Lock } from 'lucide-react';
 import type { Regatta } from '@srt/domain';
 import { useRecord } from '@/data';
 import { cn } from '@/lib/cn';
 import { formatDayRange } from '@/lib/dates';
 import { Button } from '@/components/ui/button';
+import { RegattaStatusBanner } from '@/components/RegattaStatusBanner';
 import { EmptyState, ErrorState, PageSkeleton, Skeleton } from '@/components/states';
 import { REGATTA_TABS, regattaPath } from '../nav-items';
 import { useRegattaId } from '../params';
@@ -60,18 +60,6 @@ function RegattaHeader({ regatta }: { regatta: Regatta }) {
   );
 }
 
-function FinalBanner() {
-  return (
-    <div
-      role="note"
-      className="flex items-start gap-2.5 rounded-card border border-info/40 bg-info-tint px-4 py-3 text-base leading-prose"
-    >
-      <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-info" />
-      <p>This regatta is final. Edits still work, and each one asks you to confirm first.</p>
-    </div>
-  );
-}
-
 export function RegattaLayout() {
   const regattaId = useRegattaId();
   const regatta = useRecord('regattas', regattaId);
@@ -112,7 +100,7 @@ export function RegattaLayout() {
   return (
     <div className="flex flex-col gap-6">
       <RegattaHeader regatta={regatta.data} />
-      {regatta.data.status === 'final' && <FinalBanner />}
+      <RegattaStatusBanner status={regatta.data.status} />
       <Suspense fallback={<PageSkeleton />}>
         <Outlet />
       </Suspense>
