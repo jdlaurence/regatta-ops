@@ -51,7 +51,7 @@ describe('the app in demo mode', () => {
       await within(inspector).findByRole('heading', { name: /^Conflicts \d+$/ }),
     ).toBeInTheDocument();
     expect(within(inspector).getByRole('heading', { name: 'Activity' })).toBeInTheDocument();
-    expect(await screen.findByText('Junior boys')).toBeInTheDocument();
+    expect((await screen.findAllByText('Junior boys')).length).toBeGreaterThan(0);
   });
 
   it('toggles the inspector with ]', async () => {
