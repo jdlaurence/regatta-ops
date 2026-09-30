@@ -8,6 +8,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "gen": "tsx scripts/gen-reference.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json"
   },
