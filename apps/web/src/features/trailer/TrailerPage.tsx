@@ -86,6 +86,7 @@ import {
 import { MetricsFooter } from './MetricsFooter';
 import { BoatPill } from './parts';
 import { PlanView } from './PlanView';
+import { TrailerIsometric } from '@/components/trailer';
 import { RulesPanel } from './RulesPanel';
 import { ToLoadPanel } from './ToLoadPanel';
 
@@ -241,7 +242,7 @@ function MoveChoices({
 // ---------------------------------------------------------------------------
 // The workspace
 
-type View = 'end' | 'plan';
+type View = 'end' | 'plan' | 'iso';
 
 interface DragState {
   shellId: Id;
@@ -280,7 +281,8 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
   const navigate = useNavigate();
   const param = useTrailerIdParam();
   const [search, setSearch] = useSearchParams();
-  const view: View = search.get('view') === 'plan' ? 'plan' : 'end';
+  const viewParam = search.get('view');
+  const view: View = viewParam === 'plan' || viewParam === 'iso' ? viewParam : 'end';
   const setView = (v: View) =>
     setSearch(
       (p) => {
@@ -861,6 +863,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
                   options={[
                     { value: 'end', label: 'End view' },
                     { value: 'plan', label: 'Plan view' },
+                    { value: 'iso', label: 'Isometric' },
                   ]}
                 />
                 {plan && (
@@ -934,6 +937,14 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
                     </p>
                   )}
                 </>
+              ) : view === 'iso' ? (
+                <TrailerIsometric
+                  trailer={tm.def}
+                  rules={tm.rules}
+                  placements={tm.placements}
+                  boats={viewBoats}
+                  selectedShellId={selectedId}
+                />
               ) : (
                 <PlanView
                   trailer={tm.def}
