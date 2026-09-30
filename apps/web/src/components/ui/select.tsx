@@ -66,7 +66,7 @@ export function Select<V extends string = string>({
                 key={o.value}
                 value={o.value}
                 disabled={o.disabled}
-                className="relative flex cursor-default items-center rounded-control py-1.5 pr-2 pl-7 text-base outline-none select-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-2 pointer-coarse:py-2.5"
+                className="relative flex cursor-default items-center rounded-control py-1.5 pr-2 pl-7 text-base outline-none select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid data-[disabled]:opacity-50 data-[highlighted]:bg-surface-2 pointer-coarse:py-2.5"
               >
                 <SelectPrimitive.ItemIndicator className="absolute left-2 inline-flex">
                   <Check className="size-4 text-accent" aria-hidden />

@@ -32,8 +32,10 @@ export function DropdownMenuContent({
   );
 }
 
+// Keyboard focus draws the app's 2 px accent ring, inset so the menu's edge does not clip it;
+// the pointer only tints the row.
 const itemClass =
-  'relative flex h-9 cursor-pointer items-center gap-2 rounded-control px-2 text-base outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-2 pointer-coarse:h-11 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-ink-2';
+  'relative flex h-9 cursor-pointer items-center gap-2 rounded-control px-2 text-base outline-none select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-2 pointer-coarse:h-11 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-ink-2';
 
 export function DropdownMenuItem({ className, ...props }: ComponentProps<typeof Menu.Item>) {
   return <Menu.Item className={cn(itemClass, className)} {...props} />;

@@ -1,4 +1,12 @@
-import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { Popover as PopoverPrimitive } from 'radix-ui';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -89,6 +97,8 @@ export function Combobox<V extends string = string>({
   const open = openProp ?? openState;
   const [query, setQuery] = useState(initialQuery);
   const [active, setActive] = useState(0);
+  // Arrow keys move a visible focus ring; the pointer only tints the row it is over.
+  const [keyboardNav, setKeyboardNav] = useState(false);
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -97,6 +107,7 @@ export function Combobox<V extends string = string>({
     if (next) {
       setQuery(initialQuery);
       setActive(0);
+      setKeyboardNav(false);
     }
     setOpenState(next);
     onOpenChange?.(next);
@@ -121,6 +132,7 @@ export function Combobox<V extends string = string>({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) setKeyboardNav(true);
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setActive((i) => Math.min(i + 1, selectable.length - 1));
@@ -140,6 +152,12 @@ export function Combobox<V extends string = string>({
 
   const activeRow = selectable[active];
   const optionId = (i: number) => `${listId}-opt-${i}`;
+
+  // Keep the active option in view as the arrow keys move through a long list.
+  useEffect(() => {
+    if (!open || !keyboardNav) return;
+    document.getElementById(`${listId}-opt-${active}`)?.scrollIntoView({ block: 'nearest' });
+  }, [open, keyboardNav, active, listId]);
   let lastGroup: string | undefined;
 
   return (
@@ -174,7 +192,8 @@ export function Combobox<V extends string = string>({
             contentClassName,
           )}
         >
-          <div className="flex items-center gap-2 border-b border-line px-3">
+          {/* The ring sits on the row so it frames the icon and the field together. */}
+          <div className="flex items-center gap-2 border-b border-line px-3 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-accent">
             <Search className="size-4 shrink-0 text-ink-2" aria-hidden />
             <input
               ref={inputRef}
@@ -221,12 +240,17 @@ export function Combobox<V extends string = string>({
                       role="option"
                       aria-selected={isSelected}
                       aria-disabled={opt?.disabled || undefined}
-                      onMouseMove={() => index >= 0 && setActive(index)}
+                      onMouseMove={() => {
+                        if (index < 0) return;
+                        setKeyboardNav(false);
+                        setActive(index);
+                      }}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => !opt?.disabled && choose(isClear ? null : opt!.value)}
                       className={cn(
                         'flex cursor-default items-start gap-2 rounded-control px-2 py-1.5 text-base pointer-coarse:py-2.5',
                         isActive && 'bg-surface-2',
+                        isActive && keyboardNav && 'outline-2 -outline-offset-2 outline-accent',
                         opt?.disabled && 'opacity-50',
                         isClear && 'text-ink-2',
                       )}
