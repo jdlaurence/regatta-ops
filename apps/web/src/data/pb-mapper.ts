@@ -39,6 +39,23 @@ export const FIELD_OVERRIDES: Partial<Record<CollectionName, Record<string, stri
   shells: { photoUrl: 'photo' },
 };
 
+/**
+ * The stored file name in a PocketBase file URL
+ * ('/api/files/shells/abc/peggy_x1y2z3.jpg?thumb=96x96' → 'peggy_x1y2z3.jpg'); null for
+ * anything else (a data URL, an empty value).
+ */
+export function fileNameFromUrl(url: string | null | undefined): string | null {
+  if (!url || url.startsWith('data:')) return null;
+  const path = url.split(/[?#]/)[0]!;
+  if (!/\/api\/files\//.test(path)) return null;
+  const last = path.slice(path.lastIndexOf('/') + 1);
+  try {
+    return last ? decodeURIComponent(last) : null;
+  } catch {
+    return last || null;
+  }
+}
+
 /** Domain fields computed on read and never written back (file URLs). */
 const READ_ONLY: Partial<Record<CollectionName, string[]>> = {
   users: ['avatarUrl'],

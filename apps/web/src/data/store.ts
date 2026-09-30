@@ -57,6 +57,27 @@ export const batchOp = {
     ({ op: 'delete', collection, id }) as unknown as BatchOp,
 };
 
+/**
+ * Collections with a file field, and the domain field that holds the file's URL (PLAN.md §8.1:
+ * `shells.photo` is `Shell.photoUrl`, `users.avatar` is `User.avatarUrl`). The URL field is
+ * read-only; files go in with `uploadFile` and out with `removeFile`.
+ */
+export interface FileFields {
+  users: 'avatarUrl';
+  shells: 'photoUrl';
+}
+
+export type FileCollection = keyof FileFields;
+export type FileFieldOf<C extends FileCollection> = FileFields[C];
+
+/** Thumbnail sizes the server makes (pb_migrations: shells.photo thumbs). */
+export type ThumbSize = '96x96' | '320x0';
+
+export interface FileUrlOptions {
+  /** A thumbnail instead of the full file; MemoryStore keeps one size and ignores this. */
+  thumb?: ThumbSize;
+}
+
 export type ChangeAction = 'create' | 'update' | 'delete';
 
 export interface ChangeEvent<C extends CollectionName = CollectionName> {
@@ -109,6 +130,32 @@ export interface DataStore {
    * between seats (clear one seat, set the other, set the first).
    */
   batch(ops: BatchOp[]): Promise<(RecordOf<CollectionName> | null)[]>;
+  /**
+   * Put a photo in a record's file field, replacing the one there, and resolve to the updated
+   * record (its URL field points at the new file). Where the browser can decode it, the photo
+   * is downscaled to 1600 px on its long side first; `name` overrides the file's own name.
+   * Anything that is not a photo is refused with a StoreError ('validation').
+   */
+  uploadFile<C extends FileCollection>(
+    collection: C,
+    id: string,
+    field: FileFieldOf<C>,
+    file: Blob,
+    name?: string,
+  ): Promise<RecordOf<C>>;
+  /** Delete the file in a record's file field; resolves to the updated record. */
+  removeFile<C extends FileCollection>(
+    collection: C,
+    id: string,
+    field: FileFieldOf<C>,
+  ): Promise<RecordOf<C>>;
+  /** Where to load a record's file (or a thumbnail of it) from; null when there is none. */
+  fileUrl<C extends FileCollection>(
+    collection: C,
+    record: RecordOf<C>,
+    field: FileFieldOf<C>,
+    options?: FileUrlOptions,
+  ): string | null;
   /** Change events for one collection, from anyone (including this client). */
   subscribe<C extends CollectionName>(collection: C, handler: ChangeHandler<C>): () => void;
   readonly auth: AuthApi;

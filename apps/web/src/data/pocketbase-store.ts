@@ -4,7 +4,9 @@
 
 import PocketBase, { ClientResponseError, type RecordModel } from 'pocketbase';
 import type { CollectionName, User } from '@srt/domain';
-import { chunkQuery, fromPb, toPb, toPbListParams } from './pb-mapper';
+import type { ImageCodec } from '@/lib/image';
+import { assertFileField, preparePhoto, SERVER_FILE_MAX_BYTES } from './files';
+import { chunkQuery, fileNameFromUrl, fromPb, toPb, toPbField, toPbListParams } from './pb-mapper';
 import {
   applyQuery,
   StoreError,
@@ -13,11 +15,19 @@ import {
   type ChangeHandler,
   type CreateInput,
   type DataStore,
+  type FileCollection,
+  type FileFieldOf,
+  type FileUrlOptions,
   type ListQuery,
   type Patch,
   type RecordOf,
   type UpdateOptions,
 } from './store';
+
+export interface PocketBaseStoreOptions {
+  /** Decodes and re-encodes photos before upload; default: the browser's (none in Node). */
+  imageCodec?: ImageCodec | null;
+}
 
 /** Most PocketBase batch requests are capped at 200 operations. */
 const MAX_BATCH = 200;
@@ -69,8 +79,10 @@ export class PocketBaseStore implements DataStore {
   readonly mode = 'pocketbase' as const;
   readonly pb: PocketBase;
   readonly auth: AuthApi;
+  private readonly imageCodec: ImageCodec | null | undefined;
 
-  constructor(baseUrl = '/') {
+  constructor(baseUrl = '/', options: PocketBaseStoreOptions = {}) {
+    this.imageCodec = options.imageCodec;
     this.pb = new PocketBase(baseUrl);
     // Several components may list the same collection at once; PocketBase's default
     // auto-cancellation would abort all but the last of them.
@@ -186,6 +198,62 @@ export class PocketBaseStore implements DataStore {
     } catch (err) {
       throw toStoreError(err, 'write');
     }
+  }
+
+  async uploadFile<C extends FileCollection>(
+    collection: C,
+    id: string,
+    field: FileFieldOf<C>,
+    file: Blob,
+    name?: string,
+  ): Promise<RecordOf<C>> {
+    assertFileField(collection, field);
+    const photo = await preparePhoto(file, {
+      name,
+      maxBytes: SERVER_FILE_MAX_BYTES,
+      codec: this.imageCodec,
+    });
+    try {
+      // The SDK sends a body holding a File as multipart form data.
+      const body = {
+        [toPbField(collection, field)]: new File([photo.blob], photo.name, {
+          type: photo.blob.type,
+        }),
+      };
+      return this.map(collection, await this.pb.collection(collection).update(id, body));
+    } catch (err) {
+      throw toStoreError(err, 'write');
+    }
+  }
+
+  async removeFile<C extends FileCollection>(
+    collection: C,
+    id: string,
+    field: FileFieldOf<C>,
+  ): Promise<RecordOf<C>> {
+    assertFileField(collection, field);
+    try {
+      const body = { [toPbField(collection, field)]: null };
+      return this.map(collection, await this.pb.collection(collection).update(id, body));
+    } catch (err) {
+      throw toStoreError(err, 'write');
+    }
+  }
+
+  fileUrl<C extends FileCollection>(
+    collection: C,
+    record: RecordOf<C>,
+    field: FileFieldOf<C>,
+    options: FileUrlOptions = {},
+  ): string | null {
+    const url = (record as unknown as Record<string, unknown>)[field];
+    if (typeof url !== 'string' || !url) return null;
+    const fileName = fileNameFromUrl(url);
+    // The full file is the URL mapped on read; anything else (a preview) is used as it is.
+    if (!options.thumb || !fileName) return url;
+    return this.pb.files.getURL({ id: record.id, collectionName: collection }, fileName, {
+      thumb: options.thumb,
+    });
   }
 
   subscribe<C extends CollectionName>(collection: C, handler: ChangeHandler<C>): () => void {
