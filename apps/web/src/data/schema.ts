@@ -69,10 +69,14 @@ export const RELATIONS: { [C in CollectionName]: Record<string, RelationDef> } =
     loadedBy: { target: 'users', onDelete: 'unset' },
     returnedBy: { target: 'users', onDelete: 'unset' },
   },
-  comments: { authorId: { target: 'users', onDelete: 'unset' } },
+  comments: {
+    authorId: { target: 'users', onDelete: 'unset' },
+    mentions: { target: 'users', multi: true, onDelete: 'unset' },
+  },
   activity_log: {
     regattaId: { target: 'regattas', onDelete: 'unset' },
     actorId: { target: 'users', onDelete: 'unset' },
+    teamId: { target: 'teams', onDelete: 'unset' },
   },
   presence: {
     userId: { target: 'users', onDelete: 'cascade' },
@@ -82,6 +86,7 @@ export const RELATIONS: { [C in CollectionName]: Record<string, RelationDef> } =
   share_links: {
     regattaId: { target: 'regattas', onDelete: 'cascade' },
     teamId: { target: 'teams', onDelete: 'cascade' },
+    createdBy: { target: 'users', onDelete: 'unset' },
   },
   club_settings: {},
 };

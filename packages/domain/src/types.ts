@@ -41,6 +41,10 @@ export type Role = 'admin' | 'coach' | 'viewer';
 export interface UserPreferences {
   theme?: 'light' | 'dark' | 'system';
   weightUnit?: 'kg' | 'lb';
+  /** Daily digest email during regatta week (default true). */
+  emailDigest?: boolean;
+  /** Email when someone outside the team changes its entries (default true). */
+  emailOnChange?: boolean;
 }
 
 export interface User extends BaseRecord {
@@ -395,6 +399,9 @@ export interface LoadItem extends BaseRecord {
   loadedBy?: Id | null;
   returnedAt?: string | null;
   returnedBy?: Id | null;
+  /** Free-text name typed when ticking the checklist through a share link. */
+  loadedByName?: string;
+  returnedByName?: string;
   notes?: string;
 }
 
@@ -408,11 +415,15 @@ export interface Comment extends BaseRecord {
   targetId: Id;
   authorId: Id;
   body: string;
+  /** Users @-mentioned in the body, resolved by the server. */
+  mentions?: Id[];
 }
 
 export interface ActivityEntry extends BaseRecord {
   regattaId?: Id | null;
   actorId?: Id | null;
+  /** The team the change concerns, when there is one (for digests and filters). */
+  teamId?: Id | null;
   action: 'create' | 'update' | 'delete';
   targetType: string;
   targetId: Id;
@@ -435,6 +446,7 @@ export interface ShareLink extends BaseRecord {
   token: string;
   canCheckLoad: boolean;
   revokedAt?: string | null;
+  createdBy?: Id | null;
 }
 
 /** Club-wide defaults (PLAN.md §4.12). A single record. */
