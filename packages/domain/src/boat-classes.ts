@@ -226,7 +226,8 @@ export function classSizeRank(cls: BoatClass): number {
  */
 export function parseBoatClass(text: string): BoatClass | null {
   const t = text.toLowerCase();
-  const sym = t.match(/([1248])\s*(x\+|x|\+|-|−)?/g);
+  // A class digit stands alone: not part of a longer number ("U18 4+", "14A") or a time ("8:15").
+  const sym = t.match(/(?<![\d:.])([1248])(?![\d:.])\s*(x\+|x|\+|-|−)?/g);
   if (sym) {
     for (const raw of sym) {
       const m = raw.replace(/\s+/g, '').replace('−', '-');

@@ -21,9 +21,6 @@ import {
 } from '../src';
 import { DAY1, DAY2, codes, instant, one, patchEntry, retime, world } from './fixtures';
 
-// The domain tsconfig loads no ambient DOM or Node types; the runtime has performance.now().
-declare const performance: { now(): number };
-
 /** A world that produces every finding code at least once. */
 function kitchenSink(): ConflictInput {
   return (
