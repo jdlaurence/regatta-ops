@@ -169,7 +169,9 @@ function ClubDefaultsForm({ settings, exists }: { settings: ClubSettings; exists
                   />
                 )}
               />
-              <p className="text-sm text-ink-2">Anyone can pick their own in My preferences.</p>
+              <p className="text-sm text-ink-2">
+                For crew weight ranges on shells. Anyone can pick their own in My preferences.
+              </p>
             </div>
             <div className="flex flex-col gap-1.5">
               <span className="text-sm font-medium">First day of the week</span>
