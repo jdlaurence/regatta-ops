@@ -112,8 +112,12 @@ test.describe('desktop', () => {
     await expect(pageHeading(page, 'Trailer')).toBeVisible();
     const pack = page.getByRole('main').getByRole('button', { name: 'Pack both trailers' });
     await expect(pack).toBeEnabled();
-    const p0 = Date.now();
     await pack.click();
+    // The regatta is final: the first load-plan change asks (PLAN.md §4.1). Time from the yes.
+    const ask = page.getByRole('dialog', { name: 'This regatta is final' });
+    await expect(ask).toBeVisible();
+    const p0 = Date.now();
+    await ask.getByRole('button', { name: 'Change the load plan' }).click();
     await expect(
       page
         .getByText('Trailer packed')
