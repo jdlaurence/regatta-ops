@@ -346,6 +346,14 @@ describe('headerless comma paste', () => {
     expect(parseSchedulePaste('\n  \n')).toMatchObject({ rows: [], confidence: 0 });
   });
 
+  it('strips a byte-order mark and handles CRLF line ends', () => {
+    const parsed = parseSchedulePaste('﻿time,name,class\r\n9:40,Youth 8+,8+\r\n');
+    expect(parsed.columns[0]!.header).toBe('time');
+    expect(parsed.rows.map((r) => [r.time, r.name, r.boatClass])).toEqual([
+      ['09:40', 'Youth 8+', '8+'],
+    ]);
+  });
+
   it('a single column of names still parses classes', () => {
     const parsed = parseSchedulePaste("Men's Eight\nWomen's Quad\nAwards");
     expect(parsed.rows.map((r) => [r.kind, r.boatClass])).toEqual([
