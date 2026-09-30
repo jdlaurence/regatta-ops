@@ -165,6 +165,16 @@ function TrailerTab({
   );
 }
 
+/**
+ * Keyboard focus follows a boat after it moves (its chip is drawn anew in the new lane) or is
+ * let go, so it never falls back to the top of the page.
+ */
+function focusBoat(shellId: Id) {
+  setTimeout(() => {
+    document.querySelector<HTMLElement>(`button[data-flip="${CSS.escape(shellId)}"]`)?.focus();
+  }, 50);
+}
+
 // ---------------------------------------------------------------------------
 // Phone: "Move to…" choices
 
@@ -484,15 +494,18 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
     else runPack(which);
   };
 
-  // Keyboard: Escape lets go of the selected boat.
+  // Keyboard: Escape lets go of the selected boat, and focus goes back to it (the lane
+  // buttons it may have been on go away).
   useEffect(() => {
     if (!selectedId) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || e.defaultPrevented) return;
       if (document.querySelector('[role="dialog"], [role="menu"], [role="listbox"]')) return;
+      const id = selectedId;
       setSelectedId(null);
       setPreview(null);
       announce('Selection cleared.');
+      focusBoat(id);
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
@@ -581,6 +594,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
     if (moveTo(tm, selectedId, cell, event.altKey)) {
       setPreview(null);
       setSelectedId(null);
+      focusBoat(selectedId);
     }
   };
 
@@ -669,7 +683,10 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
         laneChoices={laneChoices}
         lanes={lanes}
         onMove={(cell) => {
-          if (moveTo(tm, selectedBoat.shellId, cell, false)) setSelectedId(null);
+          if (moveTo(tm, selectedBoat.shellId, cell, false)) {
+            setSelectedId(null);
+            focusBoat(selectedBoat.shellId);
+          }
         }}
         onOther={(t) => {
           placeBest(t, selectedBoat.shellId);
