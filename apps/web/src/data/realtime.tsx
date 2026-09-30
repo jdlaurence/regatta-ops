@@ -2,9 +2,14 @@
 // reads and invalidate its queries when anything changes, batched so a burst of changes
 // refetches once. Works the same for PocketBase (server-sent events) and MemoryStore.
 //
-// Seam for WP-J (presence and "Updated by Sarah just now" toasts): useRealtimeEvents(handler)
-// receives every change event after invalidation is scheduled. Presence is left out of the
-// subscription list on purpose; WP-J owns it.
+// useRealtimeEvents(handler) receives every change event after invalidation is scheduled; the
+// "Updated by Sarah W. just now" toasts (change-toasts.ts) listen there. Presence is not in the
+// subscription list: its heartbeats patch the cache directly (presence.ts) instead of refetching.
+//
+// While an optimistic write is in flight, invalidation waits for it to settle (up to
+// MAX_DEFER_MS). Refetching mid-write would paint the server's older state over the optimistic
+// one: the echo of an earlier step of the same write, or someone else's unrelated change to
+// the collection. The write's own onSettled refetches what it touched.
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -43,6 +48,7 @@ type Listener = (event: ChangeEvent) => void;
 const RealtimeContext = createContext<Set<Listener> | null>(null);
 
 const BATCH_MS = 50;
+const MAX_DEFER_MS = 10_000;
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
   const store = useStore();
@@ -55,8 +61,17 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
     const pending = new Set<CollectionName>();
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let deferredSince: number | null = null;
     const flush = () => {
       timer = null;
+      if (qc.isMutating() > 0) {
+        deferredSince ??= Date.now();
+        if (Date.now() - deferredSince < MAX_DEFER_MS) {
+          timer = setTimeout(flush, BATCH_MS);
+          return;
+        }
+      }
+      deferredSince = null;
       for (const c of pending) void qc.invalidateQueries({ queryKey: queryKeys.collection(c) });
       pending.clear();
     };
