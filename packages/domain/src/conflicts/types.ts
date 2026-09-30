@@ -1,5 +1,6 @@
 // Conflict engine contract (PLAN.md §9.2).
 
+import type { JuniorAgeGroup } from '../boat-classes';
 import type {
   Athlete,
   Availability,
@@ -79,9 +80,22 @@ export interface Finding {
 }
 
 export interface EntryStats {
+  /** Average rower weight (cox excluded), over rowers with a weight. */
   avgWeightKg?: number;
+  /** Average rower age (cox excluded); needs seasonYear. */
   avgAge?: number;
   mastersCategory?: string;
+  /** Oldest junior age group of anyone seated (cox included); needs seasonYear. */
+  ageGroup?: JuniorAgeGroup;
+  /** Seated rowers whose own side is port / starboard. */
   portCount: number;
   starboardCount: number;
 }
+
+/** Findings the coach can acknowledge with a plan (PLAN.md §4.4). */
+export const HOT_SEAT_CODES = [
+  'SHELL_HOT_SEAT',
+  'OARS_HOT_SEAT',
+] as const satisfies readonly FindingCode[];
+
+export const SEVERITIES = ['error', 'warning', 'info'] as const satisfies readonly Severity[];
