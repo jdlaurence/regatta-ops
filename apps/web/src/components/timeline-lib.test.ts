@@ -233,6 +233,12 @@ describe('buildTimeline', () => {
     expect(n1.raceClock).toBe('9:00');
     expect(n1.teamColor).toBe('navy');
     expect(n1.description).toBe('Boys V8 n1, Race ev1 at 9:00, Alpha, busy 8:20 to 9:25');
+    expect(n1.details).toMatchObject({
+      name: 'Boys V8 n1',
+      event: 'Race ev1 at 9:00',
+      shell: 'Alpha',
+      busy: '8:20 to 9:25',
+    });
     expect(model.axis).toMatchObject({ start: ms('08:00'), end: ms('11:00') });
   });
 

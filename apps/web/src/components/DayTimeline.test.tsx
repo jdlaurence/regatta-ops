@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { effectiveSettings, findConflicts, zonedToInstant, type ConflictInput } from '@srt/domain';
 import { buildSeedWorld } from '@srt/seed';
 import { DayTimeline } from './DayTimeline';
+import { axisMinutes, buildTimeline, timeToX } from './timeline-lib';
 
 const { world } = buildSeedWorld();
 const hotl = world.regattas.find((r) => r.name === 'Head of the Lake')!;
@@ -139,5 +140,40 @@ describe('DayTimeline', () => {
     expect(buttons).toHaveLength(24);
     await user.click(buttons[0]!);
     expect(onBarClick).toHaveBeenCalledTimes(1);
+  });
+  it('shows a hover card for the bar under the pointer in the compact mode', () => {
+    const model = buildTimeline(input, findings, { day: DAY });
+    const minutes = axisMinutes(model.axis!);
+    // The first row's first bar, in lane 0 (the mini row pads 1 px, then a 7 px lane).
+    const bar = model.bars.find((b) => b.rowId === model.rows[0]!.id && b.lane === 0)!;
+    render(<DayTimeline input={input} findings={findings} day={DAY} mini onBarClick={() => {}} />);
+    const svg = document.querySelector('svg[viewBox]') as SVGSVGElement;
+    // One px per minute, so plot x is the pointer's clientX.
+    svg.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: minutes, height: 100, right: minutes, bottom: 100 }) as DOMRect;
+    const mid = (timeToX(bar.busyStart, model.axis!, 1) + timeToX(bar.busyEnd, model.axis!, 1)) / 2;
+    fireEvent.pointerMove(svg, { clientX: mid, clientY: 4, pointerType: 'mouse' });
+    const card = document.querySelector('[data-slot="timeline-hover-card"]') as HTMLElement;
+    expect(card).toHaveTextContent(bar.details.name);
+    expect(card).toHaveTextContent(`Busy${bar.details.busy}`);
+    expect(card).toHaveTextContent('Click to open the entry');
+    fireEvent.pointerLeave(svg);
+    expect(document.querySelector('[data-slot="timeline-hover-card"]')).toBeNull();
+  });
+
+  it('shows the hover card on keyboard focus, with the bar’s conflicts and hot seats', async () => {
+    const user = userEvent.setup();
+    render(<DayTimeline input={input} findings={findings} day={DAY} mini onBarClick={() => {}} />);
+    await user.tab();
+    const card = () => document.querySelector('[data-slot="timeline-hover-card"]');
+    expect(card()).not.toBeNull();
+    const boys = screen.getByRole('button', { name: /^Boys V4\+, .*at 11:15, Kokanee/ });
+    expect(boys).toHaveAccessibleName(/conflict with Evening M4\+$/);
+    act(() => boys.focus());
+    expect(card()).toHaveTextContent('Boys V4+');
+    expect(card()).toHaveTextContent('ShellKokanee');
+    expect(card()).toHaveTextContent('Conflict with Evening M4+');
+    await user.keyboard('{Escape}');
+    expect(card()).toBeNull();
   });
 });

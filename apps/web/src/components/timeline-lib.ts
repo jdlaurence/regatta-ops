@@ -66,6 +66,21 @@ export interface TimelineBar {
   raceClock: string;
   /** Full accessible name: "Boys 2V8, Youth Men's 8+ at 8:16, LLL, busy 7:01 to 8:41". */
   description: string;
+  /** The description's parts, for the hover card. */
+  details: TimelineBarDetails;
+}
+
+export interface TimelineBarDetails {
+  /** "Boys 2V8". */
+  name: string;
+  /** "Youth Men's 8+ at 8:16". */
+  event: string;
+  /** "LLL (8+)", or null without a shell. */
+  shell: string | null;
+  /** "24-D · yellow-white", or null without oars. */
+  oars: string | null;
+  /** "7:01 to 8:41". */
+  busy: string;
 }
 
 export type TimelineMarkKind = 'conflict' | 'hot_seat';
@@ -266,12 +281,19 @@ export function buildTimeline(
     const busyStart = Date.parse(w.busyStart);
     const busyEnd = Date.parse(w.busyEnd);
     const raceClock = clockAt(w.raceStart, tz);
+    const details: TimelineBarDetails = {
+      name: `${teamName} ${entry.label}`.trim(),
+      event: `${eventText(eventById.get(entry.eventId ?? '')) || 'Race'} at ${raceClock}`,
+      shell: shell ? shellLabel(shell) : null,
+      oars: oars ? oarSetLabel(oars) : null,
+      busy: `${clockAt(w.busyStart, tz)} to ${clockAt(w.busyEnd, tz)}`,
+    };
     const parts = [
-      `${teamName} ${entry.label}`.trim(),
-      `${eventText(eventById.get(entry.eventId ?? '')) || 'Race'} at ${raceClock}`,
-      shell ? shellLabel(shell) : 'no shell',
-      ...(groupBy === 'oar_set' || oars ? [oars ? `oars ${oarSetLabel(oars)}` : 'no oars'] : []),
-      `busy ${clockAt(w.busyStart, tz)} to ${clockAt(w.busyEnd, tz)}`,
+      details.name,
+      details.event,
+      details.shell ?? 'no shell',
+      ...(groupBy === 'oar_set' || oars ? [oars ? `oars ${details.oars}` : 'no oars'] : []),
+      `busy ${details.busy}`,
     ];
     const bar = {
       entryId: entry.id,
@@ -285,6 +307,7 @@ export function buildTimeline(
       label,
       raceClock,
       description: parts.join(', '),
+      details,
     };
     const list = byRow.get(bar.rowId) ?? [];
     list.push(bar);

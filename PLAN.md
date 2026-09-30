@@ -421,6 +421,8 @@ Routes are shown with React Router path syntax. Every regatta-scoped page loads 
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+- Day at a glance: hovering the miniature (or focusing a bar from the keyboard) shows a card for what is under the pointer. On a bar: the entry, its event and race time, shell, oars, busy window, and its conflicts and hot seats. On a conflict or hot seat: the finding's message and the two crews it joins. The pointer snaps to the nearest bar or mark within a few pixels, since the bars are thin; clicking there opens the entry. Touch skips the card (a tap opens the entry).
+
 ### 6.3 Schedule `/regattas/:id/schedule`
 
 - Toolbar: day selector, view toggle (List, Timeline), group-by (Shell, Team, Oars), filters, "Add event", "Import events", "Print" (the list as on screen, §4.11).

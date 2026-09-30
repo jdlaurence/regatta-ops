@@ -9,7 +9,8 @@
 // - full (the schedule page): chips as row labels, labels on bars, a legend, horizontal scroll
 //   inside its own box on narrow screens. Bars are one tab stop; arrow keys move between them.
 // - mini (the regatta overview's "Day at a glance", §6.2): thin bars that fit the width, hour
-//   labels only, no scroll.
+//   labels only, no scroll. A hover card (and keyboard focus) names what is under the pointer:
+//   the entry and its shell, oars, and busy window, or a conflict or hot seat.
 //
 //   const { input, findings } = useFindings(regattaId);
 //   {input && <DayTimeline input={input} findings={findings} day="2026-11-01" mini
@@ -19,14 +20,17 @@
 
 import {
   useCallback,
+  useEffect,
   useId,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
   type KeyboardEvent,
+  type PointerEvent,
   type ReactNode,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { clockAt, type ConflictInput, type Entry, type Finding } from '@srt/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
@@ -762,6 +766,17 @@ function Legend() {
 // ---------------------------------------------------------------------------
 // Mini mode: scales to its container with a viewBox in minutes, so it never scrolls.
 
+/** What the pointer (or keyboard focus) is on in the miniature, and where to put the card. */
+interface MiniHover {
+  target: { kind: 'bar'; bar: TimelineBar } | { kind: 'mark'; mark: TimelineMark };
+  /** Viewport px: the pointer, or the focused bar's bottom center. */
+  x: number;
+  y: number;
+}
+
+/** How far (px) from a thin bar or mark the pointer still counts as on it. */
+const MINI_HIT_SLOP = 4;
+
 function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, className }: ModeProps) {
   const axis = model.axis!;
   const minutes = axisMinutes(axis);
@@ -779,6 +794,7 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
   const x = (t: number) => timeToX(t, axis, 1);
   const pct = (t: number) => `${(timeToX(t, axis, 1) / minutes) * 100}%`;
   const barById = new Map(model.bars.map((b) => [b.entryId, b]));
+  const texts = useMemo(() => markTexts(model), [model]);
   const showNow = nowOnAxis(nowMs, axis, model.day, model.timezone);
   const hours = axis.ticks.filter((t) => t.hour);
   // Every other hour label when the day is long, so labels never collide at narrow widths.
@@ -821,11 +837,78 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
       case ' ':
         onBarClick?.(bar.entryId, bar);
         break;
+      case 'Escape':
+        setHover(null);
+        break;
       default:
         handled = false;
     }
     if (handled) e.preventDefault();
   };
+
+  // The hover card. Bars are 5 px tall, so the pointer is matched to the nearest bar or mark
+  // within a few px rather than relying on the SVG shapes' own hit areas.
+  const [hover, setHover] = useState<MiniHover | null>(null);
+  const hitAt = (px: number, py: number, slop: number): MiniHover['target'] | null => {
+    // Conflicts draw over the bars; the red block is what the eye lands on.
+    for (const m of model.marks) {
+      if (m.kind !== 'conflict') continue;
+      const a = barById.get(m.fromEntryId);
+      const b = barById.get(m.toEntryId);
+      if (!a || !b) continue;
+      const y0 = Math.min(barTop(a), barTop(b)) - 1;
+      const y1 = Math.max(barTop(a), barTop(b)) + MINI.bar + 1;
+      if (px >= x(m.start) - slop && px <= x(m.end) + slop && py >= y0 && py <= y1) {
+        return { kind: 'mark', mark: m };
+      }
+    }
+    const g = geoms.find((r) => py >= r.top && py < r.top + r.height);
+    if (!g) return null;
+    const lane = Math.min(
+      g.row.lanes - 1,
+      Math.max(0, Math.floor((py - g.top - MINI.rowPad) / MINI.pitch)),
+    );
+    const inRow = model.bars.filter((b) => b.rowId === g.row.id);
+    const exact = inRow.find((b) => b.lane === lane && px >= x(b.busyStart) && px <= x(b.busyEnd));
+    if (exact) return { kind: 'bar', bar: exact };
+    // Hot-seat links run through the gap between two bars.
+    for (const m of model.marks) {
+      if (m.kind !== 'hot_seat' || m.rowId !== g.row.id) continue;
+      if (px >= x(m.start) && px <= x(m.end)) return { kind: 'mark', mark: m };
+    }
+    let best: TimelineBar | null = null;
+    let bestDist = slop;
+    for (const b of inRow) {
+      const dist = Math.max(0, x(b.busyStart) - px, px - x(b.busyEnd));
+      if (dist <= bestDist) {
+        best = b;
+        bestDist = dist;
+      }
+    }
+    return best ? { kind: 'bar', bar: best } : null;
+  };
+  const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
+    // A tap opens the entry; the card is for a mouse or pen resting on the plot.
+    if (e.pointerType === 'touch') return;
+    const r = e.currentTarget.getBoundingClientRect();
+    if (r.width === 0) return;
+    const perPx = minutes / r.width;
+    const target = hitAt((e.clientX - r.left) * perPx, e.clientY - r.top, MINI_HIT_SLOP * perPx);
+    setHover(target ? { target, x: e.clientX, y: e.clientY } : null);
+  };
+  const showFor = (bar: TimelineBar) => {
+    const r = barRefs.current.get(bar.entryId)?.getBoundingClientRect();
+    if (r) setHover({ target: { kind: 'bar', bar }, x: r.left + r.width / 2, y: r.bottom });
+  };
+  const hoveredBar = hover?.target.kind === 'bar' ? hover.target.bar : null;
+
+  // The card is fixed to the viewport, so it would drift from its bar on scroll.
+  useEffect(() => {
+    if (!hover) return;
+    const hide = () => setHover(null);
+    window.addEventListener('scroll', hide, { capture: true, passive: true });
+    return () => window.removeEventListener('scroll', hide, { capture: true });
+  }, [hover]);
 
   return (
     // The miniature is a glance: on a phone its bars are too thin to tap, and the schedule
@@ -858,7 +941,15 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
         preserveAspectRatio="none"
         width="100%"
         height={height}
-        className="block overflow-visible"
+        className={cn('block overflow-visible', hoveredBar && onBarClick && 'cursor-pointer')}
+        onPointerMove={onPointerMove}
+        onPointerLeave={() => setHover(null)}
+        onClick={(e) => {
+          // Near a bar but not on it: the card names the bar, so the click opens it.
+          if (!onBarClick || !hoveredBar) return;
+          if ((e.target as Element).closest('[data-entry-id]')) return;
+          onBarClick(hoveredBar.entryId, hoveredBar);
+        }}
       >
         <g aria-hidden>
           {hours.map((t) => (
@@ -876,12 +967,14 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
         {model.bars.map((bar) => {
           const y = barTop(bar);
           const selected = bar.entryId === selectedEntryId;
+          const lit = selected || bar.entryId === hoveredBar?.entryId;
           const open = onBarClick;
+          const aria = [bar.description, ...(texts.get(bar.entryId) ?? [])].join(', ');
           return (
             <g
               key={bar.entryId}
               style={teamStyle(bar.teamColor)}
-              className={cn('group outline-none', open && 'cursor-pointer')}
+              className="group outline-none"
               {...(open
                 ? {
                     ref: (el: SVGGElement | null) => {
@@ -890,17 +983,21 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
                     },
                     role: 'button',
                     tabIndex: bar.entryId === tabStop ? 0 : -1,
-                    'aria-label': bar.description,
+                    'aria-label': aria,
+                    'data-entry-id': bar.entryId,
                     onClick: () => {
                       setActiveId(bar.entryId);
                       open(bar.entryId, bar);
                     },
-                    onFocus: () => setActiveId(bar.entryId),
+                    onFocus: () => {
+                      setActiveId(bar.entryId);
+                      showFor(bar);
+                    },
+                    onBlur: () => setHover(null),
                     onKeyDown: (e: KeyboardEvent<SVGGElement>) => onKeyDown(bar, e),
                   }
                 : { 'aria-hidden': true })}
             >
-              <title>{bar.description}</title>
               <rect
                 x={x(bar.busyStart)}
                 y={y}
@@ -924,8 +1021,8 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
                 vectorEffect="non-scaling-stroke"
                 strokeWidth={2}
                 className={cn(
-                  'stroke-accent',
-                  selected ? 'block' : 'hidden group-focus-visible:block',
+                  lit ? 'block' : 'hidden group-focus-visible:block',
+                  selected ? 'stroke-accent' : 'stroke-ink group-focus-visible:stroke-accent',
                 )}
               />
             </g>
@@ -938,6 +1035,7 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
             if (!a || !b) return null;
             const ya = barTop(a);
             const yb = barTop(b);
+            const lit = hover?.target.kind === 'mark' && hover.target.mark.id === m.id;
             if (m.kind === 'conflict') {
               return (
                 <rect
@@ -946,7 +1044,9 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
                   y={Math.min(ya, yb) - 1}
                   width={Math.max(1, x(m.end) - x(m.start))}
                   height={Math.abs(yb - ya) + MINI.bar + 2}
-                  className="fill-danger"
+                  vectorEffect="non-scaling-stroke"
+                  strokeWidth={lit ? 2 : 0}
+                  className="fill-danger stroke-ink"
                 />
               );
             }
@@ -957,7 +1057,7 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
                 d={`M ${x(m.start)} ${mid} H ${x(m.end)}`}
                 fill="none"
                 vectorEffect="non-scaling-stroke"
-                strokeWidth={2}
+                strokeWidth={lit ? 3.5 : 2}
                 strokeDasharray={m.acknowledged ? '4 2' : undefined}
                 className={m.acknowledged ? 'stroke-info' : 'stroke-warn'}
               />
@@ -976,6 +1076,164 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
           )}
         </g>
       </svg>
+      {hover && (
+        <MiniHoverCard
+          hover={hover}
+          model={model}
+          barById={barById}
+          rowLabel={
+            model.rows.find(
+              (r) =>
+                r.id ===
+                (hover.target.kind === 'bar' ? hover.target.bar.rowId : hover.target.mark.rowId),
+            )?.label
+          }
+          canOpen={!!onBarClick}
+        />
+      )}
     </div>
+  );
+}
+
+function MarkSwatch({ kind, acknowledged }: { kind: TimelineMark['kind']; acknowledged: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'mt-1.5 h-1 w-3 shrink-0 rounded-full',
+        kind === 'conflict' ? 'bg-danger' : acknowledged ? 'bg-info' : 'bg-warn',
+      )}
+    />
+  );
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * The miniature's hover card: the bar's entry, event, shell, oars, busy window, and its
+ * conflicts and hot seats; or, on a mark, what the finding says and which two crews it joins.
+ * Visual only (aria-hidden): each bar's accessible name carries the same facts.
+ */
+function MiniHoverCard({
+  hover,
+  model,
+  barById,
+  rowLabel,
+  canOpen,
+}: {
+  hover: MiniHover;
+  model: TimelineModel;
+  barById: Map<string, TimelineBar>;
+  rowLabel: string | undefined;
+  canOpen: boolean;
+}) {
+  const { target } = hover;
+  // Keep the card on screen: slide it along its anchor by how far across the viewport the
+  // anchor is, and open upward in the lower part of the window.
+  const vw = typeof window === 'undefined' ? 1 : window.innerWidth || 1;
+  const vh = typeof window === 'undefined' ? 1 : window.innerHeight || 1;
+  const across = Math.min(1, Math.max(0, hover.x / vw));
+  const above = hover.y > vh * 0.6;
+  const style = {
+    left: hover.x,
+    top: above ? hover.y - 12 : hover.y + 16,
+    transform: `translate(${-across * 100}%, ${above ? '-100%' : '0'})`,
+  };
+
+  let body: ReactNode;
+  if (target.kind === 'bar') {
+    const { bar } = target;
+    const d = bar.details;
+    const marks = model.marks.filter(
+      (m) => m.fromEntryId === bar.entryId || m.toEntryId === bar.entryId,
+    );
+    body = (
+      <>
+        <p className="flex items-center gap-2 font-medium" style={teamStyle(bar.teamColor)}>
+          <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-team" />
+          {d.name}
+        </p>
+        <p className="text-ink-2 tabular-nums">{d.event}</p>
+        <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 tabular-nums">
+          <dt className="text-ink-2">Shell</dt>
+          <dd>{d.shell ?? 'None'}</dd>
+          {d.oars && (
+            <>
+              <dt className="text-ink-2">Oars</dt>
+              <dd>{d.oars}</dd>
+            </>
+          )}
+          <dt className="text-ink-2">Busy</dt>
+          <dd>{d.busy}</dd>
+        </dl>
+        {marks.length > 0 && (
+          <ul className="mt-1.5 flex flex-col gap-0.5 border-t border-line pt-1.5">
+            {marks.map((m) => {
+              const other = barById.get(
+                m.fromEntryId === bar.entryId ? m.toEntryId : m.fromEntryId,
+              );
+              const who = other?.details.name ?? 'another entry';
+              const text =
+                m.kind === 'conflict'
+                  ? `Conflict with ${who}`
+                  : `Hot seat with ${who}${m.gapMin !== undefined ? `, ${m.gapMin} minutes` : ''}${m.acknowledged ? ', acknowledged' : ''}`;
+              return (
+                <li key={m.id} className="flex gap-2">
+                  <MarkSwatch kind={m.kind} acknowledged={m.acknowledged} />
+                  {text}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {canOpen && <p className="mt-1.5 text-ink-2">Click to open the entry</p>}
+      </>
+    );
+  } else {
+    const { mark } = target;
+    const pair = [barById.get(mark.fromEntryId), barById.get(mark.toEntryId)];
+    body = (
+      <>
+        <p className="flex gap-2 font-medium">
+          <MarkSwatch kind={mark.kind} acknowledged={mark.acknowledged} />
+          {mark.kind === 'conflict'
+            ? 'Conflict'
+            : mark.acknowledged
+              ? 'Hot seat, acknowledged'
+              : 'Hot seat'}
+          {rowLabel ? ` · ${rowLabel}` : ''}
+        </p>
+        <p className="mt-0.5">{capitalize(mark.message)}</p>
+        <ul className="mt-1.5 flex flex-col gap-0.5 border-t border-line pt-1.5 tabular-nums">
+          {pair.map(
+            (b) =>
+              b && (
+                <li
+                  key={b.entryId}
+                  className="flex items-center gap-2"
+                  style={teamStyle(b.teamColor)}
+                >
+                  <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-team" />
+                  {b.details.name} at {b.raceClock}
+                </li>
+              ),
+          )}
+        </ul>
+      </>
+    );
+  }
+
+  return createPortal(
+    <div
+      aria-hidden
+      data-slot="timeline-hover-card"
+      style={style}
+      className="pointer-events-none fixed z-50 w-max max-w-72 rounded-card border border-line bg-surface px-3 py-2 text-sm text-ink shadow-popover"
+    >
+      {body}
+    </div>,
+    document.body,
   );
 }
