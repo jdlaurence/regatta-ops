@@ -68,7 +68,7 @@ export function TrailerDiagramSlot({
   if (!plan) return null;
   return (
     <div data-slot="trailer-end-view" className="mb-4 break-inside-avoid">
-      <TableScroll>
+      <TableScroll label="End view">
         <TrailerEndView
           trailer={def}
           rules={rules}
