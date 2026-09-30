@@ -22,6 +22,7 @@ import {
   seatConflicts,
   sheetOrder,
   shellOptions,
+  stripFits,
   stripOrder,
   EMPTY_FILTERS,
 } from './lib';
@@ -298,6 +299,7 @@ describe('labels', () => {
     expect(autoLabel(e, '8+', [])).toBe('V8');
     expect(autoLabel(e, '8+', ['V8'])).toBe('V8 B');
     expect(autoLabel(e, '8+', ['V8 A', 'V8 B'])).toBe('V8 C');
+    expect(autoLabel(e, '8+', ['V8 B'])).toBe('V8 A');
     expect(autoLabel(e, '8+', ['2V8'])).toBe('V8');
   });
 });
@@ -369,6 +371,16 @@ describe('placementOps', () => {
       },
     ]);
     expect(clearOps(idx, { entryId: L.boysEight, seat: '8' })).toEqual([]);
+  });
+});
+
+describe('stripFits', () => {
+  it('keeps an eight as a strip only where short names still fit', () => {
+    expect(stripFits('8+', 720)).toBe(true);
+    expect(stripFits('8+', 648)).toBe(false);
+    expect(stripFits('4+', 358)).toBe(false);
+    expect(stripFits('2x', 358)).toBe(true);
+    expect(stripFits('1x', 200)).toBe(true);
   });
 });
 

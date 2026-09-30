@@ -830,6 +830,7 @@ export function autoLabel(
   for (const label of siblingLabels) {
     const l = label.trim();
     if (l === base) {
+      // An unlettered crew counts as the A crew.
       clash = true;
       used.add('A');
     } else if (l.startsWith(`${base} `) && /^[A-Z]$/.test(l.slice(base.length + 1))) {
@@ -838,7 +839,7 @@ export function autoLabel(
     }
   }
   if (!clash) return base;
-  for (let c = 66; c <= 90; c++) {
+  for (let c = 65; c <= 90; c++) {
     const letter = String.fromCharCode(c);
     if (!used.has(letter)) return `${base} ${letter}`;
   }
@@ -965,14 +966,14 @@ export function stripOrder(cls: BoatClass, coxPosition?: 'stern' | 'bow' | null)
 }
 
 /** Narrowest readable rowing seat on a md strip ("Lena K."), and the cox seat. */
-const MIN_SEAT_PX = 72;
+const MIN_SEAT_PX = 62;
 const MIN_COX_PX = 104;
 /** Bow cap, stern, borders, and the card's padding around the strip. */
 const STRIP_CHROME_PX = 96;
 
 /**
  * Whether an entry of this class reads as a strip in a column this wide; otherwise its seats
- * show as rows. An eight needs about 770 px, a four with cox about 490, a double about 240.
+ * show as rows. An eight needs about 700 px, a four with cox about 450, a double about 220.
  */
 export function stripFits(cls: BoatClass, columnWidth: number): boolean {
   const spec = boatClassSpec(cls);
