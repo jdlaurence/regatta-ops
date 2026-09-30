@@ -7,6 +7,7 @@
 
 import { COLLECTION_NAMES, type CollectionName, type User, type World } from '@srt/domain';
 import { describeChange, type Lookup } from './activity';
+import { isGuarded, sameStamp } from './concurrency';
 import { RELATIONS, STAMPED, UNIQUE, type RelationDef } from './schema';
 import {
   applyQuery,
@@ -203,7 +204,12 @@ export class MemoryStore implements DataStore {
     const table = this.table(collection);
     const prev = table.get(id);
     if (!prev) throw new StoreError('not_found', 'That record no longer exists.', 404);
-    if (options?.expectedUpdated && options.expectedUpdated !== prev.updated) {
+    // concurrency.pb.js: only events and load placements honor expectedUpdated.
+    if (
+      options?.expectedUpdated &&
+      isGuarded(collection) &&
+      !sameStamp(options.expectedUpdated, prev.updated as string | undefined)
+    ) {
       throw new StoreError('conflict', CONFLICT_MESSAGE, 409);
     }
     const changes = stripUndefined(clone(patch) as Record<string, unknown>);

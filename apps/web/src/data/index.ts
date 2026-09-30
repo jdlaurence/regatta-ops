@@ -50,5 +50,16 @@ export {
   type SeverityCounts,
 } from './findings';
 export { useRealtimeEvents, RealtimeProvider } from './realtime';
+export {
+  useGuardedUpdate,
+  type GuardedUpdateOptions,
+  type GuardedUpdateVars,
+} from './guarded-update';
+export {
+  CONFLICT_TOAST,
+  GUARDED_COLLECTIONS,
+  isGuarded,
+  type GuardedCollection,
+} from './concurrency';
 export { StoreProvider } from './context';
 export { can, ROLE_LABELS, type Action } from './permissions';
