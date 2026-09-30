@@ -61,5 +61,16 @@ export {
   isGuarded,
   type GuardedCollection,
 } from './concurrency';
+export { useChangeToasts } from './change-toasts';
+export {
+  ANNOUNCED_COLLECTIONS,
+  ChangeCoalescer,
+  describeChanges,
+  remoteChange,
+  type ChangeNotice,
+  type RemoteChange,
+} from './change-coalescer';
+export { capitalize, initialsOf, shortUserName, targetCollection } from './collab-format';
+export { useNow } from './use-now';
 export { StoreProvider } from './context';
 export { can, ROLE_LABELS, type Action } from './permissions';
