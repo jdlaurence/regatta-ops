@@ -1,6 +1,6 @@
 # SRT: Sammamish Regatta Tool
 
-**Product and build plan.** Version 0.2, 2026-09-29 (revised after owner answers and review of the club's spreadsheets). Author: J.D. Laurence-Chasen with Claude.
+**Product and build plan.** Version 0.3, 2026-09-29 (v0.2 revised after owner answers and review of the club's spreadsheets; v0.3 amendments from the build are listed in §18). Author: J.D. Laurence-Chasen with Claude.
 
 This document is the single source of truth for the team of agents building SRT. It covers what the tool is for, who uses it, how it should look and feel, how it is built, and in what order. Where the plan makes an assumption instead of a decision, the assumption is tagged `[ASSUMPTION]` and listed again in §15 so the owner can confirm or overrule it.
 
@@ -26,6 +26,7 @@ This document is the single source of truth for the team of agents building SRT.
 15. [Open questions and assumptions](#15-open-questions-and-assumptions)
 16. [Appendix A: Reference dimensions and trailer conventions](#16-appendix-a-reference-dimensions-and-trailer-conventions)
 17. [Appendix B: Sample JSON](#17-appendix-b-sample-json)
+18. [Amendments during the build](#18-amendments-during-the-build)
 
 ---
 
@@ -604,6 +605,8 @@ PocketBase collections. Every collection has `id`, `created`, and `updated` auto
 
 **presence** (Phase 2) — `user` relation, `regatta` relation, `page`, `team` relation, `seen_at` date. Heartbeat every 30 s; rows older than 2 min are ignored and pruned by a cron hook.
 
+**club_settings** (single record; added in v0.3, §18) — `club_name`, `timezone`, `weight_unit` select(`kg`,`lb`), `week_starts_on` number, `timing_defaults` json (the §4.1 timing values for sprints), `head_race_duration_min` number. Read by everyone, written by admins. Holds the club defaults of §4.12.
+
 **share_links** (Phase 3) — `regatta` relation, `team` relation (nullable), `token` (unique), `can_check_load` bool, `revoked_at` date.
 
 ### 8.2 API rules
@@ -658,7 +661,7 @@ export interface BoatClassSpec {
 export function seatsFor(cls: BoatClass): Seat[];            // ['1','2','3','4','cox'] for 4+
 export function seatSide(cls: BoatClass, seat: Seat, override?: Record<Seat,'port'|'starboard'>): 'port'|'starboard'|null;
 // Standard sweep rig: even seats port, odd seats starboard. Sculling seats return null.
-export function isCompatible(shellClasses: BoatClass[], eventClass: BoatClass): boolean;
+export function isCompatible(shellClasses: BoatClass[], eventClass: BoatClass, convertible?: boolean): boolean;
 export function juniorAgeGroup(birthYear: number, seasonYear: number): 'U15'|'U16'|'U17'|'U19'|'open';
 // age = seasonYear - birthYear: <=14 → U15, 15 → U16, 16 → U17, 17 or 18 → U19, else open.
 // Matches the club's fall age-group sheet (born 2009 → U19 in 2026, 2010 → U17, 2011 → U16, 2012 → U15).
@@ -674,7 +677,9 @@ Compatibility defaults (used when a shell has no explicit `compatible_classes`):
 export interface ConflictInput {
   settings: { launchLeadMin: number; raceDurationMin: number; returnMin: number;
               hotSeatMinGapMin: number; athleteMinGapMin: number; rerigMin: number };
-  events: Event[]; entries: Entry[]; seats: EntrySeat[];
+  timezone: string;            // v0.3: regatta zone, for times in messages
+  seasonYear: number;          // v0.3: for junior age groups
+  events: RegattaEvent[];      // v0.3: named RegattaEvent to avoid the DOM Event type entries: Entry[]; seats: EntrySeat[];
   athletes: Athlete[]; availability: Availability[];
   shells: Shell[]; oarSets: OarSet[]; teams: Team[];
   loadPlacements?: LoadPlacement[];   // optional: enables "not on trailer" findings
@@ -975,6 +980,7 @@ srt/
 │       │   ├── schemas/         # zod
 │       │   └── index.ts
 │       └── test/
+│   └── seed/                    # pure TS: builds the seed World from data/reference (v0.3, §18)
 └── .gitignore                   # excludes roster and lineup workbooks, pb_data, bin
 ```
 
@@ -1207,6 +1213,8 @@ Sources: [RCW 46.44.034](https://app.leg.wa.gov/RCW/default.aspx?cite=46.44.034)
 
 ### 17.1 Trailer definition (seeded "Boys trailer"; dimensions are placeholders until measured)
 
+> **v0.3 amendment:** with the overhangs below, an eight cannot fit (1220 + 450 + 300 = 1970 cm, shorter than a 1990 cm eight). The seed in `packages/domain/src/trailer/sra.ts` uses 500 cm front on the boys' levels 3 to 5 and 600 cm front and 350 cm rear on the girls' levels 2 to 5. Replace all of these with measurements (§15 Q1).
+
 ```json
 {
   "id": "trl_boys",
@@ -1296,3 +1304,14 @@ The last rule is what a coach adds when they say "we can squeeze three fours on 
   "acknowledged": false
 }
 ```
+
+---
+
+## 18. Amendments during the build
+
+Changes made while building v1, each reflected in the code. Earlier sections carry a "v0.3" note where they changed.
+
+1. **Placeholder trailer overhangs** (§14, §17.1). The plan's numbers made every eight too long for every shelf. The upper levels now allow enough front overhang for a 19.9 m eight (boys: 500 cm front on levels 3 to 5; girls: 600 cm front and 350 cm rear on levels 2 to 5, since the 2026 girls' layout has an eight on level 2). Still placeholders until measured.
+2. **`club_settings` collection** (§8.1). §4.12 names club defaults but §8 had nowhere to keep them. One record, admin-writable.
+3. **`packages/seed`** (§11.1). The seed world is built by a pure package so the PocketBase seed script and demo mode (`MemoryStore`) share one dataset.
+4. **Type names and inputs** (§9.1, §9.2). The race type is `RegattaEvent`. `ConflictInput` carries `timezone` and `seasonYear`. `isCompatible` takes a `convertible` flag. Compartments may also be of kind `oar_rack` and `bed` (§17.1 used both).

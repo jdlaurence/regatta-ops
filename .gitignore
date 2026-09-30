@@ -8,3 +8,10 @@ backend/bin/
 backend/pb_data/
 .env
 .env.local
+backend/pb_public/
+coverage/
+*.tsbuildinfo
+apps/web/playwright-report/
+apps/web/test-results/
+apps/web/dev-dist/
+.vite/

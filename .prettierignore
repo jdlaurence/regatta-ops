@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+PLAN.md
+data/
+backend/pb_data/
+backend/pb_public/
+backend/bin/
+**/dist/
+**/coverage/
+apps/web/src/data/pb-types.ts
