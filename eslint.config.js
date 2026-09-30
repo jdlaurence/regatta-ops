@@ -9,6 +9,7 @@ export default tseslint.config(
   {
     ignores: [
       '**/node_modules/**',
+      '.claude/**',
       '**/dist/**',
       '**/coverage/**',
       'backend/pb_data/**',

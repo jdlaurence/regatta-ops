@@ -7,3 +7,4 @@ backend/bin/
 **/dist/
 **/coverage/
 apps/web/src/data/pb-types.ts
+.claude/

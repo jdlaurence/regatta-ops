@@ -15,3 +15,4 @@ apps/web/playwright-report/
 apps/web/test-results/
 apps/web/dev-dist/
 .vite/
+.claude/worktrees/
