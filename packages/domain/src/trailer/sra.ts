@@ -150,11 +150,15 @@ export const SRA_DEFAULT_RULES: Rule[] = [
     origin: 'trailer',
     params: {},
   },
+  // Low, not Medium as §9.3.3 first proposed (amendment proposed by WP-B): at Medium the balance
+  // term outweighs "fours on levels 3 and 2" and moves a four to level 1, narrow side; the
+  // coaches' own 2026 layout is 27% heavier on the wide side. Like heavy-low, balance should
+  // break ties without fighting the convention (§9.3.5 case 12).
   {
     id: 'r_balance',
     type: 'side-balance',
     hard: false,
-    weight: 2,
+    weight: 1,
     enabled: true,
     origin: 'trailer',
     params: { tolerancePct: 15 },
