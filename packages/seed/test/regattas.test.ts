@@ -247,7 +247,8 @@ describe('2025 Northwest Youth Championships', () => {
     for (const pe of snapshot.entries) {
       for (const s of pe.seats) {
         const live = seatsOf(pe.entryId).find((x) => x.seat === s.seat);
-        if (live?.athleteId !== s.athleteId) changed++;
+        // Snapshots list every seat of the class (empty = null); the live draft has no record.
+        if ((live?.athleteId ?? null) !== (s.athleteId ?? null)) changed++;
       }
     }
     expect(changed).toBe(1);
