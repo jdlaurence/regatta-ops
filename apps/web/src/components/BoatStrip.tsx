@@ -197,6 +197,8 @@ export type BoatSeatProps = Omit<HTMLAttributes<HTMLElement>, 'onClick' | 'onKey
   highlighted?: boolean;
   /** Play the 120 ms settle once (set it on the seat that just received an athlete). */
   settling?: boolean;
+  /** md only: show the short name when the seat is too narrow for the full one (see BoatStrip). */
+  fitNames?: boolean;
   onSeatClick?: (seat: BoatStripSeat, event: MouseEvent<HTMLElement>) => void;
   onSeatKeyDown?: (seat: BoatStripSeat, event: KeyboardEvent<HTMLElement>) => void;
 };
@@ -210,6 +212,7 @@ export function BoatSeat({
   selected,
   highlighted,
   settling,
+  fitNames,
   onSeatClick,
   onSeatKeyDown,
   className,
@@ -218,7 +221,25 @@ export function BoatSeat({
   const s = SIZES[size];
   const occupant = seat.occupant;
   const full = size === 'md' || size === 'print';
-  const shown = full ? occupant?.name : (occupant?.shortName ?? occupant?.name);
+  const fit =
+    fitNames && size === 'md' && !!occupant?.shortName && occupant.shortName !== occupant.name;
+  // A container query per seat picks the name that fits: full ("Lena Kim"), short ("Lena K."),
+  // or, in the tightest seats, the first name the way a whiteboard lineup reads.
+  const shown = fit ? (
+    <>
+      <span className="@max-[7.5rem]:hidden">{occupant!.name}</span>
+      <span className="hidden @max-[7.5rem]:inline @max-[4.5rem]:hidden">
+        {occupant!.shortName}
+      </span>
+      <span className="hidden text-sm @max-[4.5rem]:inline">
+        {occupant!.shortName!.replace(/\s\S\.$/, '')}
+      </span>
+    </>
+  ) : full ? (
+    occupant?.name
+  ) : (
+    (occupant?.shortName ?? occupant?.name)
+  );
   const Tag = interactive ? 'button' : 'div';
   const a11y = interactive
     ? {
@@ -233,6 +254,7 @@ export function BoatSeat({
     'relative flex h-full items-center text-left',
     interactive && 'focus-visible:z-10 focus-visible:outline-offset-[-2px]',
     (selected || highlighted) && 'bg-accent-tint',
+    fit && '@container',
   );
 
   if (seat.isCox) {
@@ -280,8 +302,10 @@ export function BoatSeat({
         common,
         'min-w-0 flex-1 basis-0 border-l border-line first:border-l-0',
         s.seatPad,
+        fit && 'px-2',
         className,
       )}
+      title={fit ? occupant!.name : undefined}
       {...a11y}
       {...rest}
     >
@@ -377,6 +401,11 @@ export interface BoatStripProps {
   renderSeat?: (seat: BoatStripSeat, props: BoatSeatProps) => ReactNode;
   /** Fill the container instead of stopping at the boat's natural length. */
   stretch?: boolean;
+  /**
+   * md only: when a seat is narrower than 120 px, show the occupant's short name ("Lena K.")
+   * instead of truncating the full one. The accessible label keeps the full name.
+   */
+  fitNames?: boolean;
   className?: string;
 }
 
@@ -447,6 +476,7 @@ export function BoatStrip({
   interactive,
   renderSeat,
   stretch = false,
+  fitNames = false,
   className,
 }: BoatStripProps) {
   const spec = SIZES[size];
@@ -487,6 +517,7 @@ export function BoatStrip({
       selected: selectedSeat === seat.seat,
       highlighted: highlightedSeat === seat.seat,
       settling: settlingSeat === seat.seat,
+      ...(fitNames ? { fitNames } : {}),
       onSeatClick,
       onSeatKeyDown,
     };
