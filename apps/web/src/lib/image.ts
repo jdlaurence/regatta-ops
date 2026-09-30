@@ -109,12 +109,38 @@ export function isWebImage(type: string): boolean {
   return (WEB_IMAGE_TYPES as readonly string[]).includes(type);
 }
 
+// The browser APIs used below, typed here so this module also compiles and loads without the
+// DOM library (the backend's tests import PocketBaseStore, which imports this file).
+interface BitmapLike {
+  width: number;
+  height: number;
+  close(): void;
+}
+interface Context2DLike {
+  fillStyle: string;
+  imageSmoothingQuality: string;
+  fillRect(x: number, y: number, w: number, h: number): void;
+  drawImage(image: unknown, x: number, y: number, w: number, h: number): void;
+}
+interface CanvasLike {
+  width: number;
+  height: number;
+  getContext(type: '2d'): Context2DLike | null;
+  toBlob(done: (blob: Blob | null) => void, type: string, quality: number): void;
+}
+interface BrowserGlobals {
+  createImageBitmap?: (blob: Blob, options?: { imageOrientation?: string }) => Promise<BitmapLike>;
+  document?: { createElement(tag: 'canvas'): CanvasLike };
+}
+
 /**
  * The browser's codec: createImageBitmap (honoring EXIF rotation) and a canvas. Null where
  * there is none (Node, jsdom), so callers can store the file as it is.
  */
 export function browserImageCodec(): ImageCodec | null {
-  if (typeof createImageBitmap !== 'function' || typeof document === 'undefined') return null;
+  const env = globalThis as unknown as BrowserGlobals;
+  const { createImageBitmap, document } = env;
+  if (typeof createImageBitmap !== 'function' || !document) return null;
   return {
     async decode(blob) {
       const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
@@ -135,7 +161,7 @@ export function browserImageCodec(): ImageCodec | null {
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, width, height);
       ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(image.source as CanvasImageSource, 0, 0, width, height);
+      ctx.drawImage(image.source, 0, 0, width, height);
       return new Promise<Blob>((resolve, reject) =>
         canvas.toBlob(
           (b) => (b ? resolve(b) : reject(new Error('Encoding failed.'))),
@@ -148,11 +174,12 @@ export function browserImageCodec(): ImageCodec | null {
 }
 
 /** A data URL for a blob ("data:image/jpeg;base64,..."). */
-export function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error ?? new Error('Could not read the file.'));
-    reader.readAsDataURL(blob);
-  });
+export async function blobToDataUrl(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = '';
+  // In slices: spreading a whole photo into fromCharCode overflows the call stack.
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return `data:${blob.type || 'application/octet-stream'};base64,${btoa(binary)}`;
 }

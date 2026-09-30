@@ -6,7 +6,7 @@
 // entries.boatClass following its event, unique indexes, relation cascades, and change events.
 
 import { COLLECTION_NAMES, type CollectionName, type User, type World } from '@srt/domain';
-import { blobToDataUrl, type ImageCodec } from '@/lib/image';
+import { blobToDataUrl, type ImageCodec } from '../lib/image';
 import { describeChange, type Lookup } from './activity';
 import { isGuarded, sameStamp } from './concurrency';
 import { assertFileField, MEMORY_FILE_MAX_BYTES, preparePhoto } from './files';

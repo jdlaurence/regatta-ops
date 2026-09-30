@@ -9,7 +9,7 @@ import {
   ImageError,
   shrinkImage,
   type ImageCodec,
-} from '@/lib/image';
+} from '../lib/image';
 import { StoreError, type FileCollection, type FileFieldOf } from './store';
 
 /** Collections with a file field, and the domain field holding each file's URL. */
