@@ -175,10 +175,19 @@ function TrailerTab({
 
 /**
  * Keyboard focus follows a boat after it moves (its chip is drawn anew in the new lane) or is
- * let go, so it never falls back to the top of the page.
+ * let go, so it never falls back to the top of the page. On a final regatta the move waits for
+ * a yes in a dialog; focus follows once the dialog has closed.
  */
-function focusBoat(shellId: Id) {
+function focusBoat(shellId: Id, tries = 100) {
   setTimeout(() => {
+    if (document.querySelector('[role="dialog"]')) {
+      if (tries > 0) focusBoat(shellId, tries - 1);
+      return;
+    }
+    // Only when focus has nowhere better to be: it fell to the page, or is on a lane button
+    // that is going away.
+    const active = document.activeElement;
+    if (active && active !== document.body && !active.closest('[data-lane-target]')) return;
     document.querySelector<HTMLElement>(`button[data-flip="${CSS.escape(shellId)}"]`)?.focus();
   }, 50);
 }
