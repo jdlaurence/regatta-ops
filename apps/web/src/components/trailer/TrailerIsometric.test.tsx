@@ -10,6 +10,7 @@ import {
 } from '@srt/domain';
 import { presetByKey } from '@/features/trailers-admin/presets';
 import {
+  bedSummary,
   boatLengthCm,
   hullProfile,
   isometricGeometry,
@@ -143,6 +144,61 @@ describe('isometric geometry', () => {
   });
 });
 
+describe('isometric bed zones', () => {
+  it('lays the zones along the bed, front to back, each across its full width', () => {
+    const g = geometry([], 800);
+    expect(g.zones.map((z) => [z.label, z.startCm, z.endCm])).toEqual([
+      ['Slings', 0, 300],
+      ['Oars', 300, 700],
+      ['Riggers', 700, 1220],
+    ]);
+    const [slings, oars, riggers] = g.zones;
+    // Along the length: the front is up and to the right, so each zone ahead is further right.
+    expect(slings!.top[0]!.x).toBeGreaterThan(oars!.top[0]!.x);
+    expect(oars!.top[0]!.x).toBeGreaterThan(riggers!.top[0]!.x);
+    // Across the full width: from near the far edge of the bed to near its near edge.
+    const bedDepth = g.bedTop[3]!.y - g.bedTop[0]!.y;
+    expect(riggers!.top[3]!.y - riggers!.top[0]!.y).toBeGreaterThan(bedDepth * 0.9);
+    // A divider down the near side between zones, none at the back.
+    expect(slings!.divider).not.toBeNull();
+    expect(riggers!.divider).toBeNull();
+    // Names hang under the frame clear of the wheels (behind them, for the riggers).
+    const wheel = g.wheels[1]!;
+    expect(riggers!.name!.at.x).toBeLessThan(wheel.cx - wheel.r);
+    for (const z of g.zones) expect(z.name!.at.y + 18).toBeLessThanOrEqual(g.height);
+    expect(bedSummary(g.zones)).toBe(
+      'Bed, front to back: slings (3.0 m), oars (4.0 m), and riggers (5.2 m).',
+    );
+    expect(bedSummary([])).toBeNull();
+  });
+
+  it('draws the zone names that fit, and shares the width between whole-length boxes', () => {
+    render(<TrailerIsometric trailer={SRA_BOYS_TRAILER} rules={SRA_DEFAULT_RULES} width={800} />);
+    const svg = screen.getByRole('figure').querySelector('svg')!;
+    expect(svg.querySelectorAll('[data-zone]')).toHaveLength(3);
+    for (const name of ['Slings', 'Oars', 'Riggers']) {
+      expect(within(svg as unknown as HTMLElement).getByText(name)).toBeInTheDocument();
+    }
+
+    const two: TrailerDef = {
+      ...SRA_BOYS_TRAILER,
+      compartments: [
+        { id: 'a', kind: 'oar_box', label: 'Oar box', capacity: 64 },
+        { id: 'b', kind: 'rigger_rack', label: 'Rigger rack', capacity: 40 },
+      ],
+    };
+    const g = isometricGeometry({ trailer: two, width: 800 });
+    const [a, b] = g.zones;
+    // Side by side across the width: the second (nearer) one lower on screen at the same point.
+    expect(b!.top[0]!.y).toBeGreaterThan(a!.top[3]!.y - 1);
+    expect(a!.name).toBeNull();
+    expect(b!.name).not.toBeNull();
+    expect(bedSummary(g.zones)).toBe(
+      'Bed, front to back: oar box (whole length) and rigger rack (whole length).',
+    );
+  });
+});
+
 describe('TrailerIsometric', () => {
   it('describes the load for screen readers and says what sticks out', () => {
     render(
@@ -206,7 +262,10 @@ describe('TrailerIsometric', () => {
     );
     const empty = screen.getByRole('figure', { name: 'Spare trailer' });
     expect(within(empty).getByText('Spare trailer: no boats.')).toBeInTheDocument();
-    expect(empty.querySelector('figcaption')).toBeNull();
+    // No overhang to report; the caption names the bed's zones.
+    expect(empty.querySelector('figcaption')).toHaveTextContent(
+      /^Bed, front to back: slings \(3\.0 m\), oars \(4\.0 m\), and riggers \(5\.2 m\)\.$/,
+    );
     expect(empty.querySelectorAll('line[stroke-dasharray]').length).toBeGreaterThan(0);
   });
 });

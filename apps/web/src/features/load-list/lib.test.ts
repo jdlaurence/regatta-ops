@@ -12,15 +12,18 @@ import {
   buildLoadRows,
   containerPicks,
   countRows,
+  defaultHomes,
   filterRows,
   firstName,
   groupRows,
+  homeKey,
   newItemData,
   planForContainer,
   rowWrite,
   tickPatch,
   tickTime,
   tickedBy,
+  zoneOfContainer,
   type LoadRow,
 } from './lib';
 
@@ -46,6 +49,7 @@ function source(regattaId: Id, edit?: (w: World) => void) {
     loadPlans: plans,
     placements: w.load_placements.filter((p) => ids.has(p.loadPlanId)),
     trailers: w.trailers,
+    compartments: w.trailer_compartments,
   };
 }
 
@@ -69,7 +73,62 @@ describe('buildLoadRows', () => {
     expect(alma.suggestedContainer).toBe('Boys trailer');
     expect(alma.loadPlanId).not.toBeNull();
     const almaRiggers = row(rows, 'riggers', seedShellId('Alma Marie'));
-    expect(almaRiggers.suggestedContainer).toBe('Boys trailer bed');
+    // Riggers ride at the back of the bed of the trailer their shell is on (PLAN.md §4.9).
+    expect(almaRiggers.suggestedContainer).toBe('Boys trailer · Riggers (back of bed)');
+    expect(almaRiggers.suggestedWhy).toBe('the shell is on that trailer');
+  });
+
+  it('sends oar sets and slings to their bed zones', () => {
+    const src = source(NW);
+    const rows = buildLoadRows(src);
+    const homes = defaultHomes(src);
+    const trailerName = (id: string) => src.trailers.find((t) => t.id === id)!.name;
+    // An oar set rides in the oar zone of the trailer carrying its first crew's shell.
+    const oarRows = rows.filter((r) => r.kind === 'oar_set' && !r.orphaned);
+    expect(oarRows.length).toBeGreaterThan(0);
+    for (const r of oarRows) {
+      const first = src.entries.find(
+        (e) =>
+          e.status !== 'scratched' &&
+          e.oarSetId === r.refId &&
+          homes.has(homeKey('shell', e.shellId ?? '')),
+      );
+      if (!first) {
+        expect(r.suggestedContainer).toBeNull();
+        continue;
+      }
+      const trailerId = homes.get(homeKey('shell', first.shellId!))!.trailerId;
+      expect(r.suggestedContainer).toBe(`${trailerName(trailerId)} · Oars`);
+      expect(r.suggestedWhy).toBe('its first crew’s shell is on that trailer');
+    }
+    // A new oar row is tied to that trailer's plan, so the load sheet lists it there.
+    const unstored = oarRows.find((r) => !r.stored && r.suggestedContainer)!;
+    expect(unstored.loadPlanId).toBe(
+      src.loadPlans.find((p) => unstored.suggestedContainer!.startsWith(trailerName(p.trailerId)))!
+        .id,
+    );
+    // Slings ride with the trailer carrying the most boats.
+    const counts = new Map<string, number>();
+    for (const p of src.placements) {
+      const t = src.loadPlans.find((l) => l.id === p.loadPlanId)!.trailerId;
+      counts.set(t, (counts.get(t) ?? 0) + 1);
+    }
+    const busiest = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]![0];
+    const slings = row(rows, 'gear', seedGearId('slings'));
+    expect(slings.suggestedContainer).toBe(`${trailerName(busiest)} · Slings`);
+    // The seed typed "Truck 1 bed" for them in 2025: what was typed wins.
+    expect(slings.container).toBe('Truck 1 bed');
+    expect(homes.get(homeKey('gear', seedGearId('cox-boxes')))).toBeUndefined();
+  });
+
+  it('falls back to the bed, or to nothing, on a trailer without zones', () => {
+    const src = { ...source(NW), compartments: [] };
+    const rows = buildLoadRows(src);
+    expect(row(rows, 'riggers', seedShellId('Alma Marie')).suggestedContainer).toBe(
+      'Boys trailer bed',
+    );
+    expect(rows.filter((r) => r.kind === 'oar_set').every((r) => !r.suggestedContainer)).toBe(true);
+    expect(row(rows, 'gear', seedGearId('slings')).suggestedContainer).toBeNull();
   });
 
   it('flags shells with no trailer spot, spares on a trailer, and rows nothing needs', () => {
@@ -157,12 +216,38 @@ describe('writes', () => {
     expect(planForContainer('boys trailer', src.trailers, src.loadPlans)).toBe(boysPlan.id);
     expect(planForContainer('Truck 1 bed', src.trailers, src.loadPlans)).toBeNull();
     expect(planForContainer('  ', src.trailers, src.loadPlans)).toBeNull();
-    expect(containerPicks([{ name: 'Boys trailer' }])).toEqual([
+    expect(
+      planForContainer('Boys trailer · Riggers (back of bed)', src.trailers, src.loadPlans),
+    ).toBe(boysPlan.id);
+  });
+
+  it('offers each trailer’s bed zones as places to ride', () => {
+    const src = source(NW);
+    const boys = src.trailers.find((t) => t.id === SEED_TRAILER_IDS.boys)!;
+    expect(containerPicks([boys], src.compartments)).toEqual([
+      'Boys trailer',
+      'Boys trailer · Slings',
+      'Boys trailer · Oars',
+      'Boys trailer · Riggers (back of bed)',
+      'Truck 1 bed',
+      'Truck 2 bed',
+    ]);
+    // A trailer without zones keeps its bed.
+    expect(containerPicks([{ ...boys, id: 'other' }], src.compartments)).toEqual([
       'Boys trailer',
       'Boys trailer bed',
       'Truck 1 bed',
       'Truck 2 bed',
     ]);
+    const riggers = src.compartments.find(
+      (c) => c.trailerId === boys.id && c.kind === 'rigger_rack',
+    )!;
+    expect(zoneOfContainer('Boys trailer · Riggers (back of bed)', boys, src.compartments)).toBe(
+      riggers.id,
+    );
+    expect(zoneOfContainer(' boys trailer · riggers ', boys, src.compartments)).toBe(riggers.id);
+    expect(zoneOfContainer('Boys trailer bed', boys, src.compartments)).toBeNull();
+    expect(zoneOfContainer('', boys, src.compartments)).toBeNull();
   });
 });
 

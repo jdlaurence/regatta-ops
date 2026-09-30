@@ -1,14 +1,16 @@
 // The isometric trailer view (PLAN.md §4.10, Phase 3): a three-quarter picture of the whole
 // trailer, front to the upper right, with the rack levels, the uprights, and every boat as a
 // hull in its team's color at its place along the trailer, so what sticks out past the frame at
-// either end is plain to see. Read-only; the end view stays the view for moving boats. Takes
-// the same inputs as TrailerEndView. Screen readers get a summary instead of the drawing.
+// either end is plain to see, and the bed's compartments as zones along the length (§4.9).
+// Read-only; the end view stays the view for moving boats. Takes the same inputs as
+// TrailerEndView. Screen readers get a summary instead of the drawing.
 
 import { useCallback, useMemo, useState } from 'react';
 import { effectiveShelvesFor, type Id, type Rule, type TrailerDef } from '@srt/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import {
+  bedSummary,
   hullOverhang,
   isometricGeometry,
   overhangSummary,
@@ -16,6 +18,7 @@ import {
   points,
   type IsoGeometry,
   type IsoHull,
+  type IsoZone,
 } from './isometric';
 import { tierLabel } from './labels';
 import type { EndViewBoat, EndViewPlacement } from './TrailerEndView';
@@ -108,6 +111,24 @@ function HullLabel({ hull }: { hull: IsoHull }) {
   );
 }
 
+/** A zone's name under the frame's near side, when the stretch clear of the wheels holds it. */
+function ZoneName({ zone }: { zone: IsoZone }) {
+  if (!zone.name || zone.name.room < labelWidth(zone.label)) return null;
+  const { at, angle } = zone.name;
+  return (
+    <text
+      x={at.x}
+      y={at.y + 4}
+      transform={`rotate(${angle.toFixed(2)} ${at.x.toFixed(1)} ${at.y.toFixed(1)})`}
+      textAnchor="middle"
+      dominantBaseline="hanging"
+      className="pointer-events-none fill-ink-2 text-xs"
+    >
+      {zone.label}
+    </text>
+  );
+}
+
 function Drawing({ g, selectedShellId }: { g: IsoGeometry; selectedShellId: Id | null }) {
   const s = g.scale;
   const thin = Math.max(1, Math.min(1.5, 3 * s));
@@ -145,6 +166,30 @@ function Drawing({ g, selectedShellId }: { g: IsoGeometry; selectedShellId: Id |
         strokeWidth={thin}
         className="fill-surface-2 stroke-line-strong"
       />
+      {/* The bed's zones along the length, with their names under the near side. */}
+      {g.zones.map((z) => (
+        <g key={z.id} data-zone={z.id}>
+          <polygon
+            points={points(z.top)}
+            strokeWidth={thin}
+            strokeLinejoin="round"
+            className="fill-surface stroke-line-strong"
+          />
+          {z.divider && (
+            <line
+              x1={z.divider.a.x}
+              y1={z.divider.a.y}
+              x2={z.divider.b.x}
+              y2={z.divider.b.y}
+              strokeWidth={thin}
+              className="stroke-ink-2"
+            />
+          )}
+        </g>
+      ))}
+      {g.zones.map((z) => (
+        <ZoneName key={z.id} zone={z} />
+      ))}
       {g.wheels.map((w, i) => (
         <g key={i}>
           <circle
@@ -288,6 +333,7 @@ export function TrailerIsometric({
   );
   const name = label ?? `${trailer.name || 'Trailer'}, isometric view`;
   const overhang = overhangSummary(g);
+  const bed = bedSummary(g.zones);
   return (
     <figure
       ref={fixedWidth ? undefined : measureRef}
@@ -296,7 +342,12 @@ export function TrailerIsometric({
     >
       <Drawing g={g} selectedShellId={selectedShellId} />
       <Summary name={name} trailer={trailer} g={g} />
-      {overhang && <figcaption className="text-sm text-ink-2">{overhang}</figcaption>}
+      {(overhang || bed) && (
+        <figcaption className="flex flex-col gap-0.5 text-sm text-ink-2">
+          {overhang && <span>{overhang}</span>}
+          {bed && <span>{bed}</span>}
+        </figcaption>
+      )}
     </figure>
   );
 }

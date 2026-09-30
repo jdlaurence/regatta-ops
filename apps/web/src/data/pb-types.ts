@@ -707,9 +707,11 @@ export type TrailerCompartmentsRecord = {
 	capacity?: number
 	capacity_unit?: string
 	created: IsoAutoDateString
+	end_cm?: number
 	id: string
 	kind: TrailerCompartmentsKindOptions
 	label?: string
+	start_cm?: number
 	trailer: RecordIdString
 	updated: IsoAutoDateString
 }

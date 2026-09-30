@@ -1,7 +1,8 @@
 // The trailer end view (PLAN.md §5.1, §5.4, §4.10): the trailer's real cross-section seen from
-// the back, with uprights, rack arms per tier, the bed and its compartments, and the boats as
-// pills resting on the arms, sized by beam and colored by team. It is the second signature
-// visual of the app and the page's one bold element wherever it appears.
+// the back, with uprights, rack arms per tier, the bed (the zone at its back end, with the zones
+// ahead of it named), and the boats as pills resting on the arms, sized by beam and colored by
+// team. It is the second signature visual of the app and the page's one bold element wherever
+// it appears.
 //
 // The frame is SVG; the chips, lane targets, and words are HTML laid over it at the same pixel
 // coordinates (geometry.ts), so text truncates, chips are real buttons, and dnd-kit works on
@@ -37,7 +38,9 @@ import {
 } from 'react';
 import { CircleAlert, Lock } from 'lucide-react';
 import {
+  bedZones,
   effectiveShelvesFor,
+  zoneWords,
   type BoatClass,
   type Id,
   type Placement,
@@ -469,43 +472,47 @@ function DescriptionTable({
   compartments: string[];
 }) {
   return (
-    <table className="sr-only">
-      <caption>{caption}</caption>
-      <thead>
-        <tr>
-          <th scope="col">Level</th>
-          <th scope="col">Side</th>
-          <th scope="col">Lane</th>
-          <th scope="col">Boats</th>
-        </tr>
-      </thead>
-      <tbody>
-        {lanes.map((lane) => {
-          const chips = chipsByLane.get(laneKey(lane)) ?? [];
-          const boats =
-            chips.length === 0
-              ? lane.active
-                ? 'Empty'
-                : 'Not in use'
-              : chips.map((c) => boatWords(c.boat)).join('; ') +
-                (lane.active ? '' : ' (shelf not in use)');
-          return (
-            <tr key={laneKey(lane)}>
-              <th scope="row">{tierLabel(trailer, lane.shelf.tier)}</th>
-              <td>{sideOf(trailer, lane.shelf) ?? 'Full width'}</td>
-              <td>{laneLabel(lane.lane, lane.laneCount) ?? 'One lane'}</td>
-              <td>{boats}</td>
-            </tr>
-          );
-        })}
-        {compartments.length > 0 && (
+    // A table sizes itself to its text whatever its width, so the clipped box is a div around it
+    // (else the long bed row widens the page on a phone).
+    <div className="sr-only">
+      <table>
+        <caption>{caption}</caption>
+        <thead>
           <tr>
-            <th scope="row">Bed</th>
-            <td colSpan={3}>{compartments.join('; ')}</td>
+            <th scope="col">Level</th>
+            <th scope="col">Side</th>
+            <th scope="col">Lane</th>
+            <th scope="col">Boats</th>
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {lanes.map((lane) => {
+            const chips = chipsByLane.get(laneKey(lane)) ?? [];
+            const boats =
+              chips.length === 0
+                ? lane.active
+                  ? 'Empty'
+                  : 'Not in use'
+                : chips.map((c) => boatWords(c.boat)).join('; ') +
+                  (lane.active ? '' : ' (shelf not in use)');
+            return (
+              <tr key={laneKey(lane)}>
+                <th scope="row">{tierLabel(trailer, lane.shelf.tier)}</th>
+                <td>{sideOf(trailer, lane.shelf) ?? 'Full width'}</td>
+                <td>{laneLabel(lane.lane, lane.laneCount) ?? 'One lane'}</td>
+                <td>{boats}</td>
+              </tr>
+            );
+          })}
+          {compartments.length > 0 && (
+            <tr>
+              <th scope="row">Bed</th>
+              <td colSpan={3}>Front to back: {compartments.join('; ')}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -696,12 +703,23 @@ export function TrailerEndView({
           {g.compartments.map((c) => (
             <span
               key={c.id}
-              className="absolute flex items-center justify-center overflow-hidden px-1.5 text-center text-xs leading-tight text-ink-2"
-              style={rectStyle(c.rect)}
+              className={cn(
+                'absolute flex justify-center overflow-hidden px-1.5 text-center text-xs leading-tight',
+                g.bedCaption ? 'items-end font-medium text-ink' : 'items-center text-ink-2',
+              )}
+              style={rectStyle(c.labelRect)}
             >
-              <span className="line-clamp-2">{c.label}</span>
+              <span className={g.bedCaption ? 'truncate' : 'line-clamp-2'}>{c.label}</span>
             </span>
           ))}
+          {g.bedCaption && (
+            <span
+              className="absolute flex items-start justify-center overflow-hidden px-1.5 text-center text-xs leading-tight text-ink-2"
+              style={rectStyle(g.bedCaption.rect)}
+            >
+              <span className="truncate">{g.bedCaption.text}</span>
+            </span>
+          )}
           {g.captions.map((c) => (
             <span
               key={c.text}
@@ -747,7 +765,7 @@ export function TrailerEndView({
           trailer={trailer}
           lanes={lanes}
           chipsByLane={chipsByLane}
-          compartments={g.compartments.map((c) => c.label)}
+          compartments={bedZones(trailer).map((z) => zoneWords(z, trailer.frameLengthCm))}
         />
       </div>
       <p

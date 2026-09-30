@@ -28,6 +28,12 @@ export interface CompartmentDef {
   kind: CompartmentKind;
   label: string;
   capacity: number;
+  /**
+   * A zone of the bed along the frame, cm from the front (PLAN.md §4.9), across the bed's full
+   * width. Both set, or both unset for a compartment that runs the whole length.
+   */
+  startCm?: number;
+  endCm?: number;
 }
 
 export interface TrailerDef {

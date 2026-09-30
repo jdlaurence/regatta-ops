@@ -242,7 +242,7 @@ function WhereEditor({
         </form>
         {row.suggestedContainer && !row.container && (
           <p className="text-xs text-ink-2">
-            Shown as {row.suggestedContainer} because the shell is placed there.
+            Shown as {row.suggestedContainer} because {row.suggestedWhy ?? 'it rides there'}.
           </p>
         )}
       </PopoverContent>
@@ -518,7 +518,10 @@ function LoadList({ ws }: { ws: RegattaWorkingSet }) {
   const rows = useMemo(() => buildLoadRows(ws), [ws]);
   const counts = countRows(rows);
   const groups = groupRows(filterRows(rows, filter));
-  const picks = useMemo(() => containerPicks(ws.trailers), [ws.trailers]);
+  const picks = useMemo(
+    () => containerPicks(ws.trailers, ws.compartments),
+    [ws.trailers, ws.compartments],
+  );
   const firstTrailer = ws.loadPlans[0]?.trailerId ?? ws.trailers[0]?.id;
 
   const onTick = (row: LoadRow, field: TickField, value: boolean) =>

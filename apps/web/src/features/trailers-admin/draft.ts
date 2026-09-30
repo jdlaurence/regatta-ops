@@ -5,7 +5,9 @@
 
 import {
   BOAT_CLASSES,
+  zoneOverlaps,
   type BoatClass,
+  type CompartmentDef,
   type ColumnKey,
   type CompartmentKind,
   type Id,
@@ -47,6 +49,12 @@ export interface CompartmentDraft {
   label: string;
   capacity: NumberValue;
   capacityUnit: string;
+  /**
+   * Where it sits along the frame, cm from the front (PLAN.md §4.9). Blank "from" is the front
+   * and blank "to" the back; both blank, the whole length.
+   */
+  startCm: NumberValue;
+  endCm: NumberValue;
 }
 
 export interface TrailerDraft {
@@ -135,6 +143,9 @@ export function draftFromRecords(saved: SavedTrailer): TrailerDraft {
         label: c.label,
         capacity: c.capacity,
         capacityUnit: c.capacityUnit ?? defaultUnit(c.kind),
+        // A zone that starts at the front is stored with a blank start: show it as 0.
+        startCm: c.startCm ?? (c.endCm != null ? 0 : null),
+        endCm: c.endCm ?? null,
       })),
   };
 }
@@ -178,6 +189,8 @@ export function draftFromDef(def: TrailerDef, rules: Rule[], notes = ''): Traile
       label: c.label,
       capacity: c.capacity,
       capacityUnit: defaultUnit(c.kind),
+      startCm: c.startCm ?? null,
+      endCm: c.endCm ?? null,
     })),
   };
 }
@@ -228,13 +241,26 @@ export function defFromDraft(d: TrailerDraft): TrailerDef {
           active: s.active,
         };
       }),
-    compartments: d.compartments.map((c) => ({
-      id: c.id,
-      kind: c.kind,
-      label: c.label.trim() || COMPARTMENT_KIND_LABELS[c.kind],
-      capacity: num(c.capacity),
-    })),
+    compartments: d.compartments.map((c) => compartmentDefFromDraft(c, num(d.frameLengthCm))),
   };
+}
+
+/**
+ * A draft compartment as the diagrams read it: a zone with both ends when either is typed (a
+ * blank start is the front, a blank end the back), else the whole length. Invalid numbers
+ * count as blank while someone types.
+ */
+function compartmentDefFromDraft(c: CompartmentDraft, frameLengthCm: number): CompartmentDef {
+  const def: CompartmentDef = {
+    id: c.id,
+    kind: c.kind,
+    label: c.label.trim() || COMPARTMENT_KIND_LABELS[c.kind],
+    capacity: num(c.capacity),
+  };
+  const start = isNum(c.startCm) ? c.startCm : null;
+  const end = isNum(c.endCm) ? c.endCm : null;
+  if (start === null && end === null) return def;
+  return { ...def, startCm: Math.max(0, start ?? 0), endCm: end ?? frameLengthCm };
 }
 
 // ---------------------------------------------------------------------------
@@ -302,13 +328,52 @@ export function validateDraft(d: TrailerDraft): DraftErrors {
       e[k('accessRank')] = 'Access rank is a whole number, 1 for the easiest to reach.';
     }
   }
+  const frame = isNum(d.frameLengthCm) && d.frameLengthCm > 0 ? d.frameLengthCm : null;
   for (const c of d.compartments) {
-    if (!c.label.trim()) e[fieldKey.compartment(c.id, 'label')] = 'Enter a label.';
-    if (!isNum(c.capacity) || c.capacity < 0) {
-      e[fieldKey.compartment(c.id, 'capacity')] = 'Capacity is 0 or more.';
+    const k = (f: keyof CompartmentDraft) => fieldKey.compartment(c.id, f);
+    if (!c.label.trim()) e[k('label')] = 'Enter a label.';
+    if (!isNum(c.capacity) || c.capacity < 0) e[k('capacity')] = 'Capacity is 0 or more.';
+    // Where it sits along the frame (§4.9): inside the frame, starting before it ends.
+    const start = c.startCm;
+    const end = c.endCm;
+    if (start !== null && (!isNum(start) || start < 0 || (frame !== null && start >= frame))) {
+      e[k('startCm')] = frame
+        ? `From front is 0 or more and inside the ${frame} cm frame.`
+        : 'From front is 0 or more.';
+    } else if (end !== null && (!isNum(end) || end <= 0 || (frame !== null && end > frame))) {
+      e[k('endCm')] = frame
+        ? `To is more than 0 and at most ${frame} cm, the back of the frame.`
+        : 'To is more than 0.';
+    } else if (isNum(start) && isNum(end) && end <= start) {
+      e[k('endCm')] = 'To must be further back than From front.';
     }
   }
   return e;
+}
+
+/** The name a compartment goes by in messages. */
+function compartmentName(c: CompartmentDraft, i: number): string {
+  return c.label.trim() || `Compartment ${i + 1}`;
+}
+
+/**
+ * Things worth a second look that do not stop a save: compartments that share part of the bed
+ * ("Slings and Oars overlap by 20 cm."). Two that both run the whole length share it side by
+ * side, as they always have, so they pass.
+ */
+export function draftWarnings(d: TrailerDraft): string[] {
+  const names = new Map(d.compartments.map((c, i) => [c.id, compartmentName(c, i)]));
+  const whole = new Set(
+    d.compartments.filter((c) => !isNum(c.startCm) && !isNum(c.endCm)).map((c) => c.id),
+  );
+  return zoneOverlaps(defFromDraft(d)).map(({ a, b, cm }) => {
+    const [x, y] = [names.get(a)!, names.get(b)!];
+    if (whole.has(a) || whole.has(b)) {
+      const [wholeName, other] = whole.has(a) ? [x, y] : [y, x];
+      return `${wholeName} runs the whole length, so it overlaps ${other}. Give it a place along the frame.`;
+    }
+    return `${x} and ${y} overlap by ${Math.round(cm)} cm.`;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -476,6 +541,11 @@ function shelfRecord(
   };
 }
 
+/** 0 and blank are the same for a zone's ends (PocketBase stores 0 as blank). */
+function zoneEnd(v: NumberValue | undefined): number | null {
+  return v != null && Number.isFinite(v) && v > 0 ? v : null;
+}
+
 function compartmentRecord(
   c: CompartmentDraft,
   trailerId: Id,
@@ -486,6 +556,8 @@ function compartmentRecord(
     label: c.label.trim(),
     capacity: num(c.capacity),
     capacityUnit: c.capacityUnit.trim() || defaultUnit(c.kind),
+    startCm: zoneEnd(c.startCm),
+    endCm: zoneEnd(c.endCm),
   };
 }
 
@@ -587,6 +659,8 @@ export function saveOps(saved: SavedTrailer | null, d: TrailerDraft): BatchOp[] 
         {
           ...pick(old, Object.keys(rec) as (keyof TrailerCompartment)[]),
           capacityUnit: old.capacityUnit ?? defaultUnit(old.kind),
+          startCm: zoneEnd(old.startCm),
+          endCm: zoneEnd(old.endCm),
         },
         rec,
       );

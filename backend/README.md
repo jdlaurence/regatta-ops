@@ -67,6 +67,9 @@ keep their name (`created_by`, `hot_seat_ack_by`, `loaded_by`). `targetId` and `
   multi selects (`compatible_classes`, `allowed_classes`) `[]`; json `null`; numbers `0`
   (PocketBase numbers are never null, so optional numbers such as `year`, `length_cm`,
   `lanes_override`, `max_boats`, `post_offset_pct` read 0 when unset); bools `false`.
+- **Bed zones:** `trailer_compartments.start_cm` / `end_cm` place a compartment along the frame
+  (cm from the front, across the full width). A start of 0 reads as blank; a blank start is the
+  front, a blank end the back of the frame, and both blank means the whole length.
 - **Files:** `users.avatar`, `shells.photo` are file names; build URLs with `pb.files.getURL`.
 - **Emails** of other users are hidden unless the viewer is that user or an admin.
 - **Batch API** is enabled (up to 200 writes per transaction). Swapping two athletes between

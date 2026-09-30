@@ -1,9 +1,13 @@
-// The plan view (PLAN.md §4.10, §16.5): one tier from above, front (the truck) at the left.
+// The plan view (PLAN.md §4.10, §16.5): one level from above, front (the truck) at the left.
 // Each lane is a track as long as the shelf takes (dashed ends at its overhang limits); boats
 // are hulls drawn to length along it, small boats end to end. The frame's front and rear edges
 // cross every lane, so what hangs past them reads at a glance, with the overhang in meters on
 // that part of the hull. The 1.2 m (4 ft) rear flag threshold is a dashed line across the tier.
 // The pointed end of a hull is its bow.
+//
+// Below the levels, "Bed" shows the bottom of the trailer from above: the frame's outline with
+// its compartments as zones along the length, each named with its length (§4.9). On SRA's
+// trailers the riggers fill the back of the bed across its full width.
 
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -18,10 +22,13 @@ import {
   type TrailerDef,
 } from '@srt/domain';
 import { SegmentedControl } from '@/components/ui/controls';
-import { tierLabel, tierWordOf } from '@/components/trailer/labels';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
-import { planViewGeometry, type PlanBoat, type PlanLane } from './lib';
+import { tierLabel, tierWordOf } from './labels';
+import { bedPlanGeometry, planViewGeometry, type PlanBoat, type PlanLane } from './plan';
+
+/** A level of the trailer to show from above, or the bed under the racks. */
+export type PlanLevel = number | 'bed';
 
 function useWidth(fallback: number): [(el: HTMLDivElement | null) => void, number] {
   const [width, setWidth] = useState<number | null>(null);
@@ -177,17 +184,7 @@ function HullWords({
   );
 }
 
-export function PlanView({
-  trailer,
-  rules,
-  placements,
-  boatById,
-  teamColors,
-  selectedShellId,
-  onSelect,
-  tier: controlledTier,
-  onTierChange,
-}: {
+export interface PlanViewProps {
   trailer: TrailerDef;
   rules: readonly Rule[];
   placements: readonly Placement[];
@@ -195,44 +192,96 @@ export function PlanView({
   teamColors: ReadonlyMap<Id, TeamColorKey>;
   selectedShellId: Id | null;
   onSelect: (shellId: Id) => void;
-  tier: number;
-  onTierChange: (tier: number) => void;
-}) {
+  level: PlanLevel;
+  onLevelChange: (level: PlanLevel) => void;
+}
+
+export function PlanView({ level, onLevelChange, ...props }: PlanViewProps) {
+  const { trailer } = props;
   const [ref, width] = useWidth(640);
-  const shelves = useMemo(() => effectiveShelvesFor(trailer, rules), [trailer, rules]);
   const tiers = useMemo(
     () => [...new Set(trailer.shelves.map((s) => s.tier))].sort((a, b) => b - a),
     [trailer],
   );
-  const tier = tiers.includes(controlledTier) ? controlledTier : (tiers[0] ?? 1);
+  const shown: PlanLevel =
+    level === 'bed' ? 'bed' : tiers.includes(level) ? level : (tiers[0] ?? 'bed');
+  const word = tierWordOf(trailer);
+  const Word = word[0]!.toUpperCase() + word.slice(1);
+  // On a narrow drawing the levels show their numbers (as the end view does); the word stays
+  // for screen readers.
+  const narrow = width < 480;
+
+  return (
+    <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {narrow && (
+          <span aria-hidden className="-mr-1 text-sm text-ink-2">
+            {Word}
+          </span>
+        )}
+        <SegmentedControl
+          label={`${Word} to show`}
+          value={String(shown)}
+          onValueChange={(v) => onLevelChange(v === 'bed' ? 'bed' : Number(v))}
+          size="sm"
+          options={[
+            ...tiers.map((t) => ({
+              value: String(t),
+              label: (
+                <span
+                  className={cn(
+                    'whitespace-nowrap tabular-nums',
+                    // A number alone still makes a 44 px target on a phone.
+                    narrow && 'inline-block min-w-7 text-center',
+                  )}
+                >
+                  <span className={cn(narrow && 'sr-only')}>{Word} </span>
+                  {t}
+                </span>
+              ),
+            })),
+            { value: 'bed', label: 'Bed' },
+          ]}
+          className="max-w-full overflow-x-auto"
+        />
+        <span className="text-sm text-ink-2">From above, front at the left</span>
+      </div>
+      <div ref={ref} className="flex w-full min-w-0 flex-col gap-3">
+        {shown === 'bed' ? (
+          <BedPlan trailer={trailer} width={width} />
+        ) : (
+          <TierPlan {...props} tier={shown} width={width} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TierPlan({
+  trailer,
+  rules,
+  placements,
+  boatById,
+  teamColors,
+  selectedShellId,
+  onSelect,
+  tier,
+  width,
+}: Omit<PlanViewProps, 'level' | 'onLevelChange'> & { tier: number; width: number }) {
+  const shelves = useMemo(() => effectiveShelvesFor(trailer, rules), [trailer, rules]);
   const g = useMemo(
     () => planViewGeometry({ def: trailer, shelves, placements, boats: boatById, tier, width }),
     [trailer, shelves, placements, boatById, tier, width],
   );
   const word = tierWordOf(trailer);
-  const Word = word[0]!.toUpperCase() + word.slice(1);
   const narrow = width < 480;
   const boatsHere = g.lanes.flatMap((l) => l.boats.map((b) => ({ lane: l, boat: b })));
   const bandsTop = g.frame.y1;
   const bandsBottom = g.frame.y2;
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <SegmentedControl
-          label={`${Word} to show`}
-          value={String(tier)}
-          onValueChange={(v) => onTierChange(Number(v))}
-          size="sm"
-          options={tiers.map((t) => ({
-            value: String(t),
-            label: <span className="tabular-nums">{`${Word} ${t}`}</span>,
-          }))}
-          className="max-w-full overflow-x-auto"
-        />
-        <span className="text-sm text-ink-2">From above, front at the left</span>
-      </div>
-      <div ref={ref} className="w-full min-w-0">
+    <>
+      <div className="w-full min-w-0">
         <div
           role="group"
           aria-label={`${tierLabel(trailer, tier)} from above`}
@@ -409,6 +458,133 @@ export function PlanView({
           {g.lanes.some((l) => l.paired) && ' Boats sharing a lane ride end to end.'}
         </p>
       )}
-    </div>
+    </>
+  );
+}
+
+/** The bed from above: the frame's outline with its zones along the length. */
+function BedPlan({ trailer, width }: { trailer: TrailerDef; width: number }) {
+  const g = useMemo(() => bedPlanGeometry({ def: trailer, width }), [trailer, width]);
+  const top = g.frame.y1;
+  const edges = [...new Set(g.zones.flatMap((z) => [z.startCm, z.endCm]))].filter(
+    (cm) => cm > 0 && cm < trailer.frameLengthCm - 0.5,
+  );
+  return (
+    <>
+      <div
+        role="group"
+        aria-label="Bed from above"
+        className="relative"
+        style={{ width: g.width, height: g.height }}
+      >
+        <svg
+          aria-hidden
+          width={g.width}
+          height={g.height}
+          viewBox={`0 0 ${g.width} ${g.height}`}
+          className="absolute inset-0 overflow-visible"
+        >
+          {/* The frame from above: the bed. */}
+          <rect
+            x={g.frame.x1}
+            y={g.frame.y1}
+            width={Math.max(0, g.frame.x2 - g.frame.x1)}
+            height={g.frame.y2 - g.frame.y1}
+            rx={4}
+            strokeWidth={2}
+            className="fill-surface-2 stroke-ink"
+          />
+          {g.zones.map((z) => (
+            <rect
+              key={z.id}
+              x={z.x}
+              y={z.y}
+              width={z.width}
+              height={z.height}
+              rx={4}
+              strokeWidth={1.5}
+              className="fill-surface stroke-line-strong"
+            />
+          ))}
+          {/* The frame's length above it, with a tick where one zone gives way to the next. */}
+          <line
+            x1={g.frame.x1}
+            x2={g.frame.x2}
+            y1={top - 8}
+            y2={top - 8}
+            strokeWidth={1}
+            className="stroke-ink-2"
+          />
+          {[g.frame.x1, g.frame.x2, ...edges.map(g.toX)].map((x) => (
+            <line
+              key={`tick:${x}`}
+              x1={x}
+              x2={x}
+              y1={top - 12}
+              y2={top - 4}
+              strokeWidth={1}
+              className="stroke-ink-2"
+            />
+          ))}
+        </svg>
+
+        <div aria-hidden className="pointer-events-none absolute inset-0 select-none">
+          <span
+            className="absolute -translate-x-1/2 bg-surface px-1.5 text-xs whitespace-nowrap text-ink-2"
+            style={{ left: (g.frame.x1 + g.frame.x2) / 2, top: top - 16 }}
+          >
+            Frame {meters(trailer.frameLengthCm)} m
+          </span>
+          <span
+            className="absolute -translate-x-full pr-1.5 text-xs text-ink-2"
+            style={{ left: g.frame.x1, top: top - 17 }}
+          >
+            Front
+          </span>
+          <span
+            className="absolute flex -translate-y-1/2 items-center pr-2 text-xs leading-tight text-ink-2"
+            style={{ left: 0, top: (g.frame.y1 + g.frame.y2) / 2, width: g.gutter - 6 }}
+          >
+            Bed
+          </span>
+          {g.zones.map((z) => (
+            <span
+              key={z.id}
+              className="absolute flex flex-col items-center justify-center gap-0.5 overflow-hidden px-1.5 text-center leading-tight"
+              style={{ left: z.x, top: z.y, width: z.width, height: z.height }}
+            >
+              <span className="max-w-full truncate text-sm font-medium text-ink">{z.label}</span>
+              {z.note && (
+                <span className="line-clamp-3 max-w-full text-xs break-words text-ink-2">
+                  {z.note[0]!.toUpperCase() + z.note.slice(1)}
+                </span>
+              )}
+              {z.positioned && (
+                <span className="text-xs text-ink-2 tabular-nums">
+                  {meters(z.endCm - z.startCm)} m
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+        {g.zones.length > 0 && (
+          <ul className="sr-only">
+            {g.zones.map((z) => (
+              <li key={z.id}>
+                {z.words}
+                {z.note && z.positioned ? `, ${z.note}` : ''}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <p className="text-sm leading-prose text-ink-2">
+        {g.zones.length === 0
+          ? 'Nothing is set to ride in the bed yet. Admins add compartments on the trailer’s page under Trailers.'
+          : g.zones.some((z) => z.shared)
+            ? 'The bed from above, front to back. Zones that share a stretch of the bed sit side by side.'
+            : 'The bed from above, front to back. Each zone spans the bed’s full width.'}
+      </p>
+    </>
   );
 }

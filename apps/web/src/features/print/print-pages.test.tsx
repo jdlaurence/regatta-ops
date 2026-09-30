@@ -171,6 +171,15 @@ describe('print routes', () => {
     expect(within(shelves).getAllByRole('row')[1]).toHaveTextContent(
       /^5 \(top\)Narrow side1Peggy \(Peggy's Delight\)8\+Boys/,
     );
+    // The bed's zones front to back, riggers at the back (PLAN.md §4.9).
+    const bed = within(sheet).getByRole('table', { name: 'Bed, front to back' });
+    const zones = within(bed)
+      .getAllByRole('rowheader')
+      .map((h) => h.textContent);
+    expect(zones).toEqual(['Slings', 'Oars', 'Riggers (back of bed)']);
+    expect(within(bed).getAllByRole('row')[3]).toHaveTextContent(
+      /^Riggers \(back of bed\)From 7\.0 m to the back \(5\.2 m\)Riggers for /,
+    );
     const checklist = within(sheet).getByRole('region', { name: 'Checklist' });
     const shells = within(checklist).getByRole('table', { name: 'Shells' });
     expect(

@@ -79,7 +79,7 @@ export const GIRLS_SHELF_IDS = shelfMap(
 /** Both trailers' shelf ids (the sra.ts ids do not overlap). */
 export const SHELF_IDS: Readonly<Record<string, Id>> = { ...BOYS_SHELF_IDS, ...GIRLS_SHELF_IDS };
 
-/** Compartments: the ids in sra.ts ('bed', 'oars', 'gbed', 'goars') → seeded ids. */
+/** Bed zones: the ids in sra.ts ('slings', 'oars', 'riggers', 'gslings', ...) → seeded ids. */
 export const COMPARTMENT_IDS: Readonly<Record<string, Id>> = Object.fromEntries([
   ...SRA_BOYS_TRAILER.compartments.map((c) => [c.id, stableId(`trailer_compartment:boys:${c.id}`)]),
   ...SRA_GIRLS_TRAILER.compartments.map((c) => [

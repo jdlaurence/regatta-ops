@@ -10,7 +10,14 @@
 // against the post (offset and center post) or the upright (goalpost side shelves); on
 // full-width shelves lane 0 is on the left.
 
-import type { Id, ShelfDef, TrailerDef } from '@srt/domain';
+import {
+  aheadCaption,
+  bedFromBehind,
+  bedZones,
+  type Id,
+  type ShelfDef,
+  type TrailerDef,
+} from '@srt/domain';
 import { sideNamesOf, tierLabel, tierWordOf } from './labels';
 
 export type EndViewSize = 'full' | 'thumb';
@@ -80,6 +87,8 @@ export interface CompartmentGeometry {
   label: string;
   kind: string;
   rect: Rect;
+  /** Where its label goes: the whole box, or its upper half above the bed caption. */
+  labelRect: Rect;
 }
 
 export interface EndViewGeometry {
@@ -98,7 +107,13 @@ export interface EndViewGeometry {
   tiers: TierGeometry[];
   shelves: ShelfGeometry[];
   bed: Rect;
+  /**
+   * The bed zones seen from the back (PLAN.md §4.9): the ones at the back of the bed, side by
+   * side across its width (SRA's riggers fill it).
+   */
   compartments: CompartmentGeometry[];
+  /** What rides ahead of them, in the lower half of the bed: "Oars and slings ahead". */
+  bedCaption: { text: string; rect: Rect } | null;
   wheels: { cx: number; cy: number; r: number }[];
   groundY: number;
   /** Side captions under the drawing, with their baseline. */
@@ -414,20 +429,42 @@ export function endViewGeometry(input: EndViewGeometryInput): EndViewGeometry {
     width: frame.x2 - frame.x1,
     height: spec.bedHeight,
   };
+  // Seen from the back, the bed shows the zones at its back end (side by side only where they
+  // share it); the zones ahead of them are named in a caption.
   const inset = size === 'thumb' ? 1 : 4;
-  const comps = trailer.compartments;
-  const compW = comps.length > 0 ? (bed.width - inset * (comps.length + 1)) / comps.length : 0;
-  const compartments: CompartmentGeometry[] = comps.map((c, i) => ({
-    id: c.id,
-    label: c.label,
-    kind: c.kind,
-    rect: {
+  const { back, ahead } = bedFromBehind(bedZones(trailer));
+  const rearZones = [...back].sort((a, b) => a.row - b.row);
+  const caption = size === 'full' ? aheadCaption(ahead) : null;
+  const compW =
+    rearZones.length > 0 ? (bed.width - inset * (rearZones.length + 1)) / rearZones.length : 0;
+  const innerH = bed.height - inset * 2;
+  const labelH = caption ? Math.floor(innerH / 2) : innerH;
+  const compartments: CompartmentGeometry[] = rearZones.map((z, i) => {
+    const rect = {
       x: bed.x + inset + i * (compW + inset),
       y: bed.y + inset,
       width: Math.max(0, compW),
-      height: bed.height - inset * 2,
-    },
-  }));
+      height: innerH,
+    };
+    return {
+      id: z.compartment.id,
+      label: z.compartment.label,
+      kind: z.compartment.kind,
+      rect,
+      labelRect: { ...rect, height: labelH },
+    };
+  });
+  const bedCaption = caption
+    ? {
+        text: caption,
+        rect: {
+          x: bed.x + inset,
+          y: bed.y + inset + labelH,
+          width: Math.max(0, bed.width - inset * 2),
+          height: innerH - labelH,
+        },
+      }
+    : null;
   const r = spec.wheelR;
   const wheelCy = bed.y + bed.height + r * 0.45;
   const wheels = [0.2, 0.8].map((f) => ({
@@ -487,6 +524,7 @@ export function endViewGeometry(input: EndViewGeometryInput): EndViewGeometry {
     shelves,
     bed,
     compartments,
+    bedCaption,
     wheels,
     groundY,
     captions,

@@ -124,10 +124,47 @@ describe('endViewGeometry: offset post (SRA)', () => {
       expect(lane.slot.y + lane.slot.height).toBeLessThanOrEqual(s.arm.y);
     }
     expect(g.bed.y).toBeGreaterThan(g.tiers[g.tiers.length - 1]!.armY);
-    expect(g.compartments.map((c) => c.label)).toEqual([
-      'Trailer bed: riggers, oars, slings',
-      'Oar rack',
-    ]);
+  });
+
+  it('shows the bed from the back: the riggers across its width, the zones ahead named', () => {
+    // SRA's riggers fill the back of the bed (PLAN.md §4.9); slings and oars ride ahead of them.
+    expect(g.compartments.map((c) => c.label)).toEqual(['Riggers']);
+    const [riggers] = g.compartments;
+    expect(riggers!.rect.x).toBeCloseTo(g.bed.x + 4, 5);
+    expect(riggers!.rect.width).toBeCloseTo(g.bed.width - 8, 5);
+    expect(g.bedCaption?.text).toBe('Oars and slings ahead');
+    // The name sits above the caption, both inside the bed.
+    expect(riggers!.labelRect.y + riggers!.labelRect.height).toBeLessThanOrEqual(
+      g.bedCaption!.rect.y,
+    );
+    expect(g.bedCaption!.rect.y + g.bedCaption!.rect.height).toBeLessThanOrEqual(
+      g.bed.y + g.bed.height,
+    );
+    // Legible on a phone: the caption fits the bed at 390 px.
+    const phone = geo(SRA_BOYS_TRAILER, 358);
+    expect(phone.bedCaption!.rect.width).toBeGreaterThan('Oars and slings ahead'.length * 6.4);
+    expect(phone.bedCaption!.rect.height).toBeGreaterThanOrEqual(14);
+    // The thumbnail draws the zone but no words.
+    const thumb = endViewGeometry({ trailer: SRA_BOYS_TRAILER, width: 112, size: 'thumb' });
+    expect(thumb.compartments).toHaveLength(1);
+    expect(thumb.bedCaption).toBeNull();
+  });
+
+  it('puts compartments that run the whole length side by side, as before', () => {
+    const two: TrailerDef = {
+      ...GOALPOST,
+      compartments: [
+        { id: 'box', kind: 'oar_box', label: 'Oar box', capacity: 64 },
+        { id: 'rig', kind: 'rigger_rack', label: 'Rigger rack', capacity: 40 },
+      ],
+    };
+    const g2 = geo(two);
+    expect(g2.compartments.map((c) => c.label)).toEqual(['Oar box', 'Rigger rack']);
+    expect(g2.compartments[1]!.rect.x).toBeGreaterThan(
+      g2.compartments[0]!.rect.x + g2.compartments[0]!.rect.width,
+    );
+    expect(g2.bedCaption).toBeNull();
+    expect(g2.compartments[0]!.labelRect).toEqual(g2.compartments[0]!.rect);
   });
 
   it('captions the sides and the post without overlap', () => {

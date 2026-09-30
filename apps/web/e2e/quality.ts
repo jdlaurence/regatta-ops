@@ -107,6 +107,14 @@ export const PAGES: PageCase[] = [
   { name: 'trailer', path: regattaUrl(HOTL, 'trailer') },
   { name: 'trailer, girls trailer', path: regattaUrl(HOTL, `trailer/${SEED_TRAILER_IDS.girls}`) },
   { name: 'trailer, 2025 plan', path: regattaUrl(NW_YOUTH, 'trailer') },
+  {
+    name: 'trailer, plan view of the bed',
+    path: regattaUrl(NW_YOUTH, 'trailer?view=plan'),
+    prepare: async (page) => {
+      await page.getByRole('radio', { name: 'Bed' }).click();
+      await expect(page.getByRole('group', { name: 'Bed from above' })).toBeVisible();
+    },
+  },
   { name: 'load list', path: regattaUrl(HOTL, 'load') },
   { name: 'load list, 2025', path: regattaUrl(NW_YOUTH, 'load') },
 ];

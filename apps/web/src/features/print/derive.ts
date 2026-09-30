@@ -4,10 +4,13 @@
 // (buildPublishedSnapshot), so the published/live toggle changes the rows and nothing else.
 
 import {
+  bedZones,
   classSizeRank,
+  compartmentDefFromRecord,
   deriveLoadList,
   isComing,
   isCoxed,
+  meters,
   mergeLoadItems,
   seatsFor,
   sortPublishedEntries,
@@ -31,8 +34,11 @@ import {
   type Team,
   type Trailer,
   type TrailerShelf,
+  zoneExtent,
+  zoneName,
 } from '@srt/domain';
 import type { RegattaWorkingSet } from '@/data';
+import { defaultHomes, homeKey, zoneOfContainer } from '@/features/load-list/lib';
 import { publishState } from '@/components/PublishStatus';
 import { STAGE_ORDER, dayTimeText } from './format';
 
@@ -415,8 +421,10 @@ export interface ShelfRow {
 }
 
 export interface ChecklistRow extends MergedLoadRow {
-  /** Where it rides: "Top level, wide side, lane 2 (outer)", "Boys trailer bed". */
+  /** Where it rides: "Top level, wide side, lane 2 (outer)", "Riggers (back of bed)". */
   where: string;
+  /** The bed zone it rides in on this trailer, if any (PLAN.md §4.9). */
+  zoneId: Id | null;
   /** Nothing puts it on a trailer or in a truck yet. */
   unassigned: boolean;
   /** On this trailer, but no entry uses it. */
@@ -429,10 +437,25 @@ export interface ChecklistGroup {
   rows: ChecklistRow[];
 }
 
+/** One of the trailer's bed zones, front to back, with what rides in it (PLAN.md §4.9). */
+export interface BedZoneRow {
+  id: Id;
+  /** "Riggers (back of bed)". */
+  name: string;
+  /** "from 7.0 m to the back". */
+  extent: string;
+  /** "5.2 m"; null for a compartment that runs the whole length. */
+  length: string | null;
+  /** Checklist lines riding in it. */
+  rows: ChecklistRow[];
+}
+
 export interface LoadSheet {
   trailer: Trailer;
   plan: LoadPlan | null;
   shelves: ShelfRow[];
+  /** The bed's zones, front to back. */
+  bed: BedZoneRow[];
   groups: ChecklistGroup[];
   /** Load-list lines that travel somewhere else, by container: "Truck 1 bed" → 2. */
   elsewhere: { where: string; count: number }[];
@@ -520,6 +543,9 @@ export function loadSheet(ws: RegattaWorkingSet, trailerId: Id): LoadSheet | nul
     gear: ws.gear,
   });
   const merged = mergeLoadItems(derived, ws.loadItems);
+  // Where lines ride by default: riggers, oars, and slings in this trailer's bed zones.
+  const homes = defaultHomes(ws);
+  const zoneOf = (container: string) => zoneOfContainer(container, trailer, ws.compartments);
   const shelfById = ws.byId.shelves;
   const trailerName = (id: Id | undefined) => (id ? ws.byId.trailers.get(id)?.name : undefined);
 
@@ -533,21 +559,29 @@ export function loadSheet(ws: RegattaWorkingSet, trailerId: Id): LoadSheet | nul
     return shelf && p ? `${shelf.label}, lane ${laneText(shelf, p.lane)}` : trailer.name;
   };
   const listed = new Set<Id>();
+  type Keep = { where: string; unassigned: boolean; zoneId: Id | null };
   for (const row of merged.rows) {
     const stored = row.stored;
     const boat = row.kind === 'shell' || row.kind === 'riggers';
     const on = boat ? placedOn.get(row.refId) : undefined;
+    const home = row.orphaned ? undefined : homes.get(homeKey(row.kind, row.refId));
+    const here = home?.trailerId === trailerId ? home : undefined;
+    // Its bed zone here when nothing is typed, else what was typed.
+    const zoned = (fallback: string): Keep =>
+      stored?.container
+        ? { where: stored.container, unassigned: false, zoneId: zoneOf(stored.container) }
+        : { where: here?.zone ?? fallback, unassigned: false, zoneId: here?.compartmentId ?? null };
     // A container typed on the load list (riggers in a truck bed) wins over the placement.
     const typedElsewhere = !!stored?.container && !stored.loadPlanId;
-    let keep: { where: string; unassigned: boolean } | null = null;
+    let keep: Keep | null = null;
     if (boat && on === trailerId && !typedElsewhere) {
-      keep = {
-        where: row.kind === 'riggers' ? stored?.container || 'Bed' : shelfWhere(row.refId),
-        unassigned: false,
-      };
+      keep =
+        row.kind === 'riggers'
+          ? zoned('Bed')
+          : { where: shelfWhere(row.refId), unassigned: false, zoneId: null };
     } else if (stored && (stored.loadPlanId || stored.container)) {
       if (plan && stored.loadPlanId === plan.id) {
-        keep = { where: stored.container || trailer.name, unassigned: false };
+        keep = zoned(trailer.name);
       } else {
         away(
           stored.container || trailerName(planTrailer.get(stored.loadPlanId ?? '')) || 'Elsewhere',
@@ -555,9 +589,13 @@ export function loadSheet(ws: RegattaWorkingSet, trailerId: Id): LoadSheet | nul
       }
     } else if (boat) {
       if (on) away(trailerName(on) ?? 'Another trailer');
-      else keep = { where: 'Not on a trailer yet', unassigned: true };
+      else keep = { where: 'Not on a trailer yet', unassigned: true, zoneId: null };
+    } else if (home) {
+      // Oars and slings with a default home: printed on that trailer's sheet, in its zone.
+      if (here) keep = zoned(trailer.name);
+      else away(home.container);
     } else {
-      keep = { where: 'Not assigned yet', unassigned: true };
+      keep = { where: 'Not assigned yet', unassigned: true, zoneId: null };
     }
     if (!keep) continue;
     if (row.kind === 'shell') listed.add(row.refId);
@@ -584,6 +622,7 @@ export function loadSheet(ws: RegattaWorkingSet, trailerId: Id): LoadSheet | nul
       label: shellFullLabel(shell),
       quantity: 1,
       where: shelfWhere(shell.id),
+      zoneId: null,
     });
     const riggers =
       shell.riggerType === 'none'
@@ -596,16 +635,32 @@ export function loadSheet(ws: RegattaWorkingSet, trailerId: Id): LoadSheet | nul
         key: `spare:riggers:${shell.id}`,
         label: `Riggers for ${shellLabel(shell)}`,
         quantity: riggers,
-        where: 'Bed',
+        where: homes.get(homeKey('riggers', shell.id))?.zone ?? 'Bed',
+        zoneId: homes.get(homeKey('riggers', shell.id))?.compartmentId ?? null,
       });
     }
   }
 
   const kinds: LoadItemKind[] = ['shell', 'riggers', 'oar_set', 'gear', 'extra'];
+  const frame = trailer.frameLengthCm;
+  const checklist = kinds.flatMap((k) => groups.get(k) ?? []);
+  const bed: BedZoneRow[] = bedZones({
+    frameLengthCm: frame,
+    compartments: ws.compartments
+      .filter((c) => c.trailerId === trailerId)
+      .map((c) => compartmentDefFromRecord(c, frame)),
+  }).map((z) => ({
+    id: z.compartment.id,
+    name: zoneName(z.compartment, frame),
+    extent: zoneExtent(z, frame),
+    length: z.positioned ? `${meters(z.endCm - z.startCm)} m` : null,
+    rows: checklist.filter((r) => r.zoneId === z.compartment.id),
+  }));
   return {
     trailer,
     plan,
     shelves,
+    bed,
     groups: kinds
       .filter((k) => (groups.get(k)?.length ?? 0) > 0)
       .map((k) => ({ kind: k, title: GROUP_TITLES[k], rows: groups.get(k)! })),

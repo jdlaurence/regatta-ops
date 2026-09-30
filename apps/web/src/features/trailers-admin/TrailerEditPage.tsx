@@ -29,6 +29,7 @@ import {
   defFromDraft,
   defaultUnit,
   draftFromRecords,
+  draftWarnings,
   duplicateShelf,
   removeShelf,
   removedShelfIds,
@@ -101,6 +102,7 @@ function TrailerEditor({ saved }: { saved: SavedTrailer }) {
   const dirty = edits !== null && !sameDraft(edits, baseline);
   const errors = useMemo(() => validateDraft(draft), [draft]);
   const errorCount = Object.keys(errors).length;
+  const warnings = useMemo(() => draftWarnings(draft), [draft]);
   const def = useMemo(() => defFromDraft(draft), [draft]);
   const update = (fn: (d: TrailerDraft) => TrailerDraft) =>
     setEdits((prev) => fn(prev ?? baseline));
@@ -251,7 +253,9 @@ function TrailerEditor({ saved }: { saved: SavedTrailer }) {
           />
           <CompartmentsTable
             compartments={draft.compartments}
+            frameLengthCm={draft.frameLengthCm}
             errors={errors}
+            warnings={warnings}
             readOnly={readOnly}
             onChange={(id, patch) => update((d) => updateCompartment(d, id, patch))}
             onAdd={() =>
@@ -265,6 +269,8 @@ function TrailerEditor({ saved }: { saved: SavedTrailer }) {
                     label: '',
                     capacity: 1,
                     capacityUnit: defaultUnit('storage'),
+                    startCm: null,
+                    endCm: null,
                   },
                 ],
               }))

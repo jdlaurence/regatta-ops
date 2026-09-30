@@ -3,6 +3,7 @@
 // measurements.
 
 import {
+  SRA_BOYS_TRAILER,
   SRA_DEFAULT_RULES,
   type CompartmentDef,
   type Rule,
@@ -35,6 +36,14 @@ function shelf(
 
 function compartment(newId: () => string, fields: Omit<CompartmentDef, 'id'>): CompartmentDef {
   return { id: newId(), ...fields };
+}
+
+/**
+ * The bed as SRA loads it (PLAN.md §4.9): slings, then oars, then riggers filling the back of
+ * the bed, zones along a 1220 cm frame (the boys' trailer's placeholders).
+ */
+function sraBed(newId: () => string): CompartmentDef[] {
+  return SRA_BOYS_TRAILER.compartments.map(({ id: _id, ...c }) => compartment(newId, c));
 }
 
 const LEVELS = [1, 2, 3, 4, 5];
@@ -77,14 +86,7 @@ export const TRAILER_PRESETS: readonly TrailerPreset[] = [
           }),
         ];
       }),
-      compartments: [
-        compartment(newId, {
-          kind: 'bed',
-          label: 'Trailer bed: riggers, oars, slings',
-          capacity: 1,
-        }),
-        compartment(newId, { kind: 'oar_rack', label: 'Oar rack', capacity: 64 }),
-      ],
+      compartments: sraBed(newId),
     }),
   },
   {
@@ -110,9 +112,22 @@ export const TRAILER_PRESETS: readonly TrailerPreset[] = [
           rearOverhangMaxCm: tier >= 3 ? 300 : 100,
         }),
       ),
+      // An oar box at the front, riggers at the back; edit to suit.
       compartments: [
-        compartment(newId, { kind: 'oar_box', label: 'Oar box', capacity: 64 }),
-        compartment(newId, { kind: 'rigger_rack', label: 'Rigger rack', capacity: 40 }),
+        compartment(newId, {
+          kind: 'oar_box',
+          label: 'Oar box',
+          capacity: 64,
+          startCm: 0,
+          endCm: 400,
+        }),
+        compartment(newId, {
+          kind: 'rigger_rack',
+          label: 'Riggers',
+          capacity: 40,
+          startCm: 850,
+          endCm: 1250,
+        }),
       ],
     }),
   },
@@ -140,13 +155,7 @@ export const TRAILER_PRESETS: readonly TrailerPreset[] = [
           shelf(newId, { ...common, label: `Rack ${tier}, curb side`, columnKey: 'right' }),
         ];
       }),
-      compartments: [
-        compartment(newId, {
-          kind: 'bed',
-          label: 'Trailer bed: riggers, oars, slings',
-          capacity: 1,
-        }),
-      ],
+      compartments: sraBed(newId),
     }),
   },
 ];

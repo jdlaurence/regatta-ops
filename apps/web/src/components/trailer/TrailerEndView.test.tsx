@@ -52,7 +52,13 @@ describe('TrailerEndView', () => {
     // Drawn once, and once per lane in the description table.
     expect(screen.getAllByText('Level 5')).toHaveLength(1 + 3);
     expect(screen.getByText('Wide side (outer first)')).toBeInTheDocument();
-    expect(screen.getByText('Oar rack')).toBeInTheDocument();
+    expect(screen.getByText('Riggers')).toBeInTheDocument();
+    expect(screen.getByText('Oars and slings ahead')).toBeInTheDocument();
+    expect(
+      within(table).getByRole('row', { name: /^Bed Front to back: Slings/ }),
+    ).toHaveTextContent(
+      'Front to back: Slings, from the front to 3.0 m (3.0 m); Oars, 3.0 to 7.0 m from the front (4.0 m); Riggers, from 7.0 m to the back (5.2 m)',
+    );
   });
 
   it('labels chips by where they sit and reports clicks', async () => {

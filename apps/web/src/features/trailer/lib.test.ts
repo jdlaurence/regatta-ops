@@ -36,12 +36,12 @@ import {
   packOne,
   packOps,
   placementWhere,
-  planViewGeometry,
   refusalText,
   unlockPlacement,
   whyHere,
   type TrailerPageModel,
 } from './lib';
+import { planViewGeometry } from '@/components/trailer/plan';
 
 const NW = SEED_REGATTA_IDS.nwYouth2025;
 const HOTL = SEED_REGATTA_IDS.headOfTheLake2026;

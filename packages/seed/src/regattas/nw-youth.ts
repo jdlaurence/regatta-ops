@@ -623,7 +623,8 @@ function addLoadPlans(w: World): void {
       refId: seedOarSetId('24-C'),
       label: '24-C · yellow-white',
       quantity: 9,
-      container: 'Boys trailer bed',
+      // The boys' trailer's oar zone, ahead of the riggers (PLAN.md §4.9).
+      container: 'Boys trailer · Oars',
       ...loaded('2025-05-15T23:30:00.000Z', boysCoach),
     },
     {

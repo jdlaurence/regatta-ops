@@ -1,16 +1,25 @@
-// The live end view of the draft trailer, with a test pack (PLAN.md §6.9, §15 Q1): pack a
-// sample load or a regatta's boats onto the unsaved measurements and rules, to see whether the
-// numbers make sense before saving. Nothing is written.
+// The live diagram of the draft trailer, with a test pack (PLAN.md §6.9, §15 Q1): the end view,
+// the plan view (a level, or the bed's zones along the length), or the isometric view, drawn
+// from the unsaved measurements as they are typed. Pack a sample load or a regatta's boats onto
+// them to see whether the numbers make sense before saving. Nothing is written.
 
 import { useMemo, useState } from 'react';
 import { TriangleAlert } from 'lucide-react';
-import { packTrailer, type Id, type PackBoat, type Rule, type TrailerDef } from '@srt/domain';
+import {
+  packTrailer,
+  type Id,
+  type PackBoat,
+  type Rule,
+  type TeamColorKey,
+  type TrailerDef,
+} from '@srt/domain';
 import { useList } from '@/data';
 import { toEndViewBoats } from '@/components/trailer/boats';
 import { sideNamesOf, tierLabel } from '@/components/trailer/labels';
 import { SAMPLE_LOADS, sampleEndViewBoats, samplePackBoats } from '@/components/trailer/samples';
 import { TrailerEndView, type EndViewBoat } from '@/components/trailer/TrailerEndView';
 import { TrailerIsometric } from '@/components/trailer/TrailerIsometric';
+import { PlanView, type PlanLevel } from '@/components/trailer/PlanView';
 import { SegmentedControl } from '@/components/ui/controls';
 import { Label } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -19,8 +28,14 @@ import { usePlanShellIds, useRegattaBoats, useTrailerLoadPlans } from './hooks';
 
 const NONE = 'none';
 
-/** The end view (default) or the isometric view (PLAN.md §4.10, Phase 3). */
-type PreviewView = 'end' | 'iso';
+/** The end view (default), the plan view, or the isometric view (PLAN.md §4.10). */
+type PreviewView = 'end' | 'plan' | 'iso';
+
+const VIEW_TITLES: Record<PreviewView, { title: string; note: string }> = {
+  end: { title: 'End view', note: 'Seen from the back' },
+  plan: { title: 'Plan view', note: 'One level at a time, or the bed' },
+  iso: { title: 'Isometric view', note: 'Seen from behind, on the right side' },
+};
 
 function parseChoice(v: string): { kind: 'none' | 'sample' | 'regatta' | 'plan'; id: string } {
   const [kind, ...rest] = v.split(':');
@@ -44,6 +59,9 @@ export function TrailerPreview({
   const [choice, setChoice] = useState(NONE);
   const [selected, setSelected] = useState<Id | null>(null);
   const [view, setView] = useState<PreviewView>('end');
+  const [level, setLevel] = useState<PlanLevel>(() =>
+    Math.max(1, ...trailer.shelves.map((s) => s.tier)),
+  );
   const parsed = parseChoice(choice);
 
   const regattas = useList('regattas', { sort: '-startDate' });
@@ -80,6 +98,16 @@ export function TrailerPreview({
     [trailer, boats, rules],
   );
   const capacity = useMemo(() => trailerCapacity(trailer, rules), [trailer, rules]);
+  const boatById = useMemo(() => new Map((boats ?? []).map((b) => [b.shellId, b])), [boats]);
+  const teamColors = useMemo(() => {
+    const colorOf = new Map(viewBoats.map((b) => [b.shellId, b.teamColor]));
+    const out = new Map<Id, TeamColorKey>();
+    for (const b of boats ?? []) {
+      const color = colorOf.get(b.shellId);
+      if (color && b.teamId) out.set(b.teamId, color);
+    }
+    return out;
+  }, [boats, viewBoats]);
   const nameOf = new Map(viewBoats.map((b) => [b.shellId, b.name]));
   const selectedPlacement = pack?.placements.find((p) => p.shellId === selected);
   const regattaName = new Map((regattas.data ?? []).map((r) => [r.id, r.name]));
@@ -101,16 +129,12 @@ export function TrailerPreview({
   const loading = parsed.kind !== 'none' && parsed.kind !== 'sample' && !boats;
 
   return (
-    <section aria-label="End view and test pack" className={className}>
+    <section aria-label="Trailer diagram and test pack" className={className}>
       <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-3 sm:p-4">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h2 className="font-display text-lg font-semibold">
-              {view === 'end' ? 'End view' : 'Isometric view'}
-            </h2>
-            <p className="text-sm text-ink-2">
-              {view === 'end' ? 'Seen from the back' : 'Seen from behind, on the right side'}
-            </p>
+            <h2 className="font-display text-lg font-semibold">{VIEW_TITLES[view].title}</h2>
+            <p className="text-sm text-ink-2">{VIEW_TITLES[view].note}</p>
           </div>
           <SegmentedControl
             size="sm"
@@ -119,6 +143,7 @@ export function TrailerPreview({
             onValueChange={setView}
             options={[
               { value: 'end', label: 'End view' },
+              { value: 'plan', label: 'Plan view' },
               { value: 'iso', label: 'Isometric' },
             ]}
           />
@@ -133,6 +158,18 @@ export function TrailerPreview({
             selectedShellId={selected}
             onChipClick={(id) => setSelected((s) => (s === id ? null : id))}
             animateMoves
+          />
+        ) : view === 'plan' ? (
+          <PlanView
+            trailer={trailer}
+            rules={rules}
+            placements={pack?.placements ?? []}
+            boatById={boatById}
+            teamColors={teamColors}
+            selectedShellId={selected}
+            onSelect={(id) => setSelected((s) => (s === id ? null : id))}
+            level={level}
+            onLevelChange={setLevel}
           />
         ) : (
           <TrailerIsometric
