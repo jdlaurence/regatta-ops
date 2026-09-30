@@ -206,11 +206,17 @@ describe('SchedulePage timeline', () => {
     expect(router.state.location.search).toContain('view=timeline');
     await user.click(screen.getByRole('radio', { name: 'Team' }));
     expect(router.state.location.search).toContain('group=team');
+    // The lineup page consumes ?entry= once it has selected the entry, so record every stop.
+    const visited: string[] = [];
+    const unsubscribe = router.subscribe((state) =>
+      visited.push(state.location.pathname + state.location.search),
+    );
     await user.click(screen.getByRole('button', { name: /^Girls V4\+, .*at 10:55/ }));
     await waitFor(() =>
       expect(router.state.location.pathname).toBe(`/regattas/${IDS.regatta}/lineups/${IDS.girls}`),
     );
-    expect(router.state.location.search).toBe(`?entry=${ENTRY2}`);
+    unsubscribe();
+    expect(visited).toContain(`/regattas/${IDS.regatta}/lineups/${IDS.girls}?entry=${ENTRY2}`);
   });
 
   it('shows an empty regatta with what to do', async () => {

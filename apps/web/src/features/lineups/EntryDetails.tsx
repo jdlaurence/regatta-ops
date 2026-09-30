@@ -14,6 +14,7 @@ import {
   type Finding,
 } from '@srt/domain';
 import { relativeTime } from '@/lib/relative-time';
+import { CommentsThread } from '@/components/CommentsThread';
 import { ConflictIcon } from '@/components/ConflictBadge';
 import { Button } from '@/components/ui/button';
 import { Input, Label, Textarea } from '@/components/ui/input';
@@ -301,6 +302,8 @@ export function EntryDetails({ entry }: { entry: Entry }) {
         </h3>
         <FindingsList findings={findings} />
       </section>
+
+      <CommentsThread targetType="entry" targetId={entry.id} />
 
       {editor && entry.updated && (
         <p className="text-sm text-ink-2">
