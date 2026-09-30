@@ -57,7 +57,7 @@ import {
   SheetContent,
 } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
-import { laneKey, toEndViewBoats } from '@/components/trailer';
+import { laneKey, toEndViewBoats, TrailerIsometric } from '@/components/trailer';
 import type { EndViewCell } from '@/components/trailer/geometry';
 import { printLoadPath } from '@/features/print/links';
 import { cn } from '@/lib/cn';
@@ -86,7 +86,6 @@ import {
 import { MetricsFooter } from './MetricsFooter';
 import { BoatPill } from './parts';
 import { PlanView } from './PlanView';
-import { TrailerIsometric } from '@/components/trailer';
 import { RulesPanel } from './RulesPanel';
 import { ToLoadPanel } from './ToLoadPanel';
 
