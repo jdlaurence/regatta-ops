@@ -93,7 +93,6 @@ export function fixtureWorld(): World {
       level: 'experienced',
       status: 'active',
       birthYear: 2009,
-      weightKg: 70,
     });
   athlete('athboys00000001', IDS.boys, 'Rowan', 'Test');
   athlete('athboys00000002', IDS.boys, 'Emery', 'Sample');

@@ -82,7 +82,7 @@ function Preferences({ user }: { user: User }) {
           className="w-fit"
         />
         <p className="text-sm text-ink-2">
-          Rosters and crew weights show in this unit. The club default is {clubUnit}.
+          Crew weight ranges on shells show in this unit. The club default is {clubUnit}.
         </p>
       </div>
 

@@ -58,7 +58,6 @@ const athlete: Athlete = {
   side: 'port',
   canScull: true,
   canCox: false,
-  weightKg: 70,
   birthYear: 2009,
   level: 'experienced',
   status: 'active',

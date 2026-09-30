@@ -154,7 +154,6 @@ function entryChecks(ctx: Ctx, entry: Entry, out: Draft[]): void {
   const sides = entrySeatSides(entry, shell);
   const ageText = `${event?.category ?? ''} ${event?.name ?? ''}`;
   const eventGroup = eventAgeGroup(ageText);
-  const rowerWeights: number[] = [];
 
   for (const seat of template) {
     const athleteId = bySeat.get(seat);
@@ -165,7 +164,6 @@ function entryChecks(ctx: Ctx, entry: Entry, out: Draft[]): void {
     const subjects = [athlete.id];
     const res = { type: 'athlete' as const, id: athlete.id };
     const isCox = seat === 'cox';
-    if (!isCox && athlete.weightKg != null) rowerWeights.push(athlete.weightKg);
 
     const av = ctx.availabilityByAthlete.get(athlete.id);
     if (av && !isAvailableOn(av, day)) {
@@ -241,33 +239,6 @@ function entryChecks(ctx: Ctx, entry: Entry, out: Draft[]): void {
           res,
         );
       }
-    }
-  }
-
-  // Crew weight: average rower weight (cox excluded) against the shell's range.
-  if (shell && rowerWeights.length > 0) {
-    const min = shell.crewWeightMinKg ?? null;
-    const max = shell.crewWeightMaxKg ?? null;
-    const avg = rowerWeights.reduce((s, w) => s + w, 0) / rowerWeights.length;
-    const label = shell.weightClassLabel?.trim() ? ` (${shell.weightClassLabel.trim()})` : '';
-    const res = { type: 'shell' as const, id: shell.id };
-    const avgText = `${name} averages ${Math.round(avg)} kg a rower`;
-    if (max != null && avg > max) {
-      push(
-        'CREW_WEIGHT',
-        'info',
-        `${avgText}, above the ${Math.round(max)} kg limit for ${shellName(shell)}${label}.`,
-        [shell.id],
-        res,
-      );
-    } else if (min != null && avg < min) {
-      push(
-        'CREW_WEIGHT',
-        'info',
-        `${avgText}, below the ${Math.round(min)} kg minimum for ${shellName(shell)}${label}.`,
-        [shell.id],
-        res,
-      );
     }
   }
 }

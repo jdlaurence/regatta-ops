@@ -60,7 +60,6 @@ function athlete(
     level: 'experienced',
     status: 'active',
     birthYear: 2009,
-    weightKg: 75,
     ...extra,
   });
 }
@@ -126,7 +125,7 @@ export function lineupWorld(): World {
       canScull: i < 2,
     }),
   );
-  athlete(w, BOYS_COX, IDS.boys, 'Ike', 'Coxswain', 'none', { canCox: true, weightKg: 55 });
+  athlete(w, BOYS_COX, IDS.boys, 'Ike', 'Coxswain', 'none', { canCox: true });
   athlete(w, BOYS_OUT, IDS.boys, 'Jay', 'Away', 'port');
   w.availability.push({
     id: 'availboyout0001',

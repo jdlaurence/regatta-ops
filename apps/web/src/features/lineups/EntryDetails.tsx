@@ -6,7 +6,6 @@ import { useId, useState, type ReactNode } from 'react';
 import { ArrowRightLeft, Copy, RefreshCcw, Trash2 } from 'lucide-react';
 import {
   entryStats,
-  formatWeight,
   isHotSeat,
   isSculling,
   type Entry,
@@ -178,8 +177,7 @@ function ReadOnlySummary({ entry, rerig }: { entry: Entry; rerig: string | null 
 }
 
 export function EntryDetails({ entry }: { entry: Entry }) {
-  const { index, ws, canEdit, actions, findingsByEntry, weightUnit, seasonYear, team } =
-    useLineup();
+  const { index, ws, canEdit, actions, findingsByEntry, seasonYear, team } = useLineup();
   const statusId = useId();
   const coachId = useId();
   const findings = findingsByEntry.get(entry.id) ?? [];
@@ -266,9 +264,6 @@ export function EntryDetails({ entry }: { entry: Entry }) {
           Crew
         </h3>
         <dl className="flex flex-col divide-y divide-line text-base">
-          <Fact term="Average weight">
-            {stats.avgWeightKg != null ? formatWeight(stats.avgWeightKg, weightUnit) : '—'}
-          </Fact>
           <Fact term="Average age">
             {stats.avgAge != null
               ? `${stats.avgAge.toFixed(1)}${

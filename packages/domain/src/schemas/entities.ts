@@ -102,7 +102,6 @@ export const athleteSchema = z.object({
   side: athleteSideSchema,
   canScull: z.boolean(),
   canCox: z.boolean(),
-  weightKg: optionalMeasure,
   birthYear: optionalYear,
   birthdate: daySchema.nullable().optional(),
   gender: optionalText,

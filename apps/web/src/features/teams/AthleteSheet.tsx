@@ -22,14 +22,13 @@ import { Dialog, DialogContent, DialogFooter, Sheet, SheetContent } from '@/comp
 import { formatDayRange, formatWeekday, todayIn } from '@/lib/dates';
 import { AthleteForm, formValuesFrom, inputFromForm } from './AthleteForm';
 import { AgeBadgeView, InactiveTag } from './RosterBadges';
-import { ageBadge, LEVEL_LABELS, type WeightUnit } from './lib';
+import { ageBadge, LEVEL_LABELS } from './lib';
 
 export interface AthleteSheetProps {
   athlete: Athlete | null;
   team: Team;
   teams: readonly Team[];
   canEdit: boolean;
-  unit: WeightUnit;
   seasonYear: number;
   onOpenChange: (open: boolean) => void;
 }
@@ -39,7 +38,6 @@ export function AthleteSheet({
   team,
   teams,
   canEdit,
-  unit,
   seasonYear,
   onOpenChange,
 }: AthleteSheetProps) {
@@ -53,7 +51,6 @@ export function AthleteSheet({
             team={team}
             teams={teams}
             canEdit={canEdit}
-            unit={unit}
             seasonYear={seasonYear}
             onClose={() => onOpenChange(false)}
           />
@@ -68,7 +65,6 @@ function AthleteDetails({
   team,
   teams,
   canEdit,
-  unit,
   seasonYear,
   onClose,
 }: Omit<AthleteSheetProps, 'athlete' | 'onOpenChange'> & {
@@ -96,14 +92,13 @@ function AthleteDetails({
 
       <AthleteForm
         id={formId}
-        defaultValues={formValuesFrom(athlete, unit)}
-        unit={unit}
+        defaultValues={formValuesFrom(athlete)}
         seasonYear={seasonYear}
         program={team.program}
         teams={teams}
         readOnly={!canEdit}
         onSubmit={async (values) => {
-          const input = inputFromForm(values, unit, athlete);
+          const input = inputFromForm(values);
           await update.mutateAsync({ id: athlete.id, patch: input });
           const moved = input.teamId !== athlete.teamId;
           const to = teams.find((t) => t.id === input.teamId);

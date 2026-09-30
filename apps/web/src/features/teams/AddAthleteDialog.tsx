@@ -8,29 +8,26 @@ import { toast } from '@/components/toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { AthleteForm, formValuesFrom, inputFromForm } from './AthleteForm';
-import type { WeightUnit } from './lib';
 
 export function AddAthleteDialog({
   open,
   onOpenChange,
   team,
-  unit,
   seasonYear,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   team: Team;
-  unit: WeightUnit;
   seasonYear: number;
 }) {
   const formId = useId();
   const create = useCreate('athletes');
   // A new key clears the form for the next athlete.
   const [round, setRound] = useState(0);
-  const defaults = formValuesFrom(
-    { teamId: team.id, level: team.program === 'juniors' ? 'novice' : 'experienced' },
-    unit,
-  );
+  const defaults = formValuesFrom({
+    teamId: team.id,
+    level: team.program === 'juniors' ? 'novice' : 'experienced',
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -44,12 +41,11 @@ export function AddAthleteDialog({
             key={round}
             id={formId}
             defaultValues={defaults}
-            unit={unit}
             seasonYear={seasonYear}
             program={team.program}
             autoFocus
             onSubmit={async (values, tag) => {
-              const input = inputFromForm(values, unit);
+              const input = inputFromForm(values);
               await create.mutateAsync(input);
               toast.success(`${athleteName(input)} added`);
               if (tag === 'again') setRound((r) => r + 1);
