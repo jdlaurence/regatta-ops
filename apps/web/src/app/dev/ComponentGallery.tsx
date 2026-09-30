@@ -145,7 +145,7 @@ function Swatch({ name, varName }: { name: string; varName: string }) {
   );
 }
 
-function InteractiveStrip() {
+function InteractiveStrip({ orientation }: { orientation?: 'horizontal' | 'vertical' }) {
   const [seats, setSeats] = useState(crew('4+', ['3']));
   const [selected, setSelected] = useState<Seat | null>('2');
   const [settling, setSettling] = useState<Seat | null>(null);
@@ -153,6 +153,7 @@ function InteractiveStrip() {
     <div className="flex w-full flex-col gap-2">
       <BoatStrip
         boatClass="4+"
+        orientation={orientation}
         teamColor="raspberry"
         seats={seats}
         selectedSeat={selected}
@@ -274,15 +275,6 @@ export default function ComponentGallery() {
             />
           </div>
         </Row>
-        <Row label="Bow-loaded cox">
-          <BoatStrip
-            boatClass="4+"
-            size="md"
-            teamColor="violet"
-            coxPosition="bow"
-            seats={crew('4+')}
-          />
-        </Row>
         <Row label="Starboard rig">
           <BoatStrip
             boatClass="4+"
@@ -302,6 +294,105 @@ export default function ComponentGallery() {
           <div className="flex w-full flex-col gap-2">
             <BoatStripSkeleton size="md" />
             <BoatStripSkeleton size="sm" />
+          </div>
+        </Row>
+      </Section>
+
+      <Section title="Boat strip, vertical">
+        <p className="max-w-prose text-sm text-ink-2">
+          The lineup builder and the lineup sheet stand the hull on end, the way coaches write
+          lineups: the cox on top, then stroke down to bow.
+        </p>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] items-start gap-4">
+          {BOAT_CLASSES.map((cls) => (
+            <div key={cls} className="flex flex-col gap-2">
+              <ClassBadge boatClass={cls} className="self-start" />
+              <BoatStrip
+                boatClass={cls}
+                orientation="vertical"
+                teamColor={CLASS_TEAM[cls]}
+                seats={crew(cls)}
+              />
+            </div>
+          ))}
+        </div>
+        <Row label="Empty seats">
+          <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(200px,1fr))] items-start gap-4">
+            <BoatStrip
+              boatClass="8+"
+              orientation="vertical"
+              teamColor="navy"
+              seats={crew('8+', ['2', '5', 'cox'])}
+            />
+            <BoatStrip boatClass="4x" orientation="vertical" teamColor="green" />
+            <BoatStripSkeleton orientation="vertical" seats={5} />
+          </div>
+        </Row>
+        <Row label="Conflicts">
+          <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(200px,1fr))] items-start gap-4">
+            <BoatStrip
+              boatClass="4+"
+              orientation="vertical"
+              teamColor="navy"
+              seats={crew('4+')}
+              seatConflicts={{ '3': 'error' }}
+              conflict="error"
+            />
+            <BoatStrip
+              boatClass="4x+"
+              orientation="vertical"
+              teamColor="raspberry"
+              seats={crew('4x+')}
+              seatConflicts={{ '2': 'warning', cox: 'info' }}
+              conflict="warning"
+            />
+            <BoatStrip
+              boatClass="2-"
+              orientation="vertical"
+              teamColor="bronze"
+              seats={crew('2-')}
+              conflict="info"
+            />
+          </div>
+        </Row>
+        <Row label="Starboard rig">
+          <div className="w-full max-w-[240px]">
+            <BoatStrip
+              boatClass="4+"
+              orientation="vertical"
+              teamColor="ochre"
+              seats={crew('4+')}
+              seatSides={{ '1': 'port', '2': 'starboard', '3': 'port', '4': 'starboard' }}
+            />
+          </div>
+        </Row>
+        <Row label="Sizes">
+          <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(180px,1fr))] items-start gap-4">
+            <BoatStrip
+              boatClass="4+"
+              orientation="vertical"
+              size="sm"
+              teamColor="navy"
+              seats={crew('4+')}
+            />
+            <BoatStrip
+              boatClass="4+"
+              orientation="vertical"
+              size="xs"
+              teamColor="navy"
+              seats={crew('4+')}
+            />
+            <BoatStrip
+              boatClass="4+"
+              orientation="vertical"
+              size="print"
+              seats={crew('4+', ['2'])}
+            />
+          </div>
+        </Row>
+        <Row label="Interactive">
+          <div className="w-full max-w-[260px]">
+            <InteractiveStrip orientation="vertical" />
           </div>
         </Row>
       </Section>
