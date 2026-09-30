@@ -1,23 +1,63 @@
-// Providers around the whole app: the DataStore, TanStack Query, theme, realtime, tooltips,
-// and toasts. Tests render the same tree with a MemoryStore.
+// Providers around the whole app: the DataStore, TanStack Query (saved on the device for
+// offline reads, PLAN.md §10.4), theme, realtime, tooltips, and toasts. Tests render the same
+// tree with a MemoryStore and no persister.
 
-import { useCallback, useEffect, type ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { RealtimeProvider, StoreProvider, useCurrentUser, useUpdate, type DataStore } from '@/data';
+import {
+  appServerUrl,
+  bridgeQueryOnlineManager,
+  httpProbe,
+  isNetworkError,
+  networkMonitor,
+  OfflineError,
+  pocketBaseHealthUrl,
+  type Probe,
+} from '@/data/online';
+import { CACHE_MAX_AGE, persistOptions, type DevicePersister } from '@/data/persist';
 import { TooltipProvider } from '@/components/ui/menu';
 import { Toaster } from '@/components/toast';
 import { ThemeProvider, useAdoptUserTheme, type ThemeChoice } from './theme';
 
-export function createQueryClient(): QueryClient {
+export function createQueryClient({
+  mode = 'pocketbase',
+}: { mode?: DataStore['mode'] } = {}): QueryClient {
+  // Queries pause and resume with the app's network status, not just the browser's.
+  bridgeQueryOnlineManager();
+  const reportFailure = (err: unknown) => {
+    if (isNetworkError(err) && !(err instanceof OfflineError)) networkMonitor.reportFailure();
+  };
+  // A request that reached the server proves it is reachable; MemoryStore's prove nothing.
+  const reportSuccess = () => {
+    if (mode === 'pocketbase') networkMonitor.reportSuccess();
+  };
   return new QueryClient({
+    queryCache: new QueryCache({ onSuccess: reportSuccess }),
+    mutationCache: new MutationCache({ onSuccess: reportSuccess, onError: reportFailure }),
     defaultOptions: {
       queries: {
         // Realtime invalidates what changes; this only bounds staleness if a push is missed.
         staleTime: 60_000,
-        gcTime: 30 * 60_000,
-        retry: 1,
+        // Queries are saved on the device for a week (persist.ts); one dropped from memory
+        // when its page closes would be dropped from the saved copy too.
+        gcTime: CACHE_MAX_AGE,
+        // MemoryStore needs no network, so its queries always run. Against the server,
+        // queries pause while offline and keep showing what they have.
+        networkMode: mode === 'memory' ? 'always' : 'online',
+        retry: (failureCount, error) => {
+          if (isNetworkError(error)) {
+            // The failed-request signal: check the server, and go offline if it is down. The
+            // retry then waits for the connection instead of failing the page.
+            reportFailure(error);
+            return failureCount < 3;
+          }
+          return failureCount < 1;
+        },
       },
-      mutations: { retry: 0 },
+      // Writes run or fail now; offline they refuse up front (useStoreMutation), never queue.
+      mutations: { retry: 0, networkMode: 'always' },
     },
   });
 }
@@ -55,28 +95,105 @@ function SessionCheck({ store }: { store: DataStore }) {
   return null;
 }
 
+/**
+ * How the app checks that it is really online (online.ts): PocketBase's health endpoint, or in
+ * demo mode the server the app came from.
+ */
+export function networkProbeFor(store: DataStore): Probe {
+  return httpProbe(store.mode === 'pocketbase' ? () => pocketBaseHealthUrl() : appServerUrl);
+}
+
+function NetworkProbe({ probe }: { probe: Probe }) {
+  useEffect(() => {
+    networkMonitor.setProbe(probe);
+    return () => networkMonitor.setProbe(null);
+  }, [probe]);
+  return null;
+}
+
+/**
+ * The query cache, restored from and saved to this device. Only a signed-in user's copy is
+ * restored, and signing out deletes it.
+ */
+function PersistedQueryClientProvider({
+  client,
+  persister,
+  store,
+  children,
+}: {
+  client: QueryClient;
+  persister: DevicePersister;
+  store: DataStore;
+  children: ReactNode;
+}) {
+  const [options] = useState(() =>
+    persistOptions({
+      persistClient: (c) => persister.persistClient(c),
+      removeClient: () => persister.removeClient(),
+      restoreClient: async () => {
+        if (store.auth.user) return persister.restoreClient();
+        await persister.removeClient();
+        return undefined;
+      },
+    }),
+  );
+  useEffect(
+    () =>
+      store.auth.onChange((user) => {
+        if (!user) void persister.removeClient();
+      }),
+    [store, persister],
+  );
+  useEffect(() => {
+    const flush = () => void persister.flush();
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
+  }, [persister]);
+  return (
+    <PersistQueryClientProvider client={client} persistOptions={options}>
+      {children}
+    </PersistQueryClientProvider>
+  );
+}
+
 export function AppProviders({
   store,
   queryClient,
+  persister,
+  probe,
   children,
 }: {
   store: DataStore;
   queryClient: QueryClient;
+  /** Saves the query cache on the device for offline reads; none in tests. */
+  persister?: DevicePersister | null;
+  /** Checks the connection beyond navigator.onLine (networkProbeFor); none in tests. */
+  probe?: Probe | null;
   children: ReactNode;
 }) {
+  const app = (
+    <>
+      <SessionCheck store={store} />
+      {probe && <NetworkProbe probe={probe} />}
+      <ThemeWithPreferences>
+        <RealtimeProvider>
+          <TooltipProvider delayDuration={300}>
+            {children}
+            <Toaster />
+          </TooltipProvider>
+        </RealtimeProvider>
+      </ThemeWithPreferences>
+    </>
+  );
   return (
     <StoreProvider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <SessionCheck store={store} />
-        <ThemeWithPreferences>
-          <RealtimeProvider>
-            <TooltipProvider delayDuration={300}>
-              {children}
-              <Toaster />
-            </TooltipProvider>
-          </RealtimeProvider>
-        </ThemeWithPreferences>
-      </QueryClientProvider>
+      {persister ? (
+        <PersistedQueryClientProvider client={queryClient} persister={persister} store={store}>
+          {app}
+        </PersistedQueryClientProvider>
+      ) : (
+        <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+      )}
     </StoreProvider>
   );
 }

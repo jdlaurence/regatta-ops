@@ -88,3 +88,4 @@ export { capitalize, initialsOf, shortUserName, targetCollection } from './colla
 export { useNow } from './use-now';
 export { StoreProvider } from './context';
 export { can, ROLE_LABELS, type Action } from './permissions';
+export { useOnline, isNetworkError, OFFLINE_EDIT_MESSAGE } from './online';
