@@ -85,7 +85,8 @@ function Placeholder({ children }: { children: ReactNode }) {
 interface Block {
   key: string;
   label: string;
-  header: ReactNode;
+  /** The heading; `continued` where the event carries on at the start of the next row. */
+  header: (continued: boolean) => ReactNode;
   cards: { key: string; node: ReactNode }[];
 }
 
@@ -116,7 +117,7 @@ function DayGrid({ blocks, columns }: { blocks: Block[]; columns: number }) {
                   gridColumn: `${run.col + 1} / span ${run.count}`,
                 }}
               >
-                {j === 0 ? b.header : <div inert>{b.header}</div>}
+                {b.header(j > 0)}
               </div>
               {b.cards.slice(run.offset, run.offset + run.count).map((card, k) => (
                 <div
@@ -149,7 +150,12 @@ function DayEvents({ events, columns }: { events: EventGroup[]; columns: number 
   const blocks = events.map<Block>((g) => ({
     key: g.event.id,
     label: g.event.name,
-    header: <EventHeader event={g.event} onAdd={g.event.boatClass ? () => add(g) : undefined} />,
+    header: (continued) => (
+      <EventHeader
+        event={g.event}
+        onAdd={g.event.boatClass && !continued ? () => add(g) : undefined}
+      />
+    ),
     cards:
       g.entries.length === 0
         ? [
@@ -223,7 +229,9 @@ export function EntriesByEvent({
             {
               key: 'unscheduled',
               label: 'Unscheduled',
-              header: <EventHeader event={null} onAdd={() => openAdd(true)} />,
+              header: (continued) => (
+                <EventHeader event={null} onAdd={continued ? undefined : () => openAdd(true)} />
+              ),
               cards:
                 groups.unscheduled.length === 0
                   ? [
