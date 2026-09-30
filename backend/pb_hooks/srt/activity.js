@@ -1,9 +1,13 @@
 // Activity log sentences (PLAN.md §8.1 activity_log, §8.3).
 //
-// describe() turns a create, update, or delete into { summary, diff, regatta }. The summary is a
-// sentence without the actor and without a final period, so the UI can render
+// describe() turns a create, update, or delete into { summary, diff, regatta, team }. The summary
+// is a sentence without the actor and without a final period, so the UI can render
 // "<actor name> <summary>": "moved entry Girls V4+ to Event 14". Several changes in one update
-// are joined with "; ". Returns null when nothing worth logging changed.
+// are joined with "; ". Returns null when nothing worth logging changed. `team` is the team whose
+// data changed (entries, seats, availability, share links), '' otherwise.
+//
+// handle() also hands entry and seat changes to srt/notify.js, which emails the team's coaches
+// when someone from another team made the change (PLAN.md §4.6).
 
 const time = require(`${__hooks}/srt/time.js`);
 
@@ -16,6 +20,7 @@ const LOGGED = [
   'load_items',
   'shells',
   'oar_sets',
+  'share_links',
 ];
 
 // Never part of a diff: bookkeeping, and packer output that changes on every pack.
@@ -32,7 +37,9 @@ const IGNORED = [
 const QUIET = {
   entries: ['hot_seat_fingerprint'],
   load_placements: ['reasons'],
-  load_items: ['loaded_by', 'returned_by'],
+  load_items: ['loaded_by', 'returned_by', 'loaded_by_name', 'returned_by_name'],
+  // The token is a secret: activity rows are readable by every signed-in user, share links are not.
+  share_links: ['token'],
 };
 
 const STATUS_WORDS = {
@@ -158,13 +165,18 @@ function entries(find, action, before, after) {
   const rec = after || before;
   const name = entryTitle(find, rec);
   const regatta = rec.regatta;
+  const team = rec.team;
   if (action === 'create') {
     const ev = find('events', rec.event);
-    return { regatta, summary: 'added entry ' + name + (ev ? ' in ' + eventLabel(ev) : '') };
+    return { regatta, team, summary: 'added entry ' + name + (ev ? ' in ' + eventLabel(ev) : '') };
   }
   if (action === 'delete') {
     const ev = find('events', rec.event);
-    return { regatta, summary: 'deleted entry ' + name + (ev ? ' from ' + eventLabel(ev) : '') };
+    return {
+      regatta,
+      team,
+      summary: 'deleted entry ' + name + (ev ? ' from ' + eventLabel(ev) : ''),
+    };
   }
   const changed = changedKeys(before, after, 'entries');
   const has = (k) => changed.indexOf(k) !== -1;
@@ -223,7 +235,7 @@ function entries(find, action, before, after) {
   }
   const rest = changed.filter((k) => handled.indexOf(k) === -1);
   if (rest.length) clauses.push(editedClause('entry ' + name, rest));
-  return clauses.length ? { regatta, summary: clauses.join('; ') } : null;
+  return clauses.length ? { regatta, team, summary: clauses.join('; ') } : null;
 }
 
 function entrySeats(find, action, before, after) {
@@ -231,10 +243,12 @@ function entrySeats(find, action, before, after) {
   const entry = find('entries', rec.entry);
   const ename = entryTitle(find, entry);
   const regatta = entry ? entry.regatta : '';
+  const team = entry ? entry.team : '';
   const who = (id) => athleteName(find('athletes', id));
   if (action === 'create') {
     return {
       regatta,
+      team,
       summary: rec.athlete
         ? 'set ' + seatWord(rec.seat) + ' of ' + ename + ' to ' + who(rec.athlete)
         : 'added ' + seatWord(rec.seat) + ' to ' + ename,
@@ -243,6 +257,7 @@ function entrySeats(find, action, before, after) {
   if (action === 'delete') {
     return {
       regatta,
+      team,
       summary: rec.athlete
         ? 'removed ' + who(rec.athlete) + ' from ' + seatWord(rec.seat) + ' of ' + ename
         : 'removed ' + seatWord(rec.seat) + ' of ' + ename,
@@ -272,7 +287,7 @@ function entrySeats(find, action, before, after) {
     );
   }
   if (has('note')) clauses.push('edited the note on ' + seatWord(after.seat) + ' of ' + ename);
-  return clauses.length ? { regatta, summary: clauses.join('; ') } : null;
+  return clauses.length ? { regatta, team, summary: clauses.join('; ') } : null;
 }
 
 function events(find, action, before, after) {
@@ -327,24 +342,26 @@ function events(find, action, before, after) {
 
 function availability(find, action, before, after) {
   const rec = after || before;
-  const who = athleteName(find('athletes', rec.athlete));
+  const athlete = find('athletes', rec.athlete);
+  const who = athleteName(athlete);
   const regatta = rec.regatta;
+  const team = athlete ? athlete.team : '';
   const statusClause = (status) =>
     status === 'unavailable'
       ? 'marked ' + who + ' unavailable'
       : status === 'maybe'
         ? 'marked ' + who + ' as maybe'
         : 'marked ' + who + ' available';
-  if (action === 'create') return { regatta, summary: statusClause(rec.status) };
+  if (action === 'create') return { regatta, team, summary: statusClause(rec.status) };
   // No record means available (§8.1).
-  if (action === 'delete') return { regatta, summary: 'marked ' + who + ' available' };
+  if (action === 'delete') return { regatta, team, summary: 'marked ' + who + ' available' };
   const changed = changedKeys(before, after, 'availability');
   const has = (k) => changed.indexOf(k) !== -1;
   const clauses = [];
   if (has('status')) clauses.push(statusClause(after.status));
   if (has('days')) clauses.push('changed which days ' + who + ' is coming');
   if (has('reason') && !has('status')) clauses.push('edited the availability note for ' + who);
-  return clauses.length ? { regatta, summary: clauses.join('; ') } : null;
+  return clauses.length ? { regatta, team, summary: clauses.join('; ') } : null;
 }
 
 function loadPlacements(find, action, before, after) {
@@ -469,6 +486,34 @@ function equipment(noun, nameOf) {
   };
 }
 
+function shareLinks(find, action, before, after) {
+  const rec = after || before;
+  const regatta = rec.regatta;
+  const team = rec.team || '';
+  const teamRec = find('teams', rec.team);
+  const what = 'a share link for ' + (teamRec ? teamRec.name : 'the whole regatta');
+  if (action === 'create') {
+    return {
+      regatta,
+      team,
+      summary: 'created ' + what + (rec.can_check_load ? ' that can check off the load list' : ''),
+    };
+  }
+  if (action === 'delete') return { regatta, team, summary: 'deleted ' + what };
+  const changed = changedKeys(before, after, 'share_links');
+  const has = (k) => changed.indexOf(k) !== -1;
+  const clauses = [];
+  if (has('revoked_at')) clauses.push((after.revoked_at ? 'revoked ' : 'restored ') + what);
+  if (has('can_check_load')) {
+    clauses.push(
+      after.can_check_load
+        ? 'let ' + what + ' check off the load list'
+        : 'stopped ' + what + ' from checking off the load list',
+    );
+  }
+  return clauses.length ? { regatta, team, summary: clauses.join('; ') } : null;
+}
+
 const DESCRIBERS = {
   entries: entries,
   entry_seats: entrySeats,
@@ -478,6 +523,7 @@ const DESCRIBERS = {
   load_items: loadItems,
   shells: equipment('shell', shellName),
   oar_sets: equipment('oar set', (o) => (o && o.name) || 'an oar set'),
+  share_links: shareLinks,
 };
 
 /**
@@ -494,7 +540,27 @@ function describe(app, collection, action, before, after) {
   if (!result || !result.summary) return null;
   const diff = computeDiff(collection, action, before, after);
   if (action === 'update' && Object.keys(diff).length === 0) return null;
-  return { summary: result.summary, regatta: result.regatta || '', diff: diff };
+  return {
+    summary: result.summary,
+    regatta: result.regatta || '',
+    team: result.team || '',
+    diff: diff,
+  };
+}
+
+/** Writes one activity_log row. `actor` is a users id or '' (share-link check-offs). */
+function write(app, opts) {
+  const log = new Record(app.findCollectionByNameOrId('activity_log'));
+  log.set('regatta', opts.regatta || '');
+  log.set('team', opts.team || '');
+  log.set('actor', opts.actor || '');
+  log.set('action', opts.action);
+  log.set('target_type', opts.targetType);
+  log.set('target_id', opts.targetId);
+  log.set('summary', String(opts.summary).slice(0, 1000));
+  log.set('diff', opts.diff || {});
+  app.save(log);
+  return log;
 }
 
 /** The request hook body shared by create, update, and delete (see activity.pb.js). */
@@ -511,18 +577,46 @@ function handle(e, action) {
     const collection = e.collection.name;
     const entry = describe(e.app, collection, action, before, after);
     if (!entry) return;
-    const log = new Record(e.app.findCollectionByNameOrId('activity_log'));
-    log.set('regatta', entry.regatta);
-    log.set('actor', e.auth.collection().name === 'users' ? e.auth.id : '');
-    log.set('action', action);
-    log.set('target_type', collection);
-    log.set('target_id', (after || before).id);
-    log.set('summary', entry.summary.slice(0, 1000));
-    log.set('diff', entry.diff);
-    e.app.save(log);
+    const isUser = e.auth.collection().name === 'users';
+    write(e.app, {
+      regatta: entry.regatta,
+      team: entry.team,
+      actor: isUser ? e.auth.id : '',
+      action: action,
+      targetType: collection,
+      targetId: (after || before).id,
+      summary: entry.summary,
+      diff: entry.diff,
+    });
+    if (isUser && (collection === 'entries' || collection === 'entry_seats')) {
+      try {
+        require(`${__hooks}/srt/notify.js`).entryChanged(e.app, {
+          actor: e.auth,
+          collection: collection,
+          before: before,
+          after: after,
+          summary: entry.summary,
+        });
+      } catch (err) {
+        e.app.logger().error('SRT change email queueing failed', 'error', String(err));
+      }
+    }
   } catch (err) {
     e.app.logger().error('SRT activity log write failed', 'error', String(err));
   }
 }
 
-module.exports = { LOGGED, describe, handle, snapshot, computeDiff };
+module.exports = {
+  LOGGED,
+  describe,
+  handle,
+  write,
+  snapshot,
+  computeDiff,
+  finder,
+  entryTitle,
+  eventLabel,
+  eventTitle,
+  athleteName,
+  shellName,
+};
