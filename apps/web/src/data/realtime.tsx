@@ -40,6 +40,7 @@ export const REALTIME_COLLECTIONS = [
   'load_items',
   'comments',
   'activity_log',
+  'share_links',
   'club_settings',
 ] as const satisfies readonly CollectionName[];
 

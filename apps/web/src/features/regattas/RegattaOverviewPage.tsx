@@ -3,11 +3,12 @@
 // layout above (app/shell/RegattaLayout) shows the name, dates, place, tabs, and status banner.
 
 import { useMemo, useState } from 'react';
-import { Copy, Settings } from 'lucide-react';
+import { Copy, Settings, Share2 } from 'lucide-react';
 import { useCan, useFindings } from '@/data';
 import { useRegattaId } from '@/app/params';
 import { formatDayRange } from '@/lib/dates';
 import { PageHeader } from '@/components/PageHeader';
+import { ShareLinksDialog } from '@/components/ShareLinksDialog';
 import { ErrorState, Skeleton, SkeletonRows } from '@/components/states';
 import { Button } from '@/components/ui/button';
 import { EventFormDialog } from '@/features/events/EventFormDialog';
@@ -20,7 +21,7 @@ import { RegattaTeams } from './RegattaTeams';
 import { teamSummaries } from './summary';
 import { useConfirmFinalEdit } from './useConfirmFinalEdit';
 
-type OpenDialog = 'settings' | 'duplicate' | 'import' | 'event' | null;
+type OpenDialog = 'settings' | 'duplicate' | 'import' | 'event' | 'share' | null;
 
 function Section({
   id,
@@ -101,6 +102,10 @@ export default function RegattaOverviewPage() {
         actions={
           canEdit && (
             <>
+              <Button onClick={() => setDialog('share')}>
+                <Share2 aria-hidden />
+                Share
+              </Button>
               <Button onClick={() => setDialog('duplicate')}>
                 <Copy aria-hidden />
                 Duplicate
@@ -139,6 +144,11 @@ export default function RegattaOverviewPage() {
 
       {canEdit && (
         <>
+          <ShareLinksDialog
+            regattaId={regatta.id}
+            open={dialog === 'share'}
+            onOpenChange={setOpen('share')}
+          />
           <RegattaSettingsDialog
             regatta={regatta}
             clubSettings={ws.clubSettings}
