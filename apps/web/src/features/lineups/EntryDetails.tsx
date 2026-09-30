@@ -318,11 +318,11 @@ export function EntryDetails({ entry }: { entry: Entry }) {
             onClick={() => ui().openDialog({ kind: 'duplicate', entryId: entry.id })}
           >
             <Copy aria-hidden />
-            Copy to event
+            Copy to another event
           </Button>
           <Button size="sm" onClick={() => ui().openDialog({ kind: 'move', entryId: entry.id })}>
             <ArrowRightLeft aria-hidden />
-            Move
+            Move to another event
           </Button>
           <Button
             size="sm"
@@ -331,7 +331,7 @@ export function EntryDetails({ entry }: { entry: Entry }) {
             onClick={() => ui().openDialog({ kind: 'delete', entryId: entry.id })}
           >
             <Trash2 aria-hidden />
-            Delete
+            Delete entry
           </Button>
         </div>
       )}
