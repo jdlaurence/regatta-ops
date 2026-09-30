@@ -228,7 +228,13 @@ export function PlanView({ level, onLevelChange, ...props }: PlanViewProps) {
             ...tiers.map((t) => ({
               value: String(t),
               label: (
-                <span className="whitespace-nowrap tabular-nums">
+                <span
+                  className={cn(
+                    'whitespace-nowrap tabular-nums',
+                    // A number alone still makes a 44 px target on a phone.
+                    narrow && 'inline-block min-w-7 text-center',
+                  )}
+                >
                   <span className={cn(narrow && 'sr-only')}>{Word} </span>
                   {t}
                 </span>

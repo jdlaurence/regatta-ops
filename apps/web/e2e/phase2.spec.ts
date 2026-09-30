@@ -171,6 +171,19 @@ test.describe('desktop', () => {
     ).toBeVisible();
     await expect(shelves.getByRole('row', { name: '1 Narrow side Empty' })).toBeVisible();
 
+    // The bed front to back, riggers filling the back of it (PLAN.md §4.9).
+    const bed = sheet.getByRole('table', { name: 'Bed, front to back' });
+    await expect(bed.getByRole('rowheader')).toHaveText([
+      'Slings',
+      'Oars',
+      'Riggers (back of bed)',
+    ]);
+    await expect(
+      bed.getByRole('row', {
+        name: /^Riggers \(back of bed\) From 7\.0 m to the back .*Riggers for LLL/,
+      }),
+    ).toBeVisible();
+
     // The checklist, with shells that are not on a trailer flagged.
     const checklist = sheet.getByRole('region', { name: 'Checklist' });
     const shells = checklist.getByRole('table', { name: 'Shells' });

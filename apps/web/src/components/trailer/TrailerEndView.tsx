@@ -472,43 +472,47 @@ function DescriptionTable({
   compartments: string[];
 }) {
   return (
-    <table className="sr-only">
-      <caption>{caption}</caption>
-      <thead>
-        <tr>
-          <th scope="col">Level</th>
-          <th scope="col">Side</th>
-          <th scope="col">Lane</th>
-          <th scope="col">Boats</th>
-        </tr>
-      </thead>
-      <tbody>
-        {lanes.map((lane) => {
-          const chips = chipsByLane.get(laneKey(lane)) ?? [];
-          const boats =
-            chips.length === 0
-              ? lane.active
-                ? 'Empty'
-                : 'Not in use'
-              : chips.map((c) => boatWords(c.boat)).join('; ') +
-                (lane.active ? '' : ' (shelf not in use)');
-          return (
-            <tr key={laneKey(lane)}>
-              <th scope="row">{tierLabel(trailer, lane.shelf.tier)}</th>
-              <td>{sideOf(trailer, lane.shelf) ?? 'Full width'}</td>
-              <td>{laneLabel(lane.lane, lane.laneCount) ?? 'One lane'}</td>
-              <td>{boats}</td>
-            </tr>
-          );
-        })}
-        {compartments.length > 0 && (
+    // A table sizes itself to its text whatever its width, so the clipped box is a div around it
+    // (else the long bed row widens the page on a phone).
+    <div className="sr-only">
+      <table>
+        <caption>{caption}</caption>
+        <thead>
           <tr>
-            <th scope="row">Bed</th>
-            <td colSpan={3}>Front to back: {compartments.join('; ')}</td>
+            <th scope="col">Level</th>
+            <th scope="col">Side</th>
+            <th scope="col">Lane</th>
+            <th scope="col">Boats</th>
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {lanes.map((lane) => {
+            const chips = chipsByLane.get(laneKey(lane)) ?? [];
+            const boats =
+              chips.length === 0
+                ? lane.active
+                  ? 'Empty'
+                  : 'Not in use'
+                : chips.map((c) => boatWords(c.boat)).join('; ') +
+                  (lane.active ? '' : ' (shelf not in use)');
+            return (
+              <tr key={laneKey(lane)}>
+                <th scope="row">{tierLabel(trailer, lane.shelf.tier)}</th>
+                <td>{sideOf(trailer, lane.shelf) ?? 'Full width'}</td>
+                <td>{laneLabel(lane.lane, lane.laneCount) ?? 'One lane'}</td>
+                <td>{boats}</td>
+              </tr>
+            );
+          })}
+          {compartments.length > 0 && (
+            <tr>
+              <th scope="row">Bed</th>
+              <td colSpan={3}>Front to back: {compartments.join('; ')}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
