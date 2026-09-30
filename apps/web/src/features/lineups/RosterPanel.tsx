@@ -207,7 +207,7 @@ function FilterToggle({
       aria-pressed={pressed}
       onClick={() => onChange(!pressed)}
       className={cn(
-        'inline-flex h-7 items-center rounded-control border px-2 text-sm font-medium pointer-coarse:h-10',
+        'inline-flex h-7 items-center rounded-control border px-2 text-sm font-medium pointer-coarse:h-11',
         pressed
           ? 'border-accent bg-accent-tint text-ink'
           : 'border-line-strong/60 text-ink-2 hover:bg-surface-2 hover:text-ink',
@@ -461,7 +461,7 @@ function UnboatedChip({ row, draggable }: { row: RosterAthlete; draggable: boole
   const carrying = useLineupUi((s) => s.carrying?.athleteId === a.id && !s.carrying.from);
   const name = athleteName(a);
   const cls =
-    'inline-flex h-7 items-center gap-1.5 rounded-control border border-line bg-surface px-2 text-sm pointer-coarse:h-9';
+    'inline-flex h-7 items-center gap-1.5 rounded-control border border-line bg-surface px-2 text-sm pointer-coarse:h-11';
   if (!draggable) {
     return (
       <li className={cls}>

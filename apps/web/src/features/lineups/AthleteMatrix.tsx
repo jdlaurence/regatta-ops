@@ -14,6 +14,7 @@ import { AthleteBadges } from './Seats';
 import { useLineupUi } from './store';
 
 const BUSY = 3;
+const WEEKDAY = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' });
 
 export function AthleteMatrix({ onShowEntry }: { onShowEntry: (entryId: string) => void }) {
   const { index, team, ws } = useLineup();
@@ -63,7 +64,9 @@ export function AthleteMatrix({ onShowEntry }: { onShowEntry: (entryId: string) 
                     {t ? (
                       <span className="flex flex-col">
                         <span className="text-ink-2 tabular-nums">
-                          {multiDay && c.event ? `${c.event.day.slice(5)} ` : ''}
+                          {multiDay && c.event
+                            ? `${WEEKDAY.format(new Date(`${c.event.day}T12:00:00Z`))} `
+                            : ''}
                           {t.time ?? 'No time'}
                         </span>
                         <span>{t.number ?? t.name}</span>
@@ -124,7 +127,7 @@ export function AthleteMatrix({ onShowEntry }: { onShowEntry: (entryId: string) 
                                 onShowEntry(cell.entry.id);
                               }}
                               className={cn(
-                                'flex h-7 items-center gap-1.5 rounded-control border-l-[3px] border-team bg-team-tint px-1.5 text-left text-sm whitespace-nowrap hover:brightness-95 pointer-coarse:h-9',
+                                'flex h-7 items-center gap-1.5 rounded-control border-l-[3px] border-team bg-team-tint px-1.5 text-left text-sm whitespace-nowrap hover:brightness-95 pointer-coarse:h-11',
                                 cell.entry.status === 'scratched' && 'line-through opacity-60',
                               )}
                             >

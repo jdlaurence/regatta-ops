@@ -198,7 +198,7 @@ export function EntryCard({ entry, showClass }: { entry: Entry; showClass?: bool
             setOpen(true);
           }}
           className={cn(
-            'min-w-0 truncate text-md font-medium text-ink hover:underline',
+            'min-w-0 truncate text-md font-medium text-ink hover:underline pointer-coarse:min-h-11',
             scratched && 'line-through',
           )}
           aria-label={`${entry.label}, show entry details`}
