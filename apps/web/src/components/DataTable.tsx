@@ -38,6 +38,16 @@ export interface DataTableProps<T> {
   className?: string;
   /** Extra classes per row. */
   rowClassName?: (row: Row<T>) => string | undefined;
+  /**
+   * Split the rows into labelled groups (the roster by level). Sorting applies inside each
+   * group; groups follow `groupOrder`, then first appearance.
+   */
+  groupBy?: (row: T) => string;
+  groupOrder?: readonly string[];
+  /** The heading row of a group: "Experienced · 18". */
+  groupLabel?: (key: string, count: number) => ReactNode;
+  /** Controlled selection (the ids of the selected rows); pair with onSelectionChange. */
+  selectedIds?: readonly string[];
 }
 
 /**
@@ -60,9 +70,16 @@ export function DataTable<T>({
   empty,
   className,
   rowClassName,
+  groupBy,
+  groupOrder,
+  groupLabel,
+  selectedIds,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [ownSelection, setRowSelection] = useState<RowSelectionState>({});
+  const rowSelection: RowSelectionState = selectedIds
+    ? Object.fromEntries(selectedIds.map((id) => [id, true]))
+    : ownSelection;
 
   const selectColumn: ColumnDef<T, unknown> = {
     id: '__select',
@@ -101,6 +118,11 @@ export function DataTable<T>({
     state: { sorting, globalFilter, rowSelection },
     onSortingChange: setSorting,
     onRowSelectionChange: (updater) => {
+      if (selectedIds) {
+        const next = typeof updater === 'function' ? updater(rowSelection) : updater;
+        onSelectionChange?.(Object.keys(next).filter((k) => next[k]));
+        return;
+      }
       setRowSelection((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater;
         onSelectionChange?.(Object.keys(next).filter((k) => next[k]));
@@ -114,6 +136,27 @@ export function DataTable<T>({
   });
 
   const rows = table.getRowModel().rows;
+
+  const renderRow = (row: Row<T>) => (
+    <tr
+      key={row.id}
+      onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+      aria-selected={activeRowId === row.id || undefined}
+      className={cn(
+        'border-b border-line last:border-b-0 hover:bg-surface-2',
+        onRowClick && 'cursor-pointer',
+        activeRowId === row.id && 'bg-accent-tint hover:bg-accent-tint',
+        isMuted?.(row.original) && 'text-ink-2',
+        rowClassName?.(row),
+      )}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <td key={cell.id} className="h-10 px-3 align-middle pointer-coarse:h-12">
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
+      ))}
+    </tr>
+  );
 
   return (
     <div className={cn('overflow-x-auto rounded-card border border-line bg-surface', className)}>
@@ -158,37 +201,50 @@ export function DataTable<T>({
             </tr>
           ))}
         </thead>
-        <tbody>
-          {rows.length === 0 ? (
+        {rows.length === 0 ? (
+          <tbody>
             <tr>
               <td colSpan={table.getAllLeafColumns().length} className="px-3 py-8">
                 {empty ?? <p className="text-center text-ink-2">Nothing to show.</p>}
               </td>
             </tr>
-          ) : (
-            rows.map((row) => (
-              <tr
-                key={row.id}
-                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                aria-selected={activeRowId === row.id || undefined}
-                className={cn(
-                  'border-b border-line last:border-b-0 hover:bg-surface-2',
-                  onRowClick && 'cursor-pointer',
-                  activeRowId === row.id && 'bg-accent-tint hover:bg-accent-tint',
-                  isMuted?.(row.original) && 'text-ink-2',
-                  rowClassName?.(row),
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="h-10 px-3 align-middle pointer-coarse:h-12">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+          </tbody>
+        ) : groupBy ? (
+          groupRows(rows, groupBy, groupOrder).map((g) => (
+            <tbody key={g.key}>
+              <tr className="border-y border-line bg-bg">
+                <th
+                  scope="rowgroup"
+                  colSpan={table.getAllLeafColumns().length}
+                  className="h-8 px-3 text-left text-sm font-medium text-ink-2"
+                >
+                  {groupLabel ? groupLabel(g.key, g.rows.length) : g.key}
+                </th>
               </tr>
-            ))
-          )}
-        </tbody>
+              {g.rows.map(renderRow)}
+            </tbody>
+          ))
+        ) : (
+          <tbody>{rows.map(renderRow)}</tbody>
+        )}
       </table>
     </div>
   );
+}
+
+/** Rows split by group key: listed groups first in order, then the rest as they appear. */
+function groupRows<T>(
+  rows: Row<T>[],
+  groupBy: (row: T) => string,
+  order: readonly string[] = [],
+): { key: string; rows: Row<T>[] }[] {
+  const map = new Map<string, Row<T>[]>();
+  for (const key of order) map.set(key, []);
+  for (const row of rows) {
+    const key = groupBy(row.original);
+    const list = map.get(key);
+    if (list) list.push(row);
+    else map.set(key, [row]);
+  }
+  return [...map].filter(([, list]) => list.length > 0).map(([key, list]) => ({ key, rows: list }));
 }

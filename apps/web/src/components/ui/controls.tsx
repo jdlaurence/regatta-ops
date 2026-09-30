@@ -5,7 +5,7 @@ import {
   Switch as SwitchPrimitive,
   ToggleGroup,
 } from 'radix-ui';
-import { Check } from 'lucide-react';
+import { Check, Minus } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 export function Separator({
@@ -30,13 +30,23 @@ export function Checkbox({ className, ...props }: ComponentProps<typeof Checkbox
   return (
     <CheckboxPrimitive.Root
       className={cn(
-        'inline-flex size-5 shrink-0 items-center justify-center rounded-control border border-line-strong bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-ink disabled:opacity-50',
+        'group inline-flex size-5 shrink-0 items-center justify-center rounded-control border border-line-strong bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-ink data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent data-[state=indeterminate]:text-accent-ink disabled:opacity-50',
         className,
       )}
       {...props}
     >
       <CheckboxPrimitive.Indicator>
-        <Check className="size-3.5" strokeWidth={3} aria-hidden />
+        <Check
+          className="size-3.5 group-data-[state=indeterminate]:hidden"
+          strokeWidth={3}
+          aria-hidden
+        />
+        {/* Some rows selected ("select all" in a table). */}
+        <Minus
+          className="hidden size-3.5 group-data-[state=indeterminate]:block"
+          strokeWidth={3}
+          aria-hidden
+        />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );
