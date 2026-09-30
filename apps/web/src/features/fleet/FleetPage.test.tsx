@@ -9,6 +9,14 @@ import FleetPage from './FleetPage';
 
 const NOW = '2026-09-29T17:00:00.000Z';
 
+/** 1 × 1 PNG. */
+const PNG_BYTES = Uint8Array.from(
+  atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+  ),
+  (c) => c.charCodeAt(0),
+);
+
 function storeWith(userId: string = IDS.coach) {
   const world = fixtureWorld();
   world.shells.push({
@@ -144,6 +152,58 @@ describe('Shells tab', () => {
     ]);
   });
 
+  it('adds a photo in the drawer, shows it in the table, and removes it', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const store = storeWith();
+    renderFleet(store);
+    const table = await screen.findByRole('table', { name: 'Shells' });
+    // No photo column until a shell has a photo.
+    expect(within(table).queryByRole('columnheader', { name: 'Photo' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Open Spencer' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Spencer' });
+    expect(within(drawer).getByRole('button', { name: 'Choose a photo' })).toBeInTheDocument();
+
+    const input = within(drawer).getByLabelText('Photo of Spencer');
+    await user.upload(input, new File(['hello'], 'notes.txt', { type: 'text/plain' }));
+    expect(within(drawer).getByRole('alert')).toHaveTextContent(
+      'Pick a photo: a JPEG, PNG, or WebP file.',
+    );
+
+    await user.upload(input, new File([PNG_BYTES], 'spencer.png', { type: 'image/png' }));
+    const photo = await within(drawer).findByRole('img', { name: 'Photo of Spencer' });
+    expect(photo.getAttribute('src')).toMatch(/^data:image\/png;base64,/);
+    expect(within(drawer).queryByRole('alert')).toBeNull();
+    expect((await store.get('shells', IDS.shell))?.photoUrl).toMatch(/^data:image\/png/);
+    // The table behind the drawer gets a photo column with a thumbnail.
+    expect(
+      await within(table).findByRole('img', { name: 'Photo of Spencer', hidden: true }),
+    ).toBeInTheDocument();
+    expect(
+      within(table).getByRole('columnheader', { name: 'Photo', hidden: true }),
+    ).toBeInTheDocument();
+    const [log] = await store.list('activity_log', { where: { targetId: IDS.shell } });
+    expect(log!.summary).toBe('edited shell Spencer (photo)');
+
+    // Saving the form afterwards leaves the photo alone.
+    const location = within(drawer).getByRole('combobox', { name: 'Location' });
+    await user.clear(location);
+    await user.type(location, 'B3');
+    await user.click(within(drawer).getByRole('button', { name: 'Save changes' }));
+    await waitFor(async () =>
+      expect(await store.get('shells', IDS.shell)).toMatchObject({
+        location: 'B3',
+        photoUrl: expect.stringMatching(/^data:image\/png/),
+      }),
+    );
+
+    await user.click(within(drawer).getByRole('button', { name: 'Remove photo' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Remove the photo of Spencer?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Remove photo' }));
+    await waitFor(async () => expect((await store.get('shells', IDS.shell))?.photoUrl).toBeNull());
+    expect(within(drawer).queryByRole('img', { name: 'Photo of Spencer' })).toBeNull();
+    expect(within(drawer).getByRole('button', { name: 'Choose a photo' })).toBeInTheDocument();
+  });
+
   it('adds a shell with the class defaults', async () => {
     const user = userEvent.setup();
     const store = storeWith();
@@ -191,6 +251,7 @@ describe('Shells tab', () => {
     const drawer = await screen.findByRole('dialog', { name: 'Spencer' });
     expect(within(drawer).getByRole('textbox', { name: 'Name' })).toBeDisabled();
     expect(within(drawer).queryByRole('button', { name: 'Save changes' })).toBeNull();
+    expect(within(drawer).queryByRole('button', { name: 'Choose a photo' })).toBeNull();
   });
 });
 
