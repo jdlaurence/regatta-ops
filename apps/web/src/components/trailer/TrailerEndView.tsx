@@ -69,6 +69,8 @@ export interface EndViewBoat {
   beamCm: number;
   teamColor?: TeamColorKey | null;
   teamName?: string;
+  /** Hull length; the end view ignores it, the isometric view draws it (class default if unset). */
+  lengthCm?: number;
 }
 
 /** A placement as the end view needs it; a full packer `Placement` works. */
