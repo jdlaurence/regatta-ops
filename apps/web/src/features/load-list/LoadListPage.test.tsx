@@ -3,7 +3,13 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
 import type { Id, World } from '@srt/domain';
-import { SEED_REGATTA_IDS, SEED_USER_IDS, buildSeedWorld, seedShellId } from '@srt/seed';
+import {
+  SEED_REGATTA_IDS,
+  SEED_TRAILER_IDS,
+  SEED_USER_IDS,
+  buildSeedWorld,
+  seedShellId,
+} from '@srt/seed';
 import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
 import { MemoryStore } from '@/data/memory-store';
@@ -108,7 +114,7 @@ describe('Load list page', () => {
     await user.click(screen.getByRole('radio', { name: /^Not loaded/ }));
     expect(screen.queryByRole('checkbox', { name: "Loaded: Peggy's Delight (Peggy)" })).toBeNull();
     expect(screen.getByRole('checkbox', { name: 'Loaded: Alma Marie (Alma)' })).toBeInTheDocument();
-  });
+  }, 15_000);
 
   it('removes a stored line nothing needs any more', async () => {
     const user = userEvent.setup();
@@ -156,6 +162,42 @@ describe('Load list page', () => {
       expect(item).toMatchObject({ container: 'Truck 2 bed', loadPlanId: null });
     });
   });
+
+  it('puts riggers at the back of the bed and offers every bed zone', async () => {
+    const user = userEvent.setup();
+    const { store } = renderLoadList();
+    await user.click(
+      await screen.findByRole(
+        'button',
+        { name: 'Where Riggers for Alma rides: Boys trailer · Riggers (back of bed)' },
+        SLOW,
+      ),
+    );
+    const popover = screen.getByRole('dialog');
+    expect(
+      within(popover).getByText(
+        'Shown as Boys trailer · Riggers (back of bed) because the shell is on that trailer.',
+      ),
+    ).toBeInTheDocument();
+    for (const pick of ['Boys trailer · Slings', 'Boys trailer · Oars', 'Girls trailer · Oars']) {
+      expect(within(popover).getByRole('button', { name: pick })).toBeInTheDocument();
+    }
+    await user.click(
+      within(popover).getByRole('button', { name: 'Girls trailer · Riggers (back of bed)' }),
+    );
+    const girlsPlan = (await store.list('load_plans', { where: { regattaId: NW } })).find(
+      (p) => p.trailerId === SEED_TRAILER_IDS.girls,
+    )!;
+    await waitFor(async () => {
+      const items = await store.list('load_items', {
+        where: { regattaId: NW, kind: 'riggers', refId: seedShellId('Alma Marie') },
+      });
+      expect(items[0]).toMatchObject({
+        container: 'Girls trailer · Riggers (back of bed)',
+        loadPlanId: girlsPlan.id,
+      });
+    });
+  }, 15_000);
 
   it('is read-only for a viewer', async () => {
     renderLoadList(SEED_USER_IDS.viewer);

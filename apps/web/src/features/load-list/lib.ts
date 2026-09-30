@@ -7,9 +7,17 @@
 // Stored rows are created lazily: the first tick, container, or note on a line writes its
 // load_items record (with the tick). "Save list" writes every line that has none yet, so the
 // loading crew sees the whole list through a share link, which reads stored rows only.
+//
+// Where a line rides when nobody typed it (`defaultHomes`) follows the trailers' bed zones
+// (PLAN.md §4.9): a shell's riggers ride in the rigger zone of the trailer the shell is on, an
+// oar set in the oar zone of the trailer carrying its first crew's shell, and the slings in
+// the sling zone of the trailer carrying the most boats.
 
 import {
   LOAD_ITEM_KINDS,
+  bedZones,
+  compartmentDefFromRecord,
+  compartmentFor,
   defaultRiggerCount,
   deriveLoadList,
   instantToZoned,
@@ -23,7 +31,11 @@ import {
   type LoadItemKind,
   type LoadPlan,
   type Trailer,
+  type TrailerCompartment,
+  type TrailerDef,
   type User,
+  zoneContainer,
+  zoneName,
 } from '@srt/domain';
 import type { RegattaWorkingSet } from '@/data';
 
@@ -51,8 +63,13 @@ export interface LoadRow {
   orphaned: boolean;
   /** Where it rides as typed on the list ("Truck 1 bed"). */
   container: string;
-  /** Where it rides when nothing is typed: the trailer a shell (and its riggers) is on. */
+  /**
+   * Where it rides when nothing is typed: the trailer a shell is on, or the bed zone its
+   * riggers, oars, or slings ride in (`defaultHomes`).
+   */
   suggestedContainer: string | null;
+  /** Why it is shown there: "the shell is on that trailer". */
+  suggestedWhy: string | null;
   /** The load plan to attach a new stored row to (a shell's trailer). */
   loadPlanId: Id | null;
   /** The plan the shell (or the shell these riggers belong to) is placed on, if any. */
@@ -69,7 +86,15 @@ export interface LoadGroup {
 
 type LoadListSource = Pick<
   RegattaWorkingSet,
-  'entries' | 'shells' | 'oarSets' | 'gear' | 'loadItems' | 'loadPlans' | 'placements' | 'trailers'
+  | 'entries'
+  | 'shells'
+  | 'oarSets'
+  | 'gear'
+  | 'loadItems'
+  | 'loadPlans'
+  | 'placements'
+  | 'trailers'
+  | 'compartments'
 >;
 
 /** Shell → the plan it is placed on. */
@@ -81,6 +106,146 @@ function placementPlans(ws: Pick<LoadListSource, 'placements' | 'loadPlans'>): M
     if (plan && !out.has(p.shellId)) out.set(p.shellId, plan);
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Bed zones and default homes (PLAN.md §4.8, §4.9)
+
+type BedTrailer = Pick<Trailer, 'id' | 'name' | 'frameLengthCm'>;
+
+/** A trailer's compartments as zones, front to back. */
+function bedOf(
+  trailer: BedTrailer,
+  compartments: readonly TrailerCompartment[],
+): Pick<TrailerDef, 'compartments' | 'frameLengthCm'> {
+  const defs = compartments
+    .filter((c) => c.trailerId === trailer.id)
+    .map((c) => compartmentDefFromRecord(c, trailer.frameLengthCm));
+  const def = { compartments: defs, frameLengthCm: trailer.frameLengthCm };
+  return { ...def, compartments: bedZones(def).map((z) => z.compartment) };
+}
+
+/** Where a derived line rides when nobody typed where. */
+export interface DefaultHome {
+  trailerId: Id;
+  /** The trailer's load plan for this regatta, if one was started. */
+  planId: Id | null;
+  /** On the load list: "Boys trailer · Riggers (back of bed)", "Boys trailer". */
+  container: string;
+  /** The bed zone it rides in, and its name on that trailer's load sheet. */
+  compartmentId: Id | null;
+  zone: string | null;
+  /** Why: "the shell is on that trailer". */
+  why: string;
+}
+
+/** Key of a derived line in `defaultHomes`: "riggers:<shell id>". */
+export const homeKey = (kind: LoadItemKind, refId: string) => `${kind}:${refId}`;
+
+/**
+ * Where each derived line rides by default, keyed by `homeKey`:
+ *
+ * - a shell placed on a trailer rides on it;
+ * - its riggers ride in that trailer's rigger zone ("Boys trailer · Riggers (back of bed)"), or
+ *   "Boys trailer bed" on a trailer without one (as before bed zones);
+ * - an oar set rides in the oar zone of the trailer carrying the shell of its first crew (the
+ *   first non-scratched entry using the set whose shell is on a trailer);
+ * - slings (gear in the slings category) ride in the sling zone of the trailer carrying the
+ *   most of the regatta's boats.
+ *
+ * Oar sets and slings get no default on a trailer without a zone for them.
+ */
+export function defaultHomes(
+  ws: Pick<
+    LoadListSource,
+    'entries' | 'gear' | 'loadPlans' | 'placements' | 'trailers' | 'compartments'
+  >,
+): Map<string, DefaultHome> {
+  const plans = new Map(ws.loadPlans.map((p) => [p.id, p]));
+  const planOfTrailer = new Map(ws.loadPlans.map((p) => [p.trailerId, p.id]));
+  const trailers = new Map(ws.trailers.map((t) => [t.id, t]));
+  const shellTrailer = new Map<Id, Id>();
+  const boatsOn = new Map<Id, number>();
+  for (const p of ws.placements) {
+    const trailerId = plans.get(p.loadPlanId)?.trailerId;
+    if (!trailerId || !trailers.has(trailerId) || shellTrailer.has(p.shellId)) continue;
+    shellTrailer.set(p.shellId, trailerId);
+    boatsOn.set(trailerId, (boatsOn.get(trailerId) ?? 0) + 1);
+  }
+  const beds = new Map(ws.trailers.map((t) => [t.id, bedOf(t, ws.compartments)]));
+  const home = (
+    trailerId: Id,
+    load: 'riggers' | 'oars' | 'slings' | null,
+    why: string,
+  ): DefaultHome | null => {
+    const trailer = trailers.get(trailerId)!;
+    const bed = beds.get(trailerId)!;
+    const base = { trailerId, planId: planOfTrailer.get(trailerId) ?? null, why };
+    if (load === null) {
+      return { ...base, container: trailer.name, compartmentId: null, zone: null };
+    }
+    const zone = compartmentFor(bed, load);
+    if (!zone) {
+      return load === 'riggers'
+        ? { ...base, container: `${trailer.name} bed`, compartmentId: null, zone: null }
+        : null;
+    }
+    return {
+      ...base,
+      container: zoneContainer(trailer.name, zone, trailer.frameLengthCm),
+      compartmentId: zone.id,
+      zone: zoneName(zone, trailer.frameLengthCm),
+    };
+  };
+
+  const out = new Map<string, DefaultHome>();
+  for (const [shellId, trailerId] of shellTrailer) {
+    out.set(homeKey('shell', shellId), home(trailerId, null, 'the shell is placed there')!);
+    out.set(
+      homeKey('riggers', shellId),
+      home(trailerId, 'riggers', 'the shell is on that trailer')!,
+    );
+  }
+  for (const e of ws.entries) {
+    if (e.status === 'scratched' || !e.oarSetId || !e.shellId) continue;
+    const key = homeKey('oar_set', e.oarSetId);
+    const trailerId = shellTrailer.get(e.shellId);
+    if (out.has(key) || !trailerId) continue;
+    const h = home(trailerId, 'oars', 'its first crew’s shell is on that trailer');
+    if (h) out.set(key, h);
+  }
+  const busiest = [...boatsOn.entries()].sort(
+    (a, b) => b[1] - a[1] || trailers.get(a[0])!.name.localeCompare(trailers.get(b[0])!.name, 'en'),
+  )[0]?.[0];
+  if (busiest) {
+    for (const g of ws.gear) {
+      if (g.category !== 'slings') continue;
+      const h = home(busiest, 'slings', 'that trailer carries the most boats');
+      if (h) out.set(homeKey('gear', g.id), h);
+    }
+  }
+  return out;
+}
+
+/**
+ * The bed zone a typed container names on this trailer ("Boys trailer · Oars", with or
+ * without the "(back of bed)" note), if any.
+ */
+export function zoneOfContainer(
+  container: string,
+  trailer: BedTrailer,
+  compartments: readonly TrailerCompartment[],
+): Id | null {
+  const text = container.trim().toLowerCase();
+  if (!text) return null;
+  for (const c of bedOf(trailer, compartments).compartments) {
+    const names = [
+      zoneContainer(trailer.name, c, trailer.frameLengthCm),
+      `${trailer.name} · ${c.label.trim()}`,
+    ].map((n) => n.toLowerCase());
+    if (names.includes(text)) return c.id;
+  }
+  return null;
 }
 
 /**
@@ -132,12 +297,12 @@ export function buildLoadRows(ws: LoadListSource): LoadRow[] {
     ...derived.filter((d) => d.kind !== 'shell' && d.kind !== 'riggers'),
   ];
 
-  const trailerName = new Map(ws.trailers.map((t) => [t.id, t.name]));
+  const homes = defaultHomes(ws);
   const merged = mergeLoadItems(all, ws.loadItems);
   return merged.rows.map((row): LoadRow => {
     const boat = row.kind === 'shell' || row.kind === 'riggers';
     const plan = boat ? onPlan.get(row.refId) : undefined;
-    const name = plan ? trailerName.get(plan.trailerId) : undefined;
+    const home = row.orphaned ? undefined : homes.get(homeKey(row.kind, row.refId));
     const stored = row.stored ?? null;
     return {
       key: row.key,
@@ -150,8 +315,9 @@ export function buildLoadRows(ws: LoadListSource): LoadRow[] {
       spare: boat && spareIds.has(row.refId),
       orphaned: row.orphaned,
       container: stored?.container ?? '',
-      suggestedContainer: name ? (row.kind === 'riggers' ? `${name} bed` : name) : null,
-      loadPlanId: stored ? (stored.loadPlanId ?? null) : (plan?.id ?? null),
+      suggestedContainer: home?.container ?? null,
+      suggestedWhy: home?.why ?? null,
+      loadPlanId: stored ? (stored.loadPlanId ?? null) : (plan?.id ?? home?.planId ?? null),
       placementPlanId: plan?.id ?? null,
       loaded: !!stored?.loadedAt,
       returned: !!stored?.returnedAt,
@@ -250,9 +416,28 @@ export function tickPatch(
     : { returnedAt: null, returnedBy: null, returnedByName: '' };
 }
 
-/** Where-it-rides choices: each trailer and its bed, then the trucks (§4.8 free text). */
-export function containerPicks(trailers: readonly Pick<Trailer, 'name'>[]): string[] {
-  return [...trailers.flatMap((t) => [t.name, `${t.name} bed`]), 'Truck 1 bed', 'Truck 2 bed'];
+/**
+ * Where-it-rides choices: each trailer, then its bed zones front to back ("Boys trailer ·
+ * Riggers (back of bed)"; "Boys trailer bed" when it has none), then the trucks (§4.8 free
+ * text).
+ */
+export function containerPicks(
+  trailers: readonly BedTrailer[],
+  compartments: readonly TrailerCompartment[] = [],
+): string[] {
+  return [
+    ...trailers.flatMap((t) => {
+      const zones = bedOf(t, compartments).compartments;
+      return [
+        t.name,
+        ...(zones.length > 0
+          ? zones.map((z) => zoneContainer(t.name, z, t.frameLengthCm))
+          : [`${t.name} bed`]),
+      ];
+    }),
+    'Truck 1 bed',
+    'Truck 2 bed',
+  ];
 }
 
 /**
