@@ -355,6 +355,7 @@ function TeamRoster({ team }: { team: Team }) {
               teams={allTeams.filter((t) => t.id !== team.id && !t.archived)}
               onStatus={bulkStatus}
               onMove={setMoveTo}
+              moving={!!moveTo}
               onClear={() => setSelected([])}
             />
           )}
@@ -463,6 +464,7 @@ function BulkBar({
   teams,
   onStatus,
   onMove,
+  moving,
   onClear,
 }: {
   count: number;
@@ -471,6 +473,8 @@ function BulkBar({
   teams: Team[];
   onStatus: (status: Athlete['status']) => void;
   onMove: (team: Team) => void;
+  /** The move confirmation is open; closing it resets the picker. */
+  moving: boolean;
   onClear: () => void;
 }) {
   return (
@@ -492,6 +496,7 @@ function BulkBar({
       )}
       {teams.length > 0 && (
         <Select
+          key={moving ? 'moving' : 'idle'}
           label="Move to team"
           placeholder="Move to team…"
           value=""
