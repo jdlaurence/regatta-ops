@@ -15,6 +15,7 @@ import {
   type BatchOp,
 } from '@/data';
 import { toast } from '@/components/toast';
+import type { ConfirmFinalEdit } from '@/features/regattas/useConfirmFinalEdit';
 import type { GuardedWrite, Writes } from './lib';
 
 // ---------------------------------------------------------------------------
@@ -119,6 +120,40 @@ export function useTrailerWrites() {
     },
     setStatus: (planId: Id, status: LoadPlan['status']) =>
       updatePlan.mutate({ id: planId, patch: { status } }),
+  };
+}
+
+type TrailerWrites = ReturnType<typeof useTrailerWrites>;
+
+/**
+ * The trailer page's writes, each asking first on a final regatta (PLAN.md §4.1). The first
+ * yes covers the rest of the visit, as on the lineup page.
+ */
+export function useFinalGuardedWrites(
+  writes: TrailerWrites,
+  finalEdit: Pick<ConfirmFinalEdit, 'needsConfirmation' | 'confirm'>,
+): TrailerWrites {
+  const approved = useRef(false);
+  if (!finalEdit.needsConfirmation) return writes;
+  const guard =
+    <A extends unknown[]>(fn: (...args: A) => void) =>
+    (...args: A) => {
+      if (approved.current) return fn(...args);
+      void finalEdit.confirm('Change the load plan').then((ok) => {
+        if (!ok) return;
+        approved.current = true;
+        fn(...args);
+      });
+    };
+  return {
+    ...writes,
+    apply: guard(writes.apply),
+    update: guard(writes.update),
+    remove: guard(writes.remove),
+    pack: guard(writes.pack),
+    startPlan: guard(writes.startPlan),
+    setRules: guard(writes.setRules),
+    setStatus: guard(writes.setStatus),
   };
 }
 

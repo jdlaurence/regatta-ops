@@ -137,6 +137,80 @@ export function downloadText(fileName: string, text: string, type = 'text/csv;ch
 }
 
 // ---------------------------------------------------------------------------
+// Source step, shared with imports that are not record creation (the absence form)
+
+export interface CsvSourceProps {
+  text: string;
+  onTextChange: (text: string) => void;
+  /** Called with the text of a chosen file. */
+  onFileText: (text: string) => void;
+  error?: string | null;
+  hint?: ReactNode;
+  /** Label of the paste box. Default "Rows to import". */
+  label?: string;
+}
+
+/** The paste box and the file button: the first step of an import. */
+export function CsvSource({
+  text,
+  onTextChange,
+  onFileText,
+  error = null,
+  hint,
+  label = 'Rows to import',
+}: CsvSourceProps) {
+  const id = useId();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const content = await file.text();
+    e.target.value = '';
+    onFileText(content);
+  };
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={`${id}-paste`}>{label}</Label>
+        <Textarea
+          id={`${id}-paste`}
+          value={text}
+          onChange={(e) => onTextChange(e.target.value)}
+          aria-invalid={!!error || undefined}
+          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          rows={8}
+          spellCheck={false}
+          className="font-mono text-sm"
+        />
+        {hint && !error && (
+          <p id={`${id}-hint`} className="text-sm text-ink-2">
+            {hint}
+          </p>
+        )}
+        {error && (
+          <p id={`${id}-error`} role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
+      </div>
+      <div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,.tsv,.txt,text/csv,text/plain"
+          hidden
+          onChange={(e) => void onFile(e)}
+        />
+        <Button size="sm" onClick={() => fileRef.current?.click()}>
+          <Upload aria-hidden />
+          Choose a CSV file
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Dialog
 
 export interface CsvImportDialogProps<T> {
@@ -211,7 +285,6 @@ function CsvImportBody<T>({
   const [table, setTable] = useState<CsvTable | null>(null);
   const [mapping, setMapping] = useState<CsvMapping>({});
   const [busy, setBusy] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const missing = missingRequired(mapping, fields);
   const mappingProblem = missing.length === 0 && checkMapping ? checkMapping(mapping) : null;
@@ -237,15 +310,6 @@ function CsvImportBody<T>({
     setTable(parsed);
     setMapping(guessMapping(parsed.headers, fields));
     setStep('map');
-  };
-
-  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const content = await file.text();
-    e.target.value = '';
-    setText(content);
-    readSource(content);
   };
 
   const runImport = async () => {
@@ -281,45 +345,19 @@ function CsvImportBody<T>({
     >
       {step === 'source' && (
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${id}-paste`}>Rows to import</Label>
-            <Textarea
-              id={`${id}-paste`}
-              value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                setSourceError(null);
-              }}
-              aria-invalid={!!sourceError || undefined}
-              aria-describedby={sourceError ? `${id}-error` : hint ? `${id}-hint` : undefined}
-              rows={8}
-              spellCheck={false}
-              className="font-mono text-sm"
-            />
-            {hint && !sourceError && (
-              <p id={`${id}-hint`} className="text-sm text-ink-2">
-                {hint}
-              </p>
-            )}
-            {sourceError && (
-              <p id={`${id}-error`} role="alert" className="text-sm text-danger">
-                {sourceError}
-              </p>
-            )}
-          </div>
-          <div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv,.tsv,.txt,text/csv,text/plain"
-              hidden
-              onChange={(e) => void onFile(e)}
-            />
-            <Button size="sm" onClick={() => fileRef.current?.click()}>
-              <Upload aria-hidden />
-              Choose a CSV file
-            </Button>
-          </div>
+          <CsvSource
+            text={text}
+            onTextChange={(t) => {
+              setText(t);
+              setSourceError(null);
+            }}
+            onFileText={(content) => {
+              setText(content);
+              readSource(content);
+            }}
+            error={sourceError}
+            hint={hint}
+          />
           <DialogFooter>
             <Button onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button variant="primary" onClick={() => readSource()} disabled={!text.trim()}>

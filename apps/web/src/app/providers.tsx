@@ -112,6 +112,18 @@ function NetworkProbe({ probe }: { probe: Probe }) {
 }
 
 /**
+ * The device copy is for showing something at once and for offline reads, never the latest
+ * word: it is saved at most once a second, and a save started as the page unloads may not
+ * finish, so it can predate the last edits. Restored queries keep their fetch times, so without
+ * this they would count as fresh for `staleTime` and a reload right after an edit would show
+ * the lineup from before it. Marking them stale makes each page refetch in the background when
+ * it mounts (paused while offline). Not awaited: the restore must not wait for the network.
+ */
+export function markRestoredStale(client: QueryClient): void {
+  void client.invalidateQueries({ refetchType: 'none' });
+}
+
+/**
  * The query cache, restored from and saved to this device. Only a signed-in user's copy is
  * restored, and signing out deletes it.
  */
@@ -150,7 +162,11 @@ function PersistedQueryClientProvider({
     return () => window.removeEventListener('pagehide', flush);
   }, [persister]);
   return (
-    <PersistQueryClientProvider client={client} persistOptions={options}>
+    <PersistQueryClientProvider
+      client={client}
+      persistOptions={options}
+      onSuccess={() => markRestoredStale(client)}
+    >
       {children}
     </PersistQueryClientProvider>
   );

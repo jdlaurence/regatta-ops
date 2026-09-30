@@ -53,7 +53,8 @@ dashboard is at http://127.0.0.1:8090/_/ with the same admin credentials. See
 pnpm test        # unit tests in every package (the backend suite needs pnpm pb:download)
 pnpm typecheck
 pnpm lint
-pnpm test:e2e    # Playwright
+pnpm test:e2e    # Playwright: the phase demos on demo mode
+pnpm test:e2e:pb # Playwright: smoke suite on a temporary, seeded PocketBase (needs pb:download)
 pnpm build       # the app into backend/pb_public/, served by PocketBase in production
 ```
 

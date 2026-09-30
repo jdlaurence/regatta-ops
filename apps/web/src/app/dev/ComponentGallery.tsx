@@ -43,7 +43,7 @@ import {
 } from '@/components/ui/menu';
 import { ShareGallery } from '@/features/share/ShareGallery';
 import { TEAM_COLOR_LABELS } from '@/lib/team-colors';
-import { RuleCardGallery, TrailerEndViewGallery } from './TrailerGallery';
+import { RuleCardGallery, TrailerEndViewGallery, TrailerIsometricGallery } from './TrailerGallery';
 import { useTheme, type ThemeChoice } from '../theme';
 
 const NAMES: [string, string][] = [
@@ -500,6 +500,10 @@ export default function ComponentGallery() {
 
       <Section title="Trailer end view">
         <TrailerEndViewGallery />
+      </Section>
+
+      <Section title="Trailer isometric view">
+        <TrailerIsometricGallery />
       </Section>
 
       <Section title="Rule cards and the rules editor">

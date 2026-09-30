@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { CheckCheck, Copy, Search, X } from 'lucide-react';
+import { CheckCheck, Copy, FileSpreadsheet, Search, X } from 'lucide-react';
 import {
   athleteName,
   isAvailableOn,
@@ -44,6 +44,7 @@ import {
   withStatus,
   type AvailabilityDraft,
 } from './availability-model';
+import { AbsenceImportDialog } from './AbsenceImportDialog';
 import { CopyAvailabilityDialog } from './CopyAvailabilityDialog';
 import { MarkAllAvailableDialog } from './MarkAllAvailableDialog';
 
@@ -333,7 +334,7 @@ function byName(a: Athlete, b: Athlete) {
   return a.lastName.localeCompare(b.lastName, 'en') || a.firstName.localeCompare(b.firstName, 'en');
 }
 
-type BulkDialog = 'clear' | 'copy' | null;
+type BulkDialog = 'clear' | 'copy' | 'absence' | null;
 
 export default function AvailabilityPage() {
   const regattaId = useRegattaId();
@@ -451,6 +452,10 @@ export default function AvailabilityPage() {
               <Button onClick={() => setBulk('copy')}>
                 <Copy aria-hidden />
                 Copy from previous regatta
+              </Button>
+              <Button onClick={() => setBulk('absence')}>
+                <FileSpreadsheet aria-hidden />
+                Import from absence form
               </Button>
             </>
           )
@@ -576,6 +581,16 @@ export default function AvailabilityPage() {
             byAthlete={byAthlete}
             scopeLabel={scopeLabel}
             onConfirm={(ops) => write(ops, 'Copy availability')}
+          />
+          <AbsenceImportDialog
+            open={bulk === 'absence'}
+            onOpenChange={(o) => setBulk(o ? 'absence' : null)}
+            regatta={data.regatta}
+            teams={rosters.map((r) => r.team)}
+            athletes={rosters.flatMap((r) => r.athletes)}
+            byAthlete={byAthlete}
+            defaultTeamId={teamFilter}
+            onConfirm={(ops) => write(ops, 'Import availability')}
           />
         </>
       )}

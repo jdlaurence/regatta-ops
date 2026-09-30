@@ -23,6 +23,17 @@ describe('MemoryStore reads', () => {
     expect(await store.list('athletes', { in: { teamId: [] } })).toEqual([]);
   });
 
+  it('limits after sorting', async () => {
+    const store = fixtureStore();
+    const first = await store.list('events', {
+      where: { regattaId: IDS.regatta },
+      sort: '-scheduledAt',
+      limit: 1,
+    });
+    expect(first.map((e) => e.eventNumber)).toEqual(['14']);
+    expect(await store.list('events', { limit: 0 })).toEqual([]);
+  });
+
   it('matches null against missing and empty values', async () => {
     const store = fixtureStore();
     await store.create('entries', {

@@ -1,5 +1,6 @@
-# PLAN.md §11.3: typecheck, lint, unit tests with coverage, build, then the Playwright smoke
-# suite against a real PocketBase serving the built app.
+# PLAN.md §11.3: typecheck, lint, unit tests with coverage, build, then the Playwright flows:
+# the phase demos against demo mode, and the smoke suite against a real PocketBase (temporary
+# data folder, migrated and seeded) serving the built app. See apps/web/playwright.config.ts.
 name: ci
 
 on:
@@ -55,9 +56,19 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm pb:download
       - run: pnpm --filter @srt/web exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
+      - name: Playwright, demo mode (phase demos)
+        run: pnpm test:e2e
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/demo
+      - name: Playwright, PocketBase (smoke suite)
+        if: ${{ !cancelled() }}
+        run: pnpm test:e2e:pb
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/pocketbase
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-report
-          path: apps/web/playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results

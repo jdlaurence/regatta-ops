@@ -50,8 +50,10 @@ import {
   type DimensionField,
 } from './lib';
 import { ConfirmDialog, STATUS_OPTIONS, StatusLabel, UpcomingUse } from './parts';
+import { ShellPhoto } from './ShellPhoto';
 
-const shellFormSchema = shellSchema.omit(BASE_KEYS).extend({
+// The photo has its own slot (ShellPhoto) and is never part of a saved patch.
+const shellFormSchema = shellSchema.omit({ ...BASE_KEYS, photoUrl: true }).extend({
   name: requiredText('Enter the shell name'),
   year: z
     .number('Enter a year')
@@ -66,7 +68,7 @@ export type ShellFormValues = z.infer<typeof shellFormSchema>;
 
 /** The form edits the other classes a shell races as; its own class is implied. */
 export function toShellForm(shell: Shell): ShellFormValues {
-  const { id: _id, created: _c, updated: _u, ...rest } = shell;
+  const { id: _id, created: _c, updated: _u, photoUrl: _p, ...rest } = shell;
   return {
     ...rest,
     nickname: rest.nickname ?? '',
@@ -296,6 +298,8 @@ function ShellForm({
             )}
           </div>
         )}
+
+        {shell && <ShellPhoto shell={shell} canEdit={canEdit} />}
 
         {shell && (
           <section aria-labelledby={f('usage')} className="flex flex-col gap-2">

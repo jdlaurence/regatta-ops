@@ -57,13 +57,21 @@ import {
   SheetContent,
 } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
-import { laneKey, toEndViewBoats } from '@/components/trailer';
+import { laneKey, toEndViewBoats, TrailerIsometric } from '@/components/trailer';
 import type { EndViewCell } from '@/components/trailer/geometry';
 import { printLoadPath } from '@/features/print/links';
 import { cn } from '@/lib/cn';
 import { PlacedBoatDetails, UnplacedBoatDetails } from './BoatDetails';
 import { EndViewBoard, type LaneChoice } from './EndViewBoard';
-import { useFlip, useIsPhone, useMyShortName, useRulesDirty, useTrailerWrites } from './hooks';
+import {
+  useFinalGuardedWrites,
+  useFlip,
+  useIsPhone,
+  useMyShortName,
+  useRulesDirty,
+  useTrailerWrites,
+} from './hooks';
+import { useConfirmFinalEdit } from '@/features/regattas/useConfirmFinalEdit';
 import {
   bestSpot,
   buildTrailerPageModel,
@@ -251,7 +259,7 @@ function MoveChoices({
 // ---------------------------------------------------------------------------
 // The workspace
 
-type View = 'end' | 'plan';
+type View = 'end' | 'plan' | 'iso';
 
 interface DragState {
   shellId: Id;
@@ -290,7 +298,8 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
   const navigate = useNavigate();
   const param = useTrailerIdParam();
   const [search, setSearch] = useSearchParams();
-  const view: View = search.get('view') === 'plan' ? 'plan' : 'end';
+  const viewParam = search.get('view');
+  const view: View = viewParam === 'plan' || viewParam === 'iso' ? viewParam : 'end';
   const setView = (v: View) =>
     setSearch(
       (p) => {
@@ -307,7 +316,10 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
   const isPhone = useIsPhone();
   const dragEnabled = canEdit && !isPhone;
   const me = useMyShortName();
-  const writes = useTrailerWrites();
+  // A final regatta asks before the first change to its load plans (PLAN.md §4.1); after a yes,
+  // the rest of the visit goes through. Load list ticks are exempt (they record what happened).
+  const finalEdit = useConfirmFinalEdit(ws.regatta);
+  const writes = useFinalGuardedWrites(useTrailerWrites(), finalEdit);
   const dirtyPlans = useRulesDirty((s) => s.plans);
 
   // The trailer on screen: the URL's, else the first with a plan, else the first. While a boat
@@ -878,6 +890,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
                   options={[
                     { value: 'end', label: 'End view' },
                     { value: 'plan', label: 'Plan view' },
+                    { value: 'iso', label: 'Isometric' },
                   ]}
                 />
                 {plan && (
@@ -951,6 +964,14 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
                     </p>
                   )}
                 </>
+              ) : view === 'iso' ? (
+                <TrailerIsometric
+                  trailer={tm.def}
+                  rules={tm.rules}
+                  placements={tm.placements}
+                  boats={viewBoats}
+                  selectedShellId={selectedId}
+                />
               ) : (
                 <PlanView
                   trailer={tm.def}
@@ -1062,6 +1083,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {finalEdit.dialog}
     </DndContext>
   );
 }
