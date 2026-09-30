@@ -257,6 +257,14 @@ export function lockedBy(p: Pick<Placement, 'locked' | 'reasons'>): string | nul
   return r?.text ?? 'Locked';
 }
 
+/**
+ * The lock line in "Why here?": "Locked by Sam W. Pack trailer keeps it here." One period
+ * even when the name ends with an initial's.
+ */
+export function lockNote(lock: string): string {
+  return `${lock.endsWith('.') ? lock : `${lock}.`} Pack trailer keeps it here.`;
+}
+
 function withoutLockReason(reasons: readonly Reason[]): Reason[] {
   return reasons.filter((r) => r.ruleId !== LOCK_RULE_ID);
 }
