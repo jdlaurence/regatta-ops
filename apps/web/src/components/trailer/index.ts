@@ -1,5 +1,6 @@
-// Shared trailer visuals (WP-L): the end view, rule cards, and the rules editor. Used by the
-// trailers admin page (trailer mode) and the regatta trailer page (regatta mode).
+// Shared trailer visuals (WP-L): the end, plan, and isometric views, rule cards, and the rules
+// editor. Used by the trailers admin page (trailer mode) and the regatta trailer page (regatta
+// mode).
 
 export {
   TrailerEndView,
@@ -24,6 +25,16 @@ export {
   type ShelfGeometry,
 } from './geometry';
 export { TrailerIsometric, type TrailerIsometricProps } from './TrailerIsometric';
+export { PlanView, type PlanLevel, type PlanViewProps } from './PlanView';
+export {
+  bedPlanGeometry,
+  planViewGeometry,
+  type BedPlanGeometry,
+  type PlanBoat,
+  type PlanLane,
+  type PlanViewGeometry,
+  type PlanZone,
+} from './plan';
 export {
   isometricGeometry,
   type IsoGeometry,

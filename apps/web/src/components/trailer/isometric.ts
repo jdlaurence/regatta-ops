@@ -10,8 +10,18 @@
 //
 // Across the width, shelves, lanes, and posts sit exactly where the end view puts them
 // (endViewGeometry), so the two views always agree about which lane a boat is in.
+//
+// The bed shows its compartments as zones along the length (PLAN.md §4.9), each across the bed's
+// full width, with its name under the near side of the frame where the wheels leave room.
 
-import { BOAT_CLASS_SPECS, type BoatClass, type Id, type TrailerDef } from '@srt/domain';
+import {
+  BOAT_CLASS_SPECS,
+  bedZones,
+  meters,
+  type BoatClass,
+  type Id,
+  type TrailerDef,
+} from '@srt/domain';
 import { endViewGeometry, type ShelfState } from './geometry';
 import type { EndViewBoat, EndViewPlacement } from './TrailerEndView';
 
@@ -62,6 +72,20 @@ export interface IsoOverhang {
   at: Pt;
 }
 
+/** A bed zone: its patch of the bed seen from above, and its name under the near side. */
+export interface IsoZone {
+  id: Id;
+  label: string;
+  startCm: number;
+  endCm: number;
+  positioned: boolean;
+  top: Pt[];
+  /** Where the zone meets the next one on the frame's near side (none at the ends). */
+  divider: IsoSegment | null;
+  /** The name's anchor under the near side, turned to follow it; `room` is the length it may use. */
+  name: { at: Pt; angle: number; room: number } | null;
+}
+
 /** One thing to paint, in order. */
 export type IsoItem =
   | { kind: 'arm'; arm: IsoArm }
@@ -79,6 +103,8 @@ export interface IsoGeometry {
   bedSide: Pt[];
   bedBack: Pt[];
   hitch: Pt[];
+  /** Compartments along the bed, front to back. */
+  zones: IsoZone[];
   /** The hitch point, for the "Front" caption. */
   front: Pt;
   wheels: { cx: number; cy: number; r: number }[];
@@ -137,6 +163,29 @@ export function hullProfile(t: number): number {
 }
 
 const HULL_STEPS = 14;
+/** Zone patches stop this far short of each other and of the frame's edges (cm). */
+const ZONE_INSET = 8;
+/** Room under a zone's name (px): the text hangs this far below its anchor. */
+const ZONE_NAME_PX = 18;
+/** Wheel positions along the frame (fraction of its length), near side. */
+const WHEELS_AT = [0.56, 0.68];
+
+/**
+ * The longest stretch of [start, end] clear of the wheels (cm), where a zone's name can hang
+ * under the frame without running into them.
+ */
+function clearOfWheels(start: number, end: number, frameL: number): [number, number] {
+  const reach = WHEEL_R / Math.cos(LENGTH_ANGLE) + 4;
+  const blocked: [number, number] = [
+    frameL * WHEELS_AT[0]! - reach,
+    frameL * WHEELS_AT[WHEELS_AT.length - 1]! + reach,
+  ];
+  const parts: [number, number][] = [
+    [start, Math.min(end, blocked[0])],
+    [Math.max(start, blocked[1]), end],
+  ];
+  return parts.reduce((best, p) => (p[1] - p[0] > best[1] - best[0] ? p : best), [start, start]);
+}
 
 export interface IsoInput {
   trailer: TrailerDef;
@@ -239,8 +288,44 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
   ];
   const front = P(-HITCH_CM, W / 2, BED_Z - BED_DEPTH);
   const hitch = [P(0, 0, BED_Z - BED_DEPTH / 2), front, P(0, W, BED_Z - BED_DEPTH / 2)];
+  // Compartments along the bed (§4.9): each zone's patch of the bed, across the full width
+  // unless zones share a stretch, with a divider down the near side where one gives way to the
+  // next, and the name hung under the near side, clear of the wheels.
+  const zones: IsoZone[] = bedZones({ ...trailer, frameLengthCm: frameL }).map((z) => {
+    const l1 = z.startCm + ZONE_INSET / 2;
+    const l2 = Math.max(l1, z.endCm - ZONE_INSET / 2);
+    const rowW = W / z.rows;
+    const w1 = z.row * rowW + ZONE_INSET / 2;
+    const w2 = Math.max(w1, (z.row + 1) * rowW - ZONE_INSET / 2);
+    const top = [P(l1, w1, BED_Z), P(l2, w1, BED_Z), P(l2, w2, BED_Z), P(l1, w2, BED_Z)];
+    const nearRow = z.row === z.rows - 1;
+    const divider =
+      nearRow && z.endCm < frameL - 0.5
+        ? { a: P(z.endCm, W, BED_Z), b: P(z.endCm, W, BED_Z - BED_DEPTH) }
+        : null;
+    const [c1, c2] = clearOfWheels(z.startCm, z.endCm, frameL);
+    const name =
+      nearRow && c2 > c1
+        ? {
+            at: P((c1 + c2) / 2, W, BED_Z - BED_DEPTH),
+            angle: -(LENGTH_ANGLE * 180) / Math.PI,
+            room: (c2 - c1) * Math.cos(LENGTH_ANGLE),
+          }
+        : null;
+    return {
+      id: z.compartment.id,
+      label: z.compartment.label.trim() || 'Bed',
+      startCm: z.startCm,
+      endCm: z.endCm,
+      positioned: z.positioned,
+      top,
+      divider,
+      name,
+    };
+  });
+
   // A tandem axle a little behind the middle, near side only (the far wheels are hidden).
-  const wheelCenters = [0.56, 0.68].map((f) => P(frameL * f, W, WHEEL_R));
+  const wheelCenters = WHEELS_AT.map((f) => P(frameL * f, W, WHEEL_R));
   for (const c of wheelCenters) {
     drawn.add({ x: c.x - WHEEL_R, y: c.y + WHEEL_R });
     drawn.add({ x: c.x + WHEEL_R, y: c.y + WHEEL_R });
@@ -379,7 +464,6 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
   const drawnWidth = Math.ceil(
     Math.max((maxX - minX) * scale, (front.x - minX) * scale + FRONT_CAPTION_PX) + PAD * 2,
   );
-  const height = Math.ceil((maxY - minY) * scale + PAD * 2);
   for (const p of drawn) {
     p.x = PAD + (p.x - minX) * scale;
     p.y = PAD + (p.y - minY) * scale;
@@ -388,6 +472,14 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
     h.label.room *= scale;
     h.label.thickness *= scale;
   }
+  for (const z of zones) if (z.name) z.name.room *= scale;
+  // Zone names hang below the frame: keep room for them under the drawing.
+  const height = Math.ceil(
+    Math.max(
+      (maxY - minY) * scale + PAD * 2,
+      ...zones.map((z) => (z.name ? z.name.at.y + ZONE_NAME_PX + PAD / 2 : 0)),
+    ),
+  );
   const wheels = wheelCenters.map((c) => ({ cx: c.x, cy: c.y, r: WHEEL_R * scale }));
 
   return {
@@ -399,6 +491,7 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
     bedSide,
     bedBack,
     hitch,
+    zones,
     front,
     wheels,
     items: items.map((i) => i.item),
@@ -446,6 +539,28 @@ export function overhangSummary(g: Pick<IsoGeometry, 'hulls' | 'frameLengthCm'>)
     return `${h.boat?.name ?? 'A boat'} sticks out ${overhangWords(o.front, o.rear)} of the frame.`;
   }
   return `${out.length} boats stick out, up to ${overhangWords(front, rear)} of the frame.`;
+}
+
+/**
+ * The bed in words, under the drawing: "Bed, front to back: slings (3.0 m), oars (4.0 m),
+ * riggers (5.2 m)." Null when nothing rides in the bed.
+ */
+export function bedSummary(
+  zones: readonly Pick<IsoZone, 'label' | 'startCm' | 'endCm' | 'positioned'>[],
+): string | null {
+  if (zones.length === 0) return null;
+  const items = zones.map((z) => {
+    const name =
+      z.label.length > 1 && /[A-Z]/.test(z.label[1]!)
+        ? z.label
+        : z.label[0]!.toLowerCase() + z.label.slice(1);
+    return `${name} (${z.positioned ? `${meters(z.endCm - z.startCm)} m` : 'whole length'})`;
+  });
+  const list =
+    items.length <= 2
+      ? items.join(' and ')
+      : `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+  return `Bed, front to back: ${list}.`;
 }
 
 /** "4.5 m" for a length in cm. */

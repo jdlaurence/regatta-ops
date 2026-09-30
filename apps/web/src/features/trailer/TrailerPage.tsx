@@ -57,7 +57,13 @@ import {
   SheetContent,
 } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
-import { laneKey, toEndViewBoats, TrailerIsometric } from '@/components/trailer';
+import {
+  laneKey,
+  PlanView,
+  toEndViewBoats,
+  TrailerIsometric,
+  type PlanLevel,
+} from '@/components/trailer';
 import type { EndViewCell } from '@/components/trailer/geometry';
 import { printLoadPath } from '@/features/print/links';
 import { cn } from '@/lib/cn';
@@ -93,7 +99,6 @@ import {
 } from './lib';
 import { MetricsFooter } from './MetricsFooter';
 import { BoatPill } from './parts';
-import { PlanView } from './PlanView';
 import { RulesPanel } from './RulesPanel';
 import { ToLoadPanel } from './ToLoadPanel';
 
@@ -352,7 +357,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
   const [announcement, setAnnouncement] = useState('');
   const [altRef, altHeld] = useAltKey(!!drag);
   const springTimer = useRef<number | null>(null);
-  const [planTier, setPlanTier] = useState<number>(() =>
+  const [planLevel, setPlanLevel] = useState<PlanLevel>(() =>
     Math.max(1, ...(tm?.def.shelves.map((s) => s.tier) ?? [1])),
   );
   const [confirmPack, setConfirmPack] = useState<'one' | 'all' | null>(null);
@@ -990,8 +995,8 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
                   teamColors={teamColors}
                   selectedShellId={selectedId}
                   onSelect={onChipClick}
-                  tier={planTier}
-                  onTierChange={setPlanTier}
+                  level={planLevel}
+                  onLevelChange={setPlanLevel}
                 />
               )}
 
