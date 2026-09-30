@@ -1,0 +1,35 @@
+/*
+ * Print base (PLAN.md §4.11, §6.12). Print routes render without the app shell; these rules
+ * keep ink dark and backgrounds off so sheets read on a black-and-white printer. Feature print
+ * pages add their own layout rules here, under @media print.
+ */
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  /* Same specificity as the dark selectors in tokens.css, and later, so print always wins. */
+  :root,
+  :root:not([data-theme='light']),
+  :root[data-theme='dark'] {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #eeeeee;
+    --line: #999999;
+    --line-strong: #555555;
+    --ink: #000000;
+    --ink-2: #333333;
+  }
+
+  body {
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  [data-print='hide'] {
+    display: none !important;
+  }
+}
