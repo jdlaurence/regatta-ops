@@ -209,7 +209,7 @@ export function DataTable<T>({
                       <button
                         type="button"
                         onClick={header.column.getToggleSortingHandler()}
-                        className="-mx-1 inline-flex items-center gap-1 rounded-control px-1 hover:text-ink"
+                        className="-mx-1 inline-flex items-center gap-1 rounded-control px-1 hover:text-ink pointer-coarse:min-h-11"
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {dir === 'asc' ? (

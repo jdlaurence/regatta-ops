@@ -386,7 +386,7 @@ function EntryRow({
         {team && <TeamChip team={team} short size="sm" />}
         <Link
           to={href}
-          className="truncate text-base font-medium text-ink underline-offset-4 hover:underline pointer-coarse:py-2.5"
+          className="truncate text-base font-medium text-ink underline-offset-4 hover:underline pointer-coarse:min-w-11 pointer-coarse:py-[13px]"
         >
           <span className="sr-only">{teamName} </span>
           {entry.label}

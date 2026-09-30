@@ -91,7 +91,7 @@ export function RosterTable({
                 type="button"
                 onClick={() => onOpen(a)}
                 title={a.preferredName?.trim() ? legal : undefined}
-                className="-mx-1 truncate rounded-control px-1 text-left font-medium text-ink hover:text-accent hover:underline"
+                className="-mx-1 truncate rounded-control px-1 text-left font-medium text-ink hover:text-accent hover:underline pointer-coarse:min-h-11"
               >
                 {name(a)}
               </button>

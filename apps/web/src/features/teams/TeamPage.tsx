@@ -3,16 +3,7 @@
 
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import {
-  Check,
-  ChevronLeft,
-  Download,
-  Plus,
-  Search,
-  Settings2,
-  Upload,
-  UserPlus,
-} from 'lucide-react';
+import { Check, Download, Plus, Search, Settings2, Upload, UserPlus } from 'lucide-react';
 import { athleteName, type Athlete, type Team } from '@srt/domain';
 import { batchOp, useBatch, useCan, useList, useRecord, useUpdate, type Patch } from '@/data';
 import { TeamDot } from '@/components/chips';
@@ -26,6 +17,7 @@ import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/cn';
 import { downloadText } from '@/components/CsvImport';
 import { useSeasonYear, useWeightUnit } from '@/features/settings/hooks';
+import { BackLink } from '@/components/BackLink';
 import { AddAthleteDialog } from './AddAthleteDialog';
 import { AthleteSheet } from './AthleteSheet';
 import { useMediaQuery } from './hooks';
@@ -200,13 +192,7 @@ function TeamRoster({ team }: { team: Team }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <Link
-        to="/teams"
-        className="-mb-2 inline-flex w-fit items-center gap-1 rounded-control text-sm text-ink-2 hover:text-ink"
-      >
-        <ChevronLeft className="size-4" aria-hidden />
-        Teams
-      </Link>
+      <BackLink to="/teams" label="Teams" className="-mb-2" />
       <PageHeader
         title={
           <span className="inline-flex items-center gap-2.5">

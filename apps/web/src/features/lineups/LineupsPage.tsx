@@ -121,7 +121,7 @@ function TeamTitle({ team, teams, regattaId }: { team: Team; teams: Team[]; rega
     <DropdownMenu>
       <DropdownMenuTrigger
         title="Switch team"
-        className="-mx-1.5 inline-flex items-center gap-2 rounded-control px-1.5 hover:bg-surface-2"
+        className="-mx-1.5 inline-flex items-center gap-2 rounded-control px-1.5 hover:bg-surface-2 pointer-coarse:min-h-11"
       >
         {name}
         <ChevronDown aria-hidden className="size-5 text-ink-2" />

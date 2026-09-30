@@ -94,12 +94,12 @@ export function PhoneTopBar({ regattaId }: { regattaId: string | null }) {
         {regattaId ? (
           <Link
             to={regattaPath(regattaId)}
-            className="block truncate font-display text-md font-semibold"
+            className="flex h-11 min-w-0 items-center font-display text-md font-semibold"
           >
-            {regatta.data?.name ?? ' '}
+            <span className="truncate">{regatta.data?.name ?? ' '}</span>
           </Link>
         ) : (
-          <Link to="/" aria-label="SRT, all regattas" className="inline-flex">
+          <Link to="/" aria-label="SRT, all regattas" className="inline-flex h-11 items-center">
             <Wordmark />
           </Link>
         )}

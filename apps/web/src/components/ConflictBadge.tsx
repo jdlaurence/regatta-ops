@@ -102,7 +102,9 @@ export function ConflictBadge({ severity, count, label, findings, className }: C
   if (!findings || findings.length === 0) return <span className={classes}>{body}</span>;
   return (
     <Popover>
-      <PopoverTrigger className={cn(classes, 'pointer-coarse:h-8 hover:brightness-95')}>
+      <PopoverTrigger
+        className={cn(classes, 'touch-hit relative pointer-coarse:h-8 hover:brightness-95')}
+      >
         {body}
       </PopoverTrigger>
       <PopoverContent className="w-80">
@@ -132,7 +134,10 @@ export function ConflictBadges({
     .filter((g) => g.list.length > 0);
   if (groups.length === 0) return null;
   return (
-    <span className={cn('inline-flex flex-wrap items-center gap-1', className)}>
+    // Wider gaps on touch screens so neighboring badges' hit areas do not overlap.
+    <span
+      className={cn('inline-flex flex-wrap items-center gap-1 pointer-coarse:gap-2.5', className)}
+    >
       {groups.map((g) => (
         <ConflictBadge key={g.s} severity={g.s} findings={g.list} />
       ))}

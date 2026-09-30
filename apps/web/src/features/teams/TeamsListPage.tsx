@@ -57,7 +57,7 @@ export default function TeamsListPage() {
           <div className="flex flex-col py-1">
             <Link
               to={`/teams/${t.id}`}
-              className="inline-flex min-h-8 items-center gap-2 font-medium text-ink hover:text-accent hover:underline"
+              className="inline-flex min-h-8 items-center gap-2 font-medium text-ink hover:text-accent hover:underline pointer-coarse:min-h-11"
             >
               <TeamDot colorKey={t.colorKey} />
               {t.name}
