@@ -25,7 +25,7 @@ export function InlineInput<T>({
 }: {
   /** The value as shown. */
   value: string;
-  /** Accessible name: "Weight for Ava Chen". */
+  /** Accessible name: "Notes for Ava Chen". */
   label: string;
   /** Turn the typed text into the value to save, or explain what is wrong. */
   parse: (text: string) => ParseResult<T>;

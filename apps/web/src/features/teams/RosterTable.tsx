@@ -1,6 +1,6 @@
 // The roster table (PLAN.md §6.10): one row per athlete, grouped by level like the boys'
-// sheet, with spreadsheet-style inline editing for coaches. On a phone it keeps the name,
-// badges, and weight; the drawer holds the rest.
+// sheet, with spreadsheet-style inline editing for coaches. On a phone it keeps the name and
+// badges; the drawer holds the rest.
 
 import { useMemo, type ReactNode } from 'react';
 import { Check } from 'lucide-react';
@@ -12,24 +12,20 @@ import { InlineCheckbox, InlineInput, InlineSelect } from './InlineCells';
 import { AgeBadgeView, InactiveTag } from './RosterBadges';
 import {
   ageBadge,
-  displayWeight,
   LEVEL_LABELS,
   LEVEL_ORDER,
   nameSortKey,
-  parseWeight,
   parseYear,
   SIDE_LABELS,
   STATUS_LABELS,
-  type WeightUnit,
 } from './lib';
 
 export interface RosterTableProps {
   athletes: Athlete[];
   program: Program;
   canEdit: boolean;
-  unit: WeightUnit;
   seasonYear: number;
-  /** Phone layout: name with badges, and weight. */
+  /** Phone layout: name with badges. */
   compact: boolean;
   grouped: boolean;
   selectedIds: string[];
@@ -63,7 +59,6 @@ export function RosterTable({
   athletes,
   program,
   canEdit,
-  unit,
   seasonYear,
   compact,
   grouped,
@@ -112,34 +107,7 @@ export function RosterTable({
       },
     };
 
-    const weightColumn: ColumnDef<Athlete, unknown> = {
-      id: 'weight',
-      header: `Weight (${unit})`,
-      accessorFn: (a) => a.weightKg ?? -1,
-      size: 88,
-      cell: ({ row }) => {
-        const a = row.original;
-        const shown = displayWeight(a.weightKg, unit);
-        if (!canEdit) return <span className="tabular-nums">{shown ?? ''}</span>;
-        return (
-          <InlineInput<number | null>
-            key={`${a.id}:${a.weightKg ?? ''}:${unit}`}
-            value={shown == null ? '' : String(shown)}
-            label={`Weight in ${unit} for ${name(a)}`}
-            inputMode="decimal"
-            maxLength={7}
-            className="w-16 tabular-nums"
-            parse={(t) => {
-              const r = parseWeight(t, unit);
-              return r.error ? { ok: false, error: r.error } : { ok: true, value: r.kg ?? null };
-            }}
-            onCommit={(kg) => onUpdate(a, { weightKg: kg })}
-          />
-        );
-      },
-    };
-
-    if (compact) return [nameColumn, weightColumn];
+    if (compact) return [nameColumn];
 
     const cols: ColumnDef<Athlete, unknown>[] = [
       nameColumn,
@@ -198,7 +166,6 @@ export function RosterTable({
           );
         },
       },
-      weightColumn,
       {
         id: 'birthYear',
         header: 'Born',
@@ -335,7 +302,7 @@ export function RosterTable({
       },
     );
     return cols;
-  }, [canEdit, compact, grouped, onOpen, onUpdate, program, seasonYear, unit]);
+  }, [canEdit, compact, grouped, onOpen, onUpdate, program, seasonYear]);
 
   // Groups follow the data's order, so experienced athletes come first (the boys' sheet).
   const ordered = useMemo(

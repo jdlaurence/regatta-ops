@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/cn';
 import { downloadText } from '@/components/CsvImport';
-import { useSeasonYear, useWeightUnit } from '@/features/settings/hooks';
+import { useSeasonYear } from '@/features/settings/hooks';
 import { BackLink } from '@/components/BackLink';
 import { AddAthleteDialog } from './AddAthleteDialog';
 import { AthleteSheet } from './AthleteSheet';
@@ -72,7 +72,6 @@ type DialogName = 'add' | 'import' | 'settings';
 function TeamRoster({ team }: { team: Team }) {
   const canEdit = useCan('roster.edit');
   const canManage = useCan('team.manage');
-  const unit = useWeightUnit();
   const seasonYear = useSeasonYear();
   const wide = useMediaQuery('(min-width: 768px)');
   const teams = useList('teams', { sort: ['sortOrder', 'name'] });
@@ -169,7 +168,7 @@ function TeamRoster({ team }: { team: Team }) {
   };
 
   const exportCsv = () => {
-    downloadText(`${fileSlug(team.name)}-roster.csv`, rosterToCsv(roster, unit));
+    downloadText(`${fileSlug(team.name)}-roster.csv`, rosterToCsv(roster));
     toast.success('Roster exported');
   };
 
@@ -351,7 +350,6 @@ function TeamRoster({ team }: { team: Team }) {
             athletes={visible}
             program={team.program}
             canEdit={canEdit}
-            unit={unit}
             seasonYear={seasonYear}
             compact={!wide}
             grouped={grouped}
@@ -377,7 +375,6 @@ function TeamRoster({ team }: { team: Team }) {
         team={team}
         teams={allTeams}
         canEdit={canEdit}
-        unit={unit}
         seasonYear={seasonYear}
         onOpenChange={(open) => !open && setOpenId(null)}
       />
@@ -385,7 +382,6 @@ function TeamRoster({ team }: { team: Team }) {
         open={dialog === 'add'}
         onOpenChange={(open) => setDialog(open ? 'add' : null)}
         team={team}
-        unit={unit}
         seasonYear={seasonYear}
       />
       <ImportRosterDialog
@@ -393,7 +389,6 @@ function TeamRoster({ team }: { team: Team }) {
         onOpenChange={(open) => setDialog(open ? 'import' : null)}
         team={team}
         roster={roster}
-        defaultUnit={unit}
         seasonYear={seasonYear}
       />
       <TeamFormDialog

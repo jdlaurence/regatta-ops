@@ -1,4 +1,4 @@
-// Roster helpers: age badges, weights, filters, and the CSV import and export (PLAN.md §4.2).
+// Roster helpers: age badges, filters, and the CSV import and export (PLAN.md §4.2).
 // Every name here is invented.
 
 import { describe, expect, it } from 'vitest';
@@ -9,18 +9,14 @@ import {
   buildRosterImport,
   checkRosterMapping,
   DEFAULT_FILTERS,
-  displayWeight,
   fileSlug,
   filterRoster,
   guessRosterMapping,
-  guessWeightUnit,
   parseDate,
   parseSide,
-  parseWeight,
   ROSTER_FIELDS,
   rosterToCsv,
   splitFullName,
-  toKg,
   type RosterImportOptions,
 } from './lib';
 
@@ -39,7 +35,7 @@ function athlete(over: Partial<Athlete> & Pick<Athlete, 'id' | 'firstName' | 'la
 }
 
 const ROSTER: Athlete[] = [
-  athlete({ id: 'a1', firstName: 'Rowan', lastName: 'Pike', side: 'port', weightKg: 72 }),
+  athlete({ id: 'a1', firstName: 'Rowan', lastName: 'Pike', side: 'port' }),
   athlete({ id: 'a2', firstName: 'Emery', lastName: 'Holt', side: 'starboard', canScull: true }),
   athlete({ id: 'a3', firstName: 'Soren', lastName: 'Vale', side: 'both', level: 'novice' }),
   athlete({ id: 'a4', firstName: 'Ines', lastName: 'Marr', canCox: true, notes: 'Head coxswain' }),
@@ -48,7 +44,6 @@ const ROSTER: Athlete[] = [
 
 const OPTS: RosterImportOptions = {
   teamId: TEAM,
-  weightUnit: 'lb',
   existing: ROSTER,
   skipDuplicates: true,
   seasonYear: 2026,
@@ -82,25 +77,6 @@ describe('ageBadge', () => {
     expect(ageBadge(1975, 'other', 2026)?.label).toBe('D');
     expect(ageBadge(2006, 'other', 2026)).toBeNull();
     expect(ageBadge(null, 'juniors', 2026)).toBeNull();
-  });
-});
-
-describe('weights', () => {
-  it('round-trips a weight typed in pounds', () => {
-    const kg = toKg(165, 'lb');
-    expect(kg).toBeCloseTo(74.84, 2);
-    expect(displayWeight(kg, 'lb')).toBe(165);
-    expect(displayWeight(kg, 'kg')).toBe(75);
-    expect(displayWeight(null, 'lb')).toBeNull();
-  });
-
-  it('parses typed weights, honoring a unit in the text', () => {
-    expect(parseWeight('165', 'lb').kg).toBeCloseTo(74.84, 2);
-    expect(parseWeight('75kg', 'lb').kg).toBe(75);
-    expect(parseWeight('165 lbs', 'kg').kg).toBeCloseTo(74.84, 2);
-    expect(parseWeight('', 'lb').kg).toBeNull();
-    expect(parseWeight('heavy', 'lb').error).toMatch(/as a number/);
-    expect(parseWeight('1650', 'lb').error).toMatch(/looks wrong/);
   });
 });
 
@@ -146,11 +122,11 @@ describe('CSV column guessing', () => {
       'Level',
       'Shirt size',
     ];
-    expect(guessRosterMapping(headers)).toMatchObject({
+    const mapping = guessRosterMapping(headers);
+    expect(mapping).toMatchObject({
       firstName: 0,
       lastName: 1,
       side: 2,
-      weight: 3,
       birthYear: 4,
       gradYear: 5,
       canCox: 6,
@@ -159,17 +135,20 @@ describe('CSV column guessing', () => {
       fullName: null,
       notes: null,
     });
+    // Athletes have no weight: a weight column is left out.
+    expect(Object.values(mapping)).not.toContain(3);
   });
 
   it('handles short and full-name headers', () => {
-    expect(guessRosterMapping(['Name', 'P/S', 'Wt', 'YOB', 'Class of'])).toMatchObject({
+    const short = guessRosterMapping(['Name', 'P/S', 'Wt', 'YOB', 'Class of']);
+    expect(short).toMatchObject({
       fullName: 0,
       firstName: null,
       side: 1,
-      weight: 2,
       birthYear: 3,
       gradYear: 4,
     });
+    expect(Object.values(short)).not.toContain(2);
     expect(guessRosterMapping(['First', 'Preferred first name', 'Surname'])).toMatchObject({
       firstName: 0,
       preferredName: 1,
@@ -181,17 +160,8 @@ describe('CSV column guessing', () => {
     expect(guessRosterMapping(['Name', 'Grade']).gradYear).toBeNull();
   });
 
-  it('reads the weight unit from the header when it says', () => {
-    const kg = ['Name', 'Weight (kg)'];
-    expect(guessWeightUnit(kg, guessRosterMapping(kg))).toBe('kg');
-    const lb = ['Name', 'Weight (lb)'];
-    expect(guessWeightUnit(lb, guessRosterMapping(lb))).toBe('lb');
-    const plain = ['Name', 'Weight'];
-    expect(guessWeightUnit(plain, guessRosterMapping(plain))).toBeNull();
-  });
-
   it('needs a name column', () => {
-    expect(checkRosterMapping({ side: 0, weight: 1, firstName: null })).toMatch(/first names/);
+    expect(checkRosterMapping({ side: 0, birthYear: 1, firstName: null })).toMatch(/first names/);
     expect(checkRosterMapping({ fullName: 0, firstName: null })).toBeNull();
   });
 });
@@ -250,7 +220,7 @@ describe('buildRosterImport', () => {
     OPTS,
   );
 
-  it('builds athletes from good rows, converting pounds to kg', () => {
+  it('builds athletes from good rows, leaving out the weight column', () => {
     const wren = rows[0]!;
     expect(wren.line).toBe(2);
     expect(wren.errors).toEqual([]);
@@ -265,7 +235,7 @@ describe('buildRosterImport', () => {
       level: 'novice',
       status: 'active',
     });
-    expect(wren.athlete!.weightKg).toBeCloseTo(68.04, 2);
+    expect(wren.athlete).not.toHaveProperty('weightKg');
   });
 
   it('treats a Cox side as a coxswain and reads two-digit graduation years', () => {
@@ -282,10 +252,7 @@ describe('buildRosterImport', () => {
     expect(rows[2]!.errors).toEqual(['The name is blank']);
     expect(rows[2]!.athlete).toBeNull();
     expect(rows[3]!.errors).toEqual(['Side "Bow" is not port, starboard, both, or cox']);
-    expect(rows[4]!.errors).toEqual([
-      'A weight of 1650 lb looks wrong. Check the number and the unit',
-      'Enter the birth year as four digits, like 2016',
-    ]);
+    expect(rows[4]!.errors).toEqual(['Enter the birth year as four digits, like 2016']);
   });
 
   it('skips names already on the roster and flags repeats within the file', () => {
@@ -303,27 +270,42 @@ describe('buildRosterImport', () => {
     expect(keep[0]!.athlete).not.toBeNull();
   });
 
-  it('takes the weight unit from the options, and splits a full-name column', () => {
-    const [row] = buildRosterImport(mapped('Name\tWeight\tSide\nChen, Ava\t70\tStarboard\n'), {
-      ...OPTS,
-      weightUnit: 'kg',
-    });
-    expect(row!.athlete).toMatchObject({
+  it('splits a full-name column', () => {
+    const [row] = buildRosterImport(mapped('Name\tWeight\tSide\nChen, Ava\t70\tStarboard\n'), OPTS);
+    expect(row!.errors).toEqual([]);
+    expect(row!.athlete).toEqual({
+      teamId: TEAM,
       firstName: 'Ava',
       lastName: 'Chen',
-      weightKg: 70,
       side: 'starboard',
+      canScull: false,
+      canCox: false,
+      level: 'experienced',
+      status: 'active',
     });
   });
 });
 
 describe('rosterToCsv', () => {
   it('exports columns the import reads back', () => {
-    const csv = rosterToCsv(ROSTER, 'lb');
+    const csv = rosterToCsv(ROSTER);
     const table = readCsvTable(csv);
-    expect(table.headers[6]).toBe('Weight (lb)');
+    expect(table.headers).toEqual([
+      'First name',
+      'Last name',
+      'Preferred name',
+      'Side',
+      'Can scull',
+      'Can cox',
+      'Birth year',
+      'Graduation year',
+      'Gender',
+      'Level',
+      'Status',
+      'Notes',
+    ]);
     const mapping = guessRosterMapping(table.headers);
-    for (const key of ['firstName', 'lastName', 'side', 'canScull', 'canCox', 'weight']) {
+    for (const key of ['firstName', 'lastName', 'side', 'canScull', 'canCox', 'birthYear']) {
       expect(mapping[key]).not.toBeNull();
     }
     const back = buildRosterImport(
@@ -343,7 +325,6 @@ describe('rosterToCsv', () => {
         status: a.status,
       });
     }
-    expect(byName.get('Rowan')!.weightKg).toBeCloseTo(72, 0);
   });
 
   it('makes file names from team names', () => {
