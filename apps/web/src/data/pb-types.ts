@@ -174,7 +174,6 @@ export type AthletesRecord = {
 	status: AthletesStatusOptions
 	team: RecordIdString
 	updated: IsoAutoDateString
-	weight_kg?: number
 }
 
 export const AvailabilityStatusOptions = {

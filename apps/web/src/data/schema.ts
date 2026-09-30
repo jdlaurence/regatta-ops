@@ -140,7 +140,7 @@ export const NULLABLE_SELECTS: Partial<Record<CollectionName, string[]>> = {
  * for these fields (none of them is meaningfully zero).
  */
 export const NULLABLE_NUMBERS: Partial<Record<CollectionName, string[]>> = {
-  athletes: ['weightKg', 'birthYear', 'gradYear'],
+  athletes: ['birthYear', 'gradYear'],
   shells: [
     'year',
     'lengthCm',

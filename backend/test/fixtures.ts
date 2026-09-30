@@ -88,7 +88,6 @@ export function testWorld(): { world: World; accounts: SeedAccount[] } {
         side: i === 4 ? 'none' : i % 2 === 0 ? 'port' : 'starboard',
         canScull: true,
         canCox: i === 4,
-        weightKg: 70 + i,
         birthYear: 2009,
         level: 'experienced',
         status: 'active',
