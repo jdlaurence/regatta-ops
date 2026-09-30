@@ -5,8 +5,16 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import type { LoadPlacement, Trailer, TrailerShelf } from '@srt/domain';
-import { useRegattaWorkingSet } from '@/data';
+import {
+  BOAT_CLASS_SPECS,
+  placementFromRecord,
+  shellLabel,
+  trailerDefFromRecords,
+  type LoadPlacement,
+} from '@srt/domain';
+import { useRegattaWorkingSet, type RegattaWorkingSet } from '@/data';
+import { TrailerEndView, type EndViewBoat } from '@/components/trailer';
+import { effectiveRules } from '@/features/trailer/lib';
 import { useRegattaId, useTrailerIdParam } from '@/app/params';
 import { regattaPath } from '@/app/nav-items';
 import { Select } from '@/components/ui/select';
@@ -19,26 +27,57 @@ import { printedText, instantText } from './format';
 import { TickBox, usePrintedAt } from './parts';
 
 /**
- * SLOT for WP-M's trailer end view (components/trailer/TrailerEndView.tsx), merged separately.
- * Replace the body with the diagram at print size, for example:
- *
- *   <TrailerEndView trailer={trailer} shelves={shelves} placements={placements} size="print" />
- *
- * Until then the slot shows a note on screen and nothing on paper.
+ * The trailer end view at print size (WP-M): the plan's boats on the racks, in team colors,
+ * above the shelf-by-shelf table. Hidden when the trailer has no load plan.
  */
-export function TrailerDiagramSlot(props: {
-  trailer: Trailer;
-  shelves: TrailerShelf[];
+export function TrailerDiagramSlot({
+  ws,
+  sheet,
+  placements,
+}: {
+  ws: RegattaWorkingSet;
+  sheet: LoadSheet;
   placements: LoadPlacement[];
 }) {
-  void props;
+  const { trailer, plan } = sheet;
+  const def = useMemo(
+    () => trailerDefFromRecords(trailer, ws.shelves, ws.compartments),
+    [trailer, ws.shelves, ws.compartments],
+  );
+  const rules = useMemo(() => effectiveRules(trailer, plan), [trailer, plan]);
+  const boats = useMemo((): EndViewBoat[] => {
+    const teamOf = new Map(
+      sheet.shelves.flatMap((s) => s.placements.map((p) => [p.placement.shellId, p.teams[0]])),
+    );
+    return placements.flatMap((p) => {
+      const shell = ws.byId.shells.get(p.shellId);
+      if (!shell) return [];
+      const team = teamOf.get(p.shellId);
+      return [
+        {
+          shellId: shell.id,
+          name: shellLabel(shell),
+          cls: shell.boatClass,
+          beamCm: shell.beamCm ?? BOAT_CLASS_SPECS[shell.boatClass].defaultBeamCm,
+          teamColor: team?.colorKey ?? null,
+          teamName: team?.name,
+        },
+      ];
+    });
+  }, [placements, sheet, ws.byId.shells]);
+  if (!plan) return null;
   return (
-    <div
-      data-slot="trailer-end-view"
-      data-print="hide"
-      className="mb-4 rounded-card border border-dashed border-line-strong p-4 text-sm text-ink-2 print:hidden"
-    >
-      The trailer end view prints here once the trailer diagram is in place.
+    <div data-slot="trailer-end-view" className="mb-4 break-inside-avoid">
+      <TableScroll>
+        <TrailerEndView
+          trailer={def}
+          rules={rules}
+          placements={placements.map(placementFromRecord)}
+          boats={boats}
+          width={680}
+          label={`${trailer.name}, end view, seen from the back`}
+        />
+      </TableScroll>
     </div>
   );
 }
@@ -237,7 +276,6 @@ export default function PrintLoadPage() {
     const placements = sheet.plan
       ? data.placements.filter((p) => p.loadPlanId === sheet.plan!.id)
       : [];
-    const shelves = data.shelves.filter((s) => s.trailerId === sheet.trailer.id);
     const placed = sheet.shelves.reduce((n, s) => n + s.placements.length, 0);
     body = (
       <PrintSheet label={`${sheet.trailer.name} load sheet`}>
@@ -258,7 +296,7 @@ export default function PrintLoadPage() {
             </>
           }
         />
-        <TrailerDiagramSlot trailer={sheet.trailer} shelves={shelves} placements={placements} />
+        <TrailerDiagramSlot ws={data} sheet={sheet} placements={placements} />
         {!sheet.plan && (
           <p className="mb-4 text-base text-ink-2">
             No boats are placed on this trailer for this regatta. Pack the trailer on the Trailer
