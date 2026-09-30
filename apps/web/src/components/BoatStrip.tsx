@@ -223,12 +223,16 @@ export function BoatSeat({
   const full = size === 'md' || size === 'print';
   const fit =
     fitNames && size === 'md' && !!occupant?.shortName && occupant.shortName !== occupant.name;
-  // A container query per seat picks the name that fits: full, else short ("Lena K.").
+  // A container query per seat picks the name that fits: full ("Lena Kim"), short ("Lena K."),
+  // or, in the tightest seats, the first name the way a whiteboard lineup reads.
   const shown = fit ? (
     <>
       <span className="@max-[7.5rem]:hidden">{occupant!.name}</span>
-      <span className="hidden @max-[7.5rem]:inline @max-[4.5rem]:text-sm">
+      <span className="hidden @max-[7.5rem]:inline @max-[4.5rem]:hidden">
         {occupant!.shortName}
+      </span>
+      <span className="hidden text-sm @max-[4.5rem]:inline">
+        {occupant!.shortName!.replace(/\s\S\.$/, '')}
       </span>
     </>
   ) : full ? (
@@ -298,8 +302,10 @@ export function BoatSeat({
         common,
         'min-w-0 flex-1 basis-0 border-l border-line first:border-l-0',
         s.seatPad,
+        fit && 'px-2',
         className,
       )}
+      title={fit ? occupant!.name : undefined}
       {...a11y}
       {...rest}
     >
