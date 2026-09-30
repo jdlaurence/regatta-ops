@@ -1,0 +1,161 @@
+/*
+ * SRT design tokens (PLAN.md §5.2). The only place colors are written as values.
+ * Light is the default; dark applies with the system preference unless the user picked
+ * light (data-theme="light"), and always when the user picked dark (data-theme="dark").
+ * Tailwind reads these through @theme in globals.css.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Base palette */
+  --bg: #f3f5f7; /* page: cool hull white */
+  --surface: #ffffff; /* cards, panels, rows */
+  --surface-2: #e8ecf0; /* hovered rows, empty seats, trailer arms */
+  --line: #d3dae2; /* borders and dividers */
+  --line-strong: #7d8997; /* control boundaries that need 3:1 (inputs, empty seats) */
+  --ink: #16213a; /* primary text: deep lake navy */
+  --ink-2: #5a6675; /* secondary text */
+  --accent: #0e6f76; /* lake teal: buttons, links, focus, selected */
+  --accent-ink: #ffffff; /* text on accent */
+  --accent-tint: #e2eff0;
+
+  /* Semantic */
+  --danger: #b42318;
+  --danger-tint: #f8e9e8;
+  --warn: #b54708;
+  --warn-tint: #f8ede6;
+  --ok: #1e7a46;
+  --ok-tint: #e9f2ed;
+  --info: #1d5bbf;
+  --info-tint: #e8eff9;
+
+  /* Team palette; tints are 12% of the hue on white */
+  --team-navy: #2f5da8;
+  --team-navy-tint: #e6ecf5;
+  --team-raspberry: #b23a6e;
+  --team-raspberry-tint: #f6e7ee;
+  --team-ochre: #c9791c;
+  --team-ochre-tint: #f9efe4;
+  --team-green: #3c8d5b;
+  --team-green-tint: #e8f1eb;
+  --team-violet: #7a4fb5;
+  --team-violet-tint: #efeaf6;
+  --team-cyan: #1f8a9e;
+  --team-cyan-tint: #e4f1f3;
+  --team-bronze: #8c6a2e;
+  --team-bronze-tint: #f1ede6;
+  --team-slate: #5b6b7c;
+  --team-slate-tint: #ebedef;
+
+  /* The one shadow: popovers and drawers */
+  --shadow-popover-value: 0 8px 24px rgba(22, 33, 58, 0.12);
+  /* Behind dialogs and slide-overs */
+  --scrim: rgba(22, 33, 58, 0.28);
+
+  /* Motion (PLAN.md §5.2): only in response to an action */
+  --motion-strike: 180ms;
+  --motion-settle: 120ms;
+  --motion-pack: 400ms;
+  --motion-panel: 160ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg: #0f141b;
+    --surface: #161c25;
+    --surface-2: #1f2731;
+    --line: #2b3542;
+    --line-strong: #667385;
+    --ink: #e6ebf1;
+    --ink-2: #9aa6b4;
+    --accent: #3fb4bb;
+    --accent-ink: #0f141b;
+    --accent-tint: #193238;
+
+    --danger: #f97066;
+    --danger-tint: #3a292f;
+    --warn: #f38744;
+    --warn-tint: #392d2a;
+    --ok: #4cc38a;
+    --ok-tint: #1f3735;
+    --info: #7ea8f5;
+    --info-tint: #273246;
+
+    /* One step lighter; tints are 20% of the hue on the dark surface */
+    --team-navy: #6f97db;
+    --team-navy-tint: #283549;
+    --team-raspberry: #dc75a2;
+    --team-raspberry-tint: #3e2e3e;
+    --team-ochre: #e39b47;
+    --team-ochre-tint: #3f352c;
+    --team-green: #63b584;
+    --team-green-tint: #253b38;
+    --team-violet: #a787db;
+    --team-violet-tint: #333149;
+    --team-cyan: #4db4c7;
+    --team-cyan-tint: #213a45;
+    --team-bronze: #be9a5a;
+    --team-bronze-tint: #383530;
+    --team-slate: #8a9aac;
+    --team-slate-tint: #2d3540;
+
+    --shadow-popover-value: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --scrim: rgba(0, 0, 0, 0.55);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0f141b;
+  --surface: #161c25;
+  --surface-2: #1f2731;
+  --line: #2b3542;
+  --line-strong: #667385;
+  --ink: #e6ebf1;
+  --ink-2: #9aa6b4;
+  --accent: #3fb4bb;
+  --accent-ink: #0f141b;
+  --accent-tint: #193238;
+
+  --danger: #f97066;
+  --danger-tint: #3a292f;
+  --warn: #f38744;
+  --warn-tint: #392d2a;
+  --ok: #4cc38a;
+  --ok-tint: #1f3735;
+  --info: #7ea8f5;
+  --info-tint: #273246;
+
+  --team-navy: #6f97db;
+  --team-navy-tint: #283549;
+  --team-raspberry: #dc75a2;
+  --team-raspberry-tint: #3e2e3e;
+  --team-ochre: #e39b47;
+  --team-ochre-tint: #3f352c;
+  --team-green: #63b584;
+  --team-green-tint: #253b38;
+  --team-violet: #a787db;
+  --team-violet-tint: #333149;
+  --team-cyan: #4db4c7;
+  --team-cyan-tint: #213a45;
+  --team-bronze: #be9a5a;
+  --team-bronze-tint: #383530;
+  --team-slate: #8a9aac;
+  --team-slate-tint: #2d3540;
+
+  --shadow-popover-value: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --scrim: rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-strike: 0ms;
+    --motion-settle: 0ms;
+    --motion-pack: 0ms;
+    --motion-panel: 0ms;
+  }
+}

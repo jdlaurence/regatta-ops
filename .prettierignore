@@ -1,6 +1,6 @@
 pnpm-lock.yaml
 PLAN.md
-data/
+/data/
 backend/pb_data/
 backend/pb_public/
 backend/bin/

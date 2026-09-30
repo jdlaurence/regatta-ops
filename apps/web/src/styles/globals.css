@@ -1,0 +1,157 @@
+@import 'tailwindcss';
+@import './tokens.css';
+@import './print.css';
+
+/*
+ * Tailwind reads the tokens here. Default palettes, fonts, sizes, radii, and shadows are
+ * cleared so only SRT's tokens exist as utilities (bg-surface, text-ink-2, rounded-card, ...).
+ */
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-tint: var(--accent-tint);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-warn: var(--warn);
+  --color-warn-tint: var(--warn-tint);
+  --color-ok: var(--ok);
+  --color-ok-tint: var(--ok-tint);
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
+  --color-scrim: var(--scrim);
+
+  /* `team` follows the nearest --team / --team-tint set by teamStyle() (lib/team-colors.ts). */
+  --color-team: var(--team, var(--team-slate));
+  --color-team-tint: var(--team-tint, var(--team-slate-tint));
+  --color-team-navy: var(--team-navy);
+  --color-team-navy-tint: var(--team-navy-tint);
+  --color-team-raspberry: var(--team-raspberry);
+  --color-team-raspberry-tint: var(--team-raspberry-tint);
+  --color-team-ochre: var(--team-ochre);
+  --color-team-ochre-tint: var(--team-ochre-tint);
+  --color-team-green: var(--team-green);
+  --color-team-green-tint: var(--team-green-tint);
+  --color-team-violet: var(--team-violet);
+  --color-team-violet-tint: var(--team-violet-tint);
+  --color-team-cyan: var(--team-cyan);
+  --color-team-cyan-tint: var(--team-cyan-tint);
+  --color-team-bronze: var(--team-bronze);
+  --color-team-bronze-tint: var(--team-bronze-tint);
+  --color-team-slate: var(--team-slate);
+  --color-team-slate-tint: var(--team-slate-tint);
+
+  --font-*: initial;
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* Type scale (px): 12, 13, 14 (body), 16, 20, 24, 32, 40. UI line height 1.3. */
+  --text-*: initial;
+  --text-xs: 12px;
+  --text-xs--line-height: 1.3;
+  --text-sm: 13px;
+  --text-sm--line-height: 1.3;
+  --text-base: 14px;
+  --text-base--line-height: 1.3;
+  --text-md: 16px;
+  --text-md--line-height: 1.3;
+  --text-lg: 20px;
+  --text-lg--line-height: 1.25;
+  --text-xl: 24px;
+  --text-xl--line-height: 1.2;
+  --text-xl--letter-spacing: -0.01em;
+  --text-2xl: 32px;
+  --text-2xl--line-height: 1.1;
+  --text-2xl--letter-spacing: -0.02em;
+  --text-3xl: 40px;
+  --text-3xl--line-height: 1.05;
+  --text-3xl--letter-spacing: -0.025em;
+
+  --leading-prose: 1.5;
+
+  /* 6 px controls, 10 px cards and panels, pill only for boats. */
+  --radius-*: initial;
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --radius-boat: 9999px;
+
+  --shadow-*: initial;
+  --shadow-popover: var(--shadow-popover-value);
+
+  --animate-*: initial;
+  --animate-strike: srt-strike var(--motion-strike) ease-out both;
+  --animate-settle: srt-settle var(--motion-settle) ease-out both;
+}
+
+@keyframes srt-strike {
+  from {
+    background-size: 0% 2px;
+  }
+  to {
+    background-size: 100% 2px;
+  }
+}
+
+@keyframes srt-settle {
+  from {
+    transform: scale(0.96);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--accent-tint);
+  }
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
