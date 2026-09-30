@@ -46,8 +46,8 @@ export interface ScheduleListProps {
   loose: Entry[];
   findings: readonly Finding[];
   canEdit: boolean;
-  /** Draw each entry's crew as a boat strip (the "Show crews" toggle). Default true. */
-  showCrews?: boolean;
+  /** Draw each entry's lineup as a boat strip (the "Show lineups" toggle). Default true. */
+  showLineups?: boolean;
   onSaveTime: (event: RegattaEvent, hhmm: string) => void;
   onSaveName: (event: RegattaEvent, name: string) => void;
   onEditEvent: (event: RegattaEvent) => void;
@@ -61,7 +61,7 @@ export function ScheduleList({
   loose,
   findings,
   canEdit,
-  showCrews = true,
+  showLineups = true,
   onSaveTime,
   onSaveName,
   onEditEvent,
@@ -129,7 +129,7 @@ export function ScheduleList({
                       ws={ws}
                       regattaId={regattaId}
                       findings={byEntry.get(entry.id) ?? []}
-                      showCrew={showCrews}
+                      showLineup={showLineups}
                     />
                   ))}
                 </ul>
@@ -164,7 +164,7 @@ export function ScheduleList({
                 ws={ws}
                 regattaId={regattaId}
                 findings={byEntry.get(entry.id) ?? []}
-                showCrew={showCrews}
+                showLineup={showLineups}
               />
             ))}
           </ul>
@@ -380,13 +380,13 @@ function EntryRow({
   ws,
   regattaId,
   findings,
-  showCrew,
+  showLineup,
 }: {
   entry: Entry;
   ws: RegattaWorkingSet;
   regattaId: string;
   findings: Finding[];
-  showCrew: boolean;
+  showLineup: boolean;
 }) {
   const navigate = useNavigate();
   const team = ws.byId.teams.get(entry.teamId);
@@ -436,7 +436,7 @@ function EntryRow({
         </Link>
         {scratched && <span className="shrink-0 text-xs text-ink-2">Scratched</span>}
       </div>
-      {showCrew && (
+      {showLineup && (
         <BoatStrip
           boatClass={entry.boatClass}
           seats={seats}

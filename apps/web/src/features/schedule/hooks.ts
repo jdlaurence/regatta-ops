@@ -27,21 +27,21 @@ export function groupParam(g: TimelineGroupBy): string {
  * `?event=<id>` to open the list on one event.
  * Changes replace the history entry, so filters do not pile up behind the back button.
  */
-const CREWS_KEY = 'srt-schedule-crews';
+const LINEUPS_KEY = 'srt-schedule-lineups';
 
-/** The viewer's last "Show crews" choice (a per-device convenience; storage may be blocked). */
-function storedShowCrews(): boolean {
+/** The viewer's last "Show lineups" choice (a per-device convenience; storage may be blocked). */
+function storedShowLineups(): boolean {
   try {
-    return localStorage.getItem(CREWS_KEY) !== 'hide';
+    return localStorage.getItem(LINEUPS_KEY) !== 'hide';
   } catch {
     return true;
   }
 }
 
-export function rememberShowCrews(show: boolean) {
+export function rememberShowLineups(show: boolean) {
   try {
-    if (show) localStorage.removeItem(CREWS_KEY);
-    else localStorage.setItem(CREWS_KEY, 'hide');
+    if (show) localStorage.removeItem(LINEUPS_KEY);
+    else localStorage.setItem(LINEUPS_KEY, 'hide');
   } catch {
     // Private windows and blocked storage: the URL still carries the choice.
   }
@@ -73,15 +73,15 @@ export function useScheduleParams() {
       ),
     [setParams],
   );
-  const crews = params.get('crews');
+  const lineups = params.get('lineups');
   // The URL wins (links and the back button); otherwise the viewer's last choice.
-  const showCrews = crews === 'show' ? true : crews === 'hide' ? false : storedShowCrews();
+  const showLineups = lineups === 'show' ? true : lineups === 'hide' ? false : storedShowLineups();
   return {
     view,
     groupBy,
     filters,
-    /** List view: draw each entry's crew as a boat strip, or keep the schedule clean. */
-    showCrews,
+    /** List view: draw each entry's lineup as a boat strip, or keep the schedule clean. */
+    showLineups,
     day: params.get('day'),
     /** A link to one event (activity feed, mention emails): show and highlight it once. */
     event: params.get('event'),

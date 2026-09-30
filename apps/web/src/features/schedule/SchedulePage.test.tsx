@@ -97,12 +97,12 @@ describe('SchedulePage list', () => {
     expect(within(entryRow(ENTRY2)).getByText('Hot seat')).toBeInTheDocument();
   });
 
-  it('hides and shows the crews, and remembers the choice', async () => {
+  it('hides and shows the lineups, and remembers the choice', async () => {
     const user = userEvent.setup();
     const { router } = renderSchedule();
     await screen.findByRole('list', { name: 'Races and logistics' });
     const strips = () => entryRow(IDS.entry1).querySelectorAll('[data-boat-class]');
-    const toggle = () => screen.getByRole('switch', { name: 'Show crews' });
+    const toggle = () => screen.getByRole('switch', { name: 'Show lineups' });
     expect(strips()).toHaveLength(1);
     expect(toggle()).toBeChecked();
     const before = toggle();
@@ -113,11 +113,11 @@ describe('SchedulePage list', () => {
     expect(toggle()).toHaveFocus();
     // The rest of the row stays: team, label, shell, oars.
     expect(within(entryRow(IDS.entry1)).getByText('Spencer')).toBeInTheDocument();
-    expect(router.state.location.search).toContain('crews=hide');
-    expect(localStorage.getItem('srt-schedule-crews')).toBe('hide');
+    expect(router.state.location.search).toContain('lineups=hide');
+    expect(localStorage.getItem('srt-schedule-lineups')).toBe('hide');
     await user.click(toggle());
     await waitFor(() => expect(strips()).toHaveLength(1));
-    expect(localStorage.getItem('srt-schedule-crews')).toBeNull();
+    expect(localStorage.getItem('srt-schedule-lineups')).toBeNull();
   });
 
   it('edits an event time inline, and conflicts follow at once', async () => {

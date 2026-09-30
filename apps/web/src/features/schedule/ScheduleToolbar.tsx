@@ -13,7 +13,7 @@ import { SegmentedControl, Switch } from '@/components/ui/controls';
 import { Label } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { hasFilters, type ScheduleFilters } from './lib';
-import { groupParam, rememberShowCrews, type ScheduleView } from './hooks';
+import { groupParam, rememberShowLineups, type ScheduleView } from './hooks';
 
 const CLASS_ORDER: BoatClass[] = ['8+', '4+', '4-', '4x+', '4x', '2+', '2-', '2x', '1x'];
 
@@ -24,8 +24,8 @@ export interface ScheduleToolbarProps {
   view: ScheduleView;
   groupBy: TimelineGroupBy;
   filters: ScheduleFilters;
-  /** List view: crews shown as boat strips. */
-  showCrews: boolean;
+  /** List view: lineups shown as boat strips. */
+  showLineups: boolean;
   onChange: (patch: Record<string, string | null>) => void;
 }
 
@@ -36,7 +36,7 @@ export function ScheduleToolbar({
   view,
   groupBy,
   filters,
-  showCrews,
+  showLineups,
   onChange,
 }: ScheduleToolbarProps) {
   const classes = useMemo(() => {
@@ -96,15 +96,15 @@ export function ScheduleToolbar({
         {view === 'list' && (
           <div className="flex items-center gap-2">
             <Switch
-              id="schedule-show-crews"
-              checked={showCrews}
+              id="schedule-show-lineups"
+              checked={showLineups}
               onCheckedChange={(on) => {
-                rememberShowCrews(on);
-                onChange({ crews: on ? 'show' : 'hide' });
+                rememberShowLineups(on);
+                onChange({ lineups: on ? 'show' : 'hide' });
               }}
             />
-            <Label htmlFor="schedule-show-crews" className="text-base">
-              Show crews
+            <Label htmlFor="schedule-show-lineups" className="text-base">
+              Show lineups
             </Label>
           </div>
         )}
