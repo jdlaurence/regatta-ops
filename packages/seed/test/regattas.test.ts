@@ -54,15 +54,12 @@ describe('rosters', () => {
     ]);
   });
 
-  it('gives each junior team three light coxswains, scullers, novices, and U15 to U19', () => {
+  it('gives each junior team three coxswains, scullers, novices, and U15 to U19', () => {
     for (const teamId of [SEED_TEAM_IDS.boys, SEED_TEAM_IDS.girls]) {
       const team = byTeam(teamId);
       const coxes = team.filter((a) => a.side === 'none');
       expect(coxes).toHaveLength(3);
-      for (const c of coxes) {
-        expect(c.canCox).toBe(true);
-        expect(c.weightKg!).toBeLessThan(57);
-      }
+      for (const c of coxes) expect(c.canCox).toBe(true);
       expect(team.some((a) => a.canScull)).toBe(true);
       expect(new Set(team.map((a) => a.level))).toEqual(new Set(['novice', 'experienced']));
       expect(new Set(team.map((a) => a.side))).toEqual(
@@ -364,9 +361,7 @@ describe('Head of the Lake 2026', () => {
     const conflict = serious.find((f) => f.code === 'SHELL_CONFLICT')!;
     expect(conflict.resource?.id).toBe(seedShellId('Kokanee'));
     expect(new Set(conflict.teamIds)).toEqual(new Set([SEED_TEAM_IDS.boys, SEED_TEAM_IDS.evening]));
-    expect(new Set(fs.filter((f) => f.severity === 'info').map((f) => f.code))).toEqual(
-      new Set(['CREW_WEIGHT']),
-    );
+    expect(fs.filter((f) => f.severity === 'info')).toEqual([]);
   });
 });
 

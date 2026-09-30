@@ -2,7 +2,6 @@
 
 import {
   DEFAULT_CLUB_SETTINGS,
-  lbToKg,
   stableId,
   type Athlete,
   type AthleteLevel,
@@ -22,7 +21,7 @@ import {
 } from './names';
 import { rng } from './prng';
 import { SEED_EMAILS, SEED_USER_IDS, TEAM_COACH, teamId, type TeamKey, type UserKey } from './ids';
-import { clone, round1 } from './world';
+import { clone } from './world';
 
 export function addClubSettings(w: World): void {
   const settings: ClubSettings = {
@@ -222,22 +221,6 @@ function mastersSpecs(team: '5am' | 'evening'): AthleteSpec[] {
   ];
 }
 
-/** Rowers' weight bands by birth year, lb. Set so most crews sit inside their shells' ranges. */
-const WEIGHT_LB: Record<'M' | 'F', Record<number, [number, number]>> = {
-  M: { 2008: [172, 202], 2009: [168, 198], 2010: [162, 192], 2011: [152, 182], 2012: [140, 170] },
-  F: { 2008: [142, 170], 2009: [140, 168], 2010: [136, 164], 2011: [130, 158], 2012: [124, 152] },
-};
-
-function weightLb(spec: AthleteSpec, r: ReturnType<typeof rng>): number {
-  if (spec.cox) {
-    if (spec.birthYear < 2000) return spec.gender === 'M' ? r.int(148, 165) : r.int(112, 128);
-    return spec.gender === 'M' ? r.int(104, 122) : r.int(92, 110);
-  }
-  if (spec.birthYear < 2000) return spec.gender === 'M' ? r.int(165, 205) : r.int(125, 165);
-  const [lo, hi] = WEIGHT_LB[spec.gender][spec.birthYear]!;
-  return r.int(lo, hi);
-}
-
 /** Every athlete's last name is unique across the club, so "Ava C." style short names differ. */
 export function addAthletes(w: World): void {
   const lastNames = rng('names:last').shuffle(LAST_NAMES);
@@ -258,7 +241,6 @@ export function addAthletes(w: World): void {
 
   for (const team of ['boys', 'girls', '5am', 'evening'] as const) {
     const specs = team === 'boys' || team === 'girls' ? juniorSpecs(team) : mastersSpecs(team);
-    const r = rng(`athletes:${team}`);
     const used = { M: 0, F: 0 };
     let rowerIndex = 0;
     let portNext = true;
@@ -293,7 +275,6 @@ export function addAthletes(w: World): void {
         side,
         canScull,
         canCox,
-        weightKg: round1(lbToKg(weightLb(spec, r))),
         birthYear: spec.birthYear,
         gender: spec.gender,
         gradYear: junior ? spec.birthYear + 19 : null,

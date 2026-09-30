@@ -55,7 +55,7 @@ export function unboatedAthletes(
 
 /**
  * Computed facts for an entry (PLAN.md §4.4 Entry details). Rowers exclude the cox for
- * weight, age, and side counts; `ageGroup` is the oldest junior group of anyone seated, cox
+ * age and side counts; `ageGroup` is the oldest junior group of anyone seated, cox
  * included. Ages need `seasonYear` (age = seasonYear − birthYear, USRowing convention).
  * `portCount` / `starboardCount` count seated rowers by their own side (both/none count as neither).
  */
@@ -83,8 +83,6 @@ export function entryStats(
     portCount: rowers.filter((a) => a.side === 'port').length,
     starboardCount: rowers.filter((a) => a.side === 'starboard').length,
   };
-  const weights = rowers.map((a) => a.weightKg).filter((w): w is number => w != null);
-  if (weights.length > 0) stats.avgWeightKg = weights.reduce((s, w) => s + w, 0) / weights.length;
   if (seasonYear != null) {
     const ages = rowers
       .map((a) => a.birthYear)

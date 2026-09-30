@@ -56,7 +56,6 @@ export const FINDING_CODES = [
   'SIDE_MISMATCH',
   'COX_NOT_COX',
   'SCULLER_NOT_SCULLER',
-  'CREW_WEIGHT',
   'UNSCHEDULED',
   'NOT_ON_TRAILER',
   'AGE_GROUP',
@@ -80,8 +79,6 @@ export interface Finding {
 }
 
 export interface EntryStats {
-  /** Average rower weight (cox excluded), over rowers with a weight. */
-  avgWeightKg?: number;
   /** Average rower age (cox excluded); needs seasonYear. */
   avgAge?: number;
   mastersCategory?: string;
