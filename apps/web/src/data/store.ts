@@ -22,6 +22,8 @@ export interface ListQuery<T> {
   in?: { [K in FieldOf<T>]?: readonly NonNullable<T[K]>[] };
   /** One key or several; later keys break ties. */
   sort?: SortKey<T> | readonly SortKey<T>[];
+  /** At most this many records, after sorting (activity feeds, "Show more"). */
+  limit?: number;
 }
 
 /** Create payload: everything but the server-managed fields; `id` is optional (15 chars a-z0-9). */
@@ -268,8 +270,9 @@ export function sortRecords<T extends object>(
 
 /** Apply a query to an in-memory array (filter, then sort). */
 export function applyQuery<T extends object>(records: readonly T[], query?: ListQuery<T>): T[] {
-  return sortRecords(
+  const sorted = sortRecords(
     records.filter((r) => matchesQuery(r, query)),
     query?.sort,
   );
+  return query?.limit != null ? sorted.slice(0, Math.max(0, query.limit)) : sorted;
 }

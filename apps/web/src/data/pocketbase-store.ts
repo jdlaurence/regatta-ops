@@ -108,19 +108,27 @@ export class PocketBaseStore implements DataStore {
   ): Promise<RecordOf<C>[]> {
     try {
       const chunks = chunkQuery(query);
+      const limit = query?.limit;
       const results: RecordOf<C>[] = [];
       for (const chunk of chunks) {
         const params = toPbListParams(collection, chunk);
         if (!params) continue;
-        const raw = await this.pb.collection(collection).getFullList({
-          batch: 500,
+        const options = {
           ...(params.filter ? { filter: this.pb.filter(params.filter, params.params) } : {}),
           ...(params.sort ? { sort: params.sort } : {}),
-        });
+        };
+        const raw =
+          limit != null
+            ? (
+                await this.pb
+                  .collection(collection)
+                  .getList(1, Math.max(1, limit), { ...options, skipTotal: true })
+              ).items
+            : await this.pb.collection(collection).getFullList({ batch: 500, ...options });
         for (const r of raw) results.push(this.map(collection, r));
       }
-      // Chunked results arrive per chunk; restore the requested order across chunks.
-      return chunks.length > 1 ? applyQuery(results, { sort: query?.sort }) : results;
+      // Chunked results arrive per chunk; restore the requested order (and limit) across chunks.
+      return chunks.length > 1 ? applyQuery(results, { sort: query?.sort, limit }) : results;
     } catch (err) {
       throw toStoreError(err);
     }

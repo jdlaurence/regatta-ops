@@ -136,16 +136,20 @@ export function ActivityFeed({
   title = 'Activity',
   className,
 }: ActivityFeedProps) {
+  const [shown, setShown] = useState(pageSize);
+  // One more than shown, so "Show more" knows whether there is more without loading the log.
   const activity = useList(
     'activity_log',
-    regattaId ? { where: { regattaId }, sort: '-created' } : { sort: '-created' },
+    regattaId
+      ? { where: { regattaId }, sort: '-created', limit: shown + 1 }
+      : { sort: '-created', limit: shown + 1 },
+    { keepPrevious: true },
   );
   // Same keys as the working set and the navigation: cache hits on regatta pages.
   const users = useList('users', { sort: 'name' });
   const regattas = useList('regattas', { sort: 'startDate' }, { enabled: !regattaId });
   const lookups = useRegattaLookups(regattaId);
   const now = useNow(30_000);
-  const [shown, setShown] = useState(pageSize);
 
   const names = useMemo(() => new Map((users.data ?? []).map((u) => [u.id, u.name])), [users.data]);
   const regattaNames = useMemo(
