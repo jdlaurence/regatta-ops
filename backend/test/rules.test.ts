@@ -59,7 +59,8 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
     it('any signed-in user reads everything except share links', async () => {
       expect((await viewer.collection('entries').getList(1, 50)).totalItems).toBe(1);
       expect((await viewer.collection('users').getList(1, 50)).totalItems).toBe(5);
-      expect((await coach.collection('share_links').getList(1, 50)).totalItems).toBe(0);
+      // Coaches and admins list share links (share.test.ts); viewers never see them.
+      expect((await viewer.collection('share_links').getList(1, 50)).totalItems).toBe(0);
     });
 
     it('other users’ emails stay hidden, except from admins', async () => {
