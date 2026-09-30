@@ -7,6 +7,7 @@ import {
   clockAt,
   isComing,
   isCoxed,
+  isHotSeat,
   isSculling,
   seatSide,
   seatsFor,
@@ -1006,6 +1007,23 @@ export function seatConflicts(
     if (!cur || SEVERITY_RANK[f.severity] < SEVERITY_RANK[cur]) out[seat] = f.severity;
   }
   return out;
+}
+
+/**
+ * The plans of acknowledged hot seats among an entry's findings. The plan is stored on the later
+ * entry of the pair, and shows on both (PLAN.md §4.4: it prints on both teams' sheets).
+ */
+export function hotSeatPlans(
+  findings: readonly Finding[],
+  entryById: ReadonlyMap<Id, Entry>,
+): string[] {
+  const plans = new Set<string>();
+  for (const f of findings) {
+    if (!isHotSeat(f) || !f.acknowledged) continue;
+    const later = entryById.get(f.entryIds[1] ?? '');
+    if (later?.hotSeatPlan?.trim()) plans.add(later.hotSeatPlan.trim());
+  }
+  return [...plans];
 }
 
 /** "Lundberg rigged as 4x+" when the shell's own class differs from the entry's. */

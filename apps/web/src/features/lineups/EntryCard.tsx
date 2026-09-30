@@ -13,14 +13,7 @@ import {
   RefreshCcw,
   Trash2,
 } from 'lucide-react';
-import {
-  entryStats,
-  formatWeight,
-  isHotSeat,
-  type Entry,
-  type EntryStatus,
-  type Finding,
-} from '@srt/domain';
+import { entryStats, formatWeight, type Entry, type EntryStatus, type Finding } from '@srt/domain';
 import { cn } from '@/lib/cn';
 import { worstSeverity } from '@/data';
 import { ClassBadge } from '@/components/chips';
@@ -39,7 +32,7 @@ import {
 } from '@/components/ui/menu';
 import { useLineup } from './context';
 import { OarPicker, ShellPicker } from './EquipmentPickers';
-import { rerigNote, seatConflicts, stripFits } from './lib';
+import { hotSeatPlans, rerigNote, seatConflicts, stripFits } from './lib';
 import { EntrySeatList, EntryStrip } from './Seats';
 import { useLineupUi } from './store';
 
@@ -63,17 +56,6 @@ export function StatusText({ status }: { status: EntryStatus }) {
       {STATUS_LABELS[status]}
     </span>
   );
-}
-
-/** The plan text of an acknowledged hot seat involving this entry (stored on the later entry). */
-export function hotSeatPlans(findings: Finding[], entryById: Map<string, Entry>): string[] {
-  const plans = new Set<string>();
-  for (const f of findings) {
-    if (!isHotSeat(f) || !f.acknowledged) continue;
-    const later = entryById.get(f.entryIds[1] ?? '');
-    if (later?.hotSeatPlan?.trim()) plans.add(later.hotSeatPlan.trim());
-  }
-  return [...plans];
 }
 
 function EntryMenu({ entry }: { entry: Entry }) {

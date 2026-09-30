@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { performance } from 'node:perf_hooks';
-import { findConflicts, unboatedAthletes, type RegattaEvent, type Seat } from '@srt/domain';
+import {
+  findConflicts,
+  hotSeatAckPatch,
+  unboatedAthletes,
+  type RegattaEvent,
+  type Seat,
+} from '@srt/domain';
 import { buildConflictInput } from '@/data';
 import type { MemoryStore } from '@/data/memory-store';
 import { IDS } from '@/test/fixtures';
@@ -12,6 +18,7 @@ import {
   clearOps,
   equipmentHints,
   groupEntries,
+  hotSeatPlans,
   labelPrefix,
   matchesFilters,
   normalizeEventName,
@@ -419,6 +426,41 @@ describe('placement batches against the MemoryStore unique index', () => {
     expect(at(store, L.boysEight, '5')).toBe(BOYS[0]);
     expect(at(store, L.boysEight, '1')).toBeNull();
     expect(at(store, IDS.entry1, '3')).toBeNull();
+  });
+});
+
+describe('hotSeatPlans', () => {
+  it('shows an acknowledged plan on both entries of the pair', () => {
+    const w = lineupWorld();
+    // Boys U17 8 takes Monahan at 11:30 after the girls' 10:20: a hot seat (35 min).
+    entry(w, {
+      id: 'entryhot0000001',
+      teamId: IDS.boys,
+      eventId: L.event4,
+      label: 'U17 8',
+      shellId: IDS.shell2,
+    });
+    const data = lineupData(w);
+    const input = { ...data, timezone: 'America/Los_Angeles', seasonYear: 2026 };
+    const hot = findConflicts(input).find((f) => f.code === 'SHELL_HOT_SEAT')!;
+    const patch = hotSeatAckPatch(hot, input)!;
+    const later = w.entries.find((e) => e.id === patch.entryId)!;
+    Object.assign(later, {
+      hotSeatFingerprint: patch.hotSeatFingerprint,
+      hotSeatAckBy: IDS.coach,
+      hotSeatPlan: 'Girls cox meets the U17 crew at dock B',
+    });
+    const after = findConflicts({
+      ...lineupData(w),
+      timezone: 'America/Los_Angeles',
+      seasonYear: 2026,
+    });
+    const idx = buildIndex(lineupData(w));
+    for (const id of [L.girlsEntry, 'entryhot0000001']) {
+      const mine = after.filter((f) => f.entryIds.includes(id));
+      expect(mine.find((f) => f.code === 'SHELL_HOT_SEAT')?.severity).toBe('info');
+      expect(hotSeatPlans(mine, idx.entryById)).toEqual(['Girls cox meets the U17 crew at dock B']);
+    }
   });
 });
 
