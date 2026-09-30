@@ -9,7 +9,7 @@ import type { PackBoat, Reason, Team } from '@srt/domain';
 import { Button } from '@/components/ui/button';
 import { TeamChip } from '@/components/chips';
 import { BoatPill, ReasonList } from './parts';
-import type { WhyHere } from './lib';
+import { lockNote, type WhyHere } from './lib';
 
 function Heading({ boat, team }: { boat: PackBoat; team: Team | undefined }) {
   return (
@@ -61,9 +61,7 @@ export function PlacedBoatDetails({
           ) : (
             <LockOpen aria-hidden className="size-4 shrink-0 text-ink-2" />
           )}
-          {why.lock
-            ? `${why.lock}. Pack trailer keeps it here.`
-            : 'Not locked. Pack trailer may move it.'}
+          {why.lock ? lockNote(why.lock) : 'Not locked. Pack trailer may move it.'}
         </p>
         {canEdit && (
           <div className="flex flex-wrap gap-2">

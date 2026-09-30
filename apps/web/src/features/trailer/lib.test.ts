@@ -26,6 +26,7 @@ import {
   effectiveRules,
   flaggedPlacements,
   formatScore,
+  lockNote,
   lockPlacement,
   lockedBy,
   metricsSummary,
@@ -148,6 +149,9 @@ describe('drops and locks', () => {
     expect(again.reasons.filter((r) => r.ruleId === LOCK_RULE_ID)).toHaveLength(1);
     const unlocked = unlockPlacement(again);
     expect(unlocked).toEqual({ locked: false, reasons: p.reasons });
+    // "Why here?" ends the name's initial with one period, not two.
+    expect(lockNote(lockedBy(locked)!)).toBe('Locked by Sam W. Pack trailer keeps it here.');
+    expect(lockNote('Locked by Sam')).toBe('Locked by Sam. Pack trailer keeps it here.');
     expect(lockedBy(unlocked)).toBeNull();
   });
 

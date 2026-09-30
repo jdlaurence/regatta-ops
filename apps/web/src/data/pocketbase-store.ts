@@ -291,18 +291,21 @@ export class PocketBaseStore implements DataStore {
 
   private createAuth(): AuthApi {
     const pb = this.pb;
-    // `user` must return the same object until the session changes (useSyncExternalStore).
-    let cachedFor: RecordModel | null = null;
+    // `user` must return the same object until the session changes (useSyncExternalStore). In
+    // the browser, LocalAuthStore parses its local storage entry on every read, so
+    // `authStore.record` is a new object each time: compare what it says, not its identity.
+    let cachedFor: string | null = null;
     let cached: User | null = null;
     const currentUser = (): User | null => {
-      const rec = pb.authStore.record;
+      const rec: RecordModel | null = pb.authStore.record;
       if (!pb.authStore.isValid || !rec || rec.collectionName !== 'users') {
         cachedFor = null;
         cached = null;
         return null;
       }
-      if (rec !== cachedFor) {
-        cachedFor = rec;
+      const key = JSON.stringify(rec);
+      if (key !== cachedFor) {
+        cachedFor = key;
         cached = this.map('users', rec);
       }
       return cached;

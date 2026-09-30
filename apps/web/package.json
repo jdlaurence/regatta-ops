@@ -14,7 +14,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "build:demo": "vite build --mode demo --outDir dist/demo",
     "preview:demo": "vite preview --mode demo --outDir dist/demo",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=demo",
+    "test:e2e:pb": "playwright test --project=pocketbase",
     "icons": "tsx scripts/generate-icons.ts"
   },
   "dependencies": {

@@ -12,7 +12,8 @@ pnpm dev                # PocketBase + Vite together (needs `pnpm pb:download` o
 pnpm demo               # the app on seed data in the browser, MemoryStore, no backend
 pnpm test               # all unit tests (Vitest)
 pnpm --filter @srt/domain test      # one package
-pnpm test:e2e           # Playwright (apps/web/e2e)
+pnpm test:e2e           # Playwright phase demos on demo mode (apps/web/e2e)
+pnpm test:e2e:pb        # Playwright smoke suite on a real, seeded PocketBase (e2e/pb)
 pnpm lint && pnpm typecheck
 pnpm build              # web app into backend/pb_public/
 pnpm pb:download | pb:migrate | pb:seed | pb:reset | pb:types
