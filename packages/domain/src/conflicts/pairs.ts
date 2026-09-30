@@ -3,6 +3,7 @@
 // gap = b.T − a.busyEnd (minutes from landing to the next race start). Different days never
 // pair. Checking consecutive pairs is sufficient because a later race is never closer.
 
+import { boatClassSpec } from '../boat-classes';
 import type { Id } from '../types';
 import { clock, msToMinutes, MINUTE_MS, type Ctx, type ScheduledEntry } from './context';
 import { draft, type Draft } from './finding';
@@ -139,6 +140,12 @@ function oarPairs(ctx: Ctx, out: Draft[]): void {
     const gap = msToMinutes(b.t - a.busyEnd);
     if (gap >= launchLeadMin) continue;
     const oars = ctx.oarSetById.get(resourceId)!;
+    // Clubs split a big set between two small crews (two 4+ crews on one 9-oar sweep set).
+    // When both crews fit in the set at once they never wait on each other. Only consecutive
+    // pairs are checked, so three crews sharing one set are not summed together.
+    const need =
+      boatClassSpec(a.entry.boatClass).oarsNeeded + boatClassSpec(b.entry.boatClass).oarsNeeded;
+    if (need <= oars.count) continue;
     const lead =
       `${oarSetName(oars)} is used by ${entryName(ctx, a.entry)} at ${clock(ctx, a.at)} ` +
       `and also by ${entryName(ctx, b.entry)} at ${clock(ctx, b.at)}`;

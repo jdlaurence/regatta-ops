@@ -131,6 +131,17 @@ describe('oar-set pairs', () => {
   it('no finding when the gap covers the launch lead', () => {
     expect(codes(run(pair('10:30'))).filter((c) => c.startsWith('OARS_'))).toEqual([]);
   });
+  it('two small crews splitting one big set at the same time do not conflict', () => {
+    const split = (count: number) =>
+      world()
+        .oars('24-D', 'sweep', count)
+        .entry({ id: 'a', label: 'N4+ A', cls: '4+', at: '10:36', oars: '24-D' })
+        .entry({ id: 'b', label: 'N4+ B', cls: '4+', at: '10:36', oars: '24-D' })
+        .build();
+    expect(codes(run(split(9))).filter((c) => c.startsWith('OARS_'))).toEqual([]);
+    expect(codes(run(split(8))).filter((c) => c.startsWith('OARS_'))).toEqual([]);
+    expect(codes(run(split(7)))).toContain('OARS_CONFLICT');
+  });
 });
 
 describe('athlete pairs (athlete minimum gap 30)', () => {

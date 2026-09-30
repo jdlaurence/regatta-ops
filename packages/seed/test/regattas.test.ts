@@ -214,11 +214,11 @@ describe('2025 Northwest Youth Championships', () => {
     ] as const) {
       expect(count(fs, code), code).toBe(0);
     }
-    // The only errors are the sheet's own oar sharing: 24-D split between two fours racing
-    // together, and 24-C handed from the V4+ to the 3V4+ sixteen minutes later.
+    // The sheet's own oar sharing (24-D split between two fours racing together, 24-C handed
+    // from the V4+ to the 3V4+ sixteen minutes later) fits within each set's count, so the
+    // engine treats it as a split, not a conflict. No errors remain.
     const errors = fs.filter((f) => f.severity === 'error');
-    expect(new Set(errors.map((f) => f.code))).toEqual(new Set(['OARS_CONFLICT']));
-    expect(errors).toHaveLength(6);
+    expect(errors).toEqual([]);
     // Forty boys cannot cover the novice window with an hour between every race.
     expect(count(fs, 'ATHLETE_TIGHT')).toBeLessThanOrEqual(16);
     expect(count(fs, 'SEATS_EMPTY')).toBeLessThanOrEqual(3);
