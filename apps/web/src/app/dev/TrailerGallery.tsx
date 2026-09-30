@@ -1,5 +1,6 @@
 // Gallery sections for the trailer visuals (WP-L): the end view in all three styles with the
-// 2026 Regionals layouts from the coaches' sheet, its states, thumbs, and rule cards.
+// 2026 Regionals layouts from the coaches' sheet, its states, thumbs, and rule cards; and the
+// isometric view (Phase 3) with packed sample loads.
 
 import { useMemo, useState, type ReactNode } from 'react';
 import {
@@ -14,6 +15,7 @@ import {
   type TrailerDef,
 } from '@srt/domain';
 import { TrailerEndView } from '@/components/trailer/TrailerEndView';
+import { TrailerIsometric } from '@/components/trailer/TrailerIsometric';
 import {
   BOYS_2026_LOAD,
   GIRLS_2026_LOAD,
@@ -168,6 +170,84 @@ export function TrailerEndViewGallery() {
           />
         </div>
       </Block>
+    </div>
+  );
+}
+
+function PackedIsometric({
+  trailer,
+  load,
+  rules,
+  selected,
+  width,
+}: {
+  trailer: TrailerDef;
+  load: typeof RATED_LOAD;
+  rules: Rule[];
+  selected?: string;
+  width?: number;
+}) {
+  const result = useMemo(
+    () => packTrailer(trailer, samplePackBoats(load), rules, []),
+    [trailer, load, rules],
+  );
+  const boats = useMemo(() => sampleEndViewBoats(load), [load]);
+  return (
+    <TrailerIsometric
+      trailer={trailer}
+      rules={rules}
+      placements={result.placements}
+      boats={boats}
+      selectedShellId={selected ? boats.find((b) => b.name === selected)?.shellId : null}
+      width={width}
+    />
+  );
+}
+
+export function TrailerIsometricGallery() {
+  const goalpostRules = useMemo(() => defaultRulesFor([1, 2, 3, 4, 5]), []);
+  const centerRules = useMemo(() => defaultRulesFor([1, 2, 3, 4]), []);
+  const offRules = useMemo(
+    () => [...SRA_DEFAULT_RULES, makeRule('shelf-off', { shelfIds: ['l1', 'r1'] }, 'regatta')],
+    [],
+  );
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="grid gap-8 xl:grid-cols-2">
+        <Block title="Boys trailer, packed with the boys' 2026 Regionals load (Peggy selected)">
+          <PackedIsometric
+            trailer={SRA_BOYS_TRAILER}
+            load={BOYS_2026_LOAD}
+            rules={SRA_DEFAULT_RULES}
+            selected="Peggy"
+          />
+        </Block>
+        <Block title="Girls trailer, packed with the girls' 2026 Regionals load">
+          <PackedIsometric
+            trailer={SRA_GIRLS_TRAILER}
+            load={GIRLS_2026_LOAD}
+            rules={SRA_DEFAULT_RULES}
+          />
+        </Block>
+        <Block title="Goalpost, packed with the rated load">
+          <PackedIsometric trailer={GOALPOST} load={RATED_LOAD} rules={goalpostRules} />
+        </Block>
+        <Block title="Center post, packed with the girls' load">
+          <PackedIsometric trailer={CENTER} load={GIRLS_2026_LOAD} rules={centerRules} />
+        </Block>
+        <Block title="Empty boys trailer, level 1 off for this regatta">
+          <TrailerIsometric trailer={SRA_BOYS_TRAILER} rules={offRules} />
+        </Block>
+        <Block title="At phone width (358 px)">
+          <div className="w-[358px] max-w-full rounded-card border border-line bg-surface p-3">
+            <PackedIsometric
+              trailer={SRA_BOYS_TRAILER}
+              load={BOYS_2026_LOAD}
+              rules={SRA_DEFAULT_RULES}
+            />
+          </div>
+        </Block>
+      </div>
     </div>
   );
 }

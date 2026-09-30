@@ -58,6 +58,7 @@ import {
   STATUS_OPTIONS,
   StatusLabel,
 } from './parts';
+import { ShellThumb } from './ShellPhoto';
 import { ShellSheet } from './ShellSheet';
 
 const NO_TEAM = 'none';
@@ -108,7 +109,16 @@ export function ShellsTab({ nav }: { nav: ReactNode }) {
     toast.success(`${rows.length} ${rows.length === 1 ? 'shell' : 'shells'} exported`);
   };
 
-  const columns = useShellColumns({ canEdit, byId, teams, save, onOpen: openShell });
+  // The photo column shows once any shell has a photo (PLAN.md §4.7, Phase 3).
+  const withPhotos = useMemo(() => all.some((s) => !!s.photoUrl), [all]);
+  const columns = useShellColumns({
+    canEdit,
+    byId,
+    teams,
+    save,
+    onOpen: openShell,
+    withPhotos,
+  });
 
   const actions = (
     <>
@@ -324,12 +334,14 @@ function useShellColumns({
   teams,
   save,
   onOpen,
+  withPhotos,
 }: {
   canEdit: boolean;
   byId: Map<string, Team>;
   teams: Team[];
   save: (shell: Shell, patch: Partial<Shell>) => void;
   onOpen: (id: string) => void;
+  withPhotos: boolean;
 }): ColumnDef<Shell, unknown>[] {
   return useMemo(() => {
     const teamName = (id?: string | null) => (id ? (byId.get(id)?.name ?? '') : '');
@@ -487,8 +499,19 @@ function useShellColumns({
         meta: { className: 'whitespace-nowrap text-ink-2' },
       },
     ];
+    if (withPhotos) {
+      cols.unshift({
+        id: 'photo',
+        header: () => <span className="sr-only">Photo</span>,
+        enableSorting: false,
+        size: 48,
+        // A wide table squeezes columns; keep room for the thumbnail in every row.
+        meta: { className: 'w-12 min-w-12 py-1 pr-0', headerClassName: 'w-12 min-w-12 pr-0' },
+        cell: ({ row }) => <ShellThumb shell={row.original} />,
+      });
+    }
     return cols;
-  }, [canEdit, byId, teams, save, onOpen]);
+  }, [canEdit, byId, teams, save, onOpen, withPhotos]);
 }
 
 // ---------------------------------------------------------------------------
@@ -539,6 +562,7 @@ function ShellCards({
                     className="flex min-h-11 w-full flex-col gap-2 rounded-card border border-line bg-surface p-3 text-left hover:bg-surface-2"
                   >
                     <span className="flex w-full min-w-0 items-center gap-2">
+                      <ShellThumb shell={s} className="size-10" />
                       <ShellChip
                         shell={chipShell(s)}
                         teamColor={team?.colorKey}

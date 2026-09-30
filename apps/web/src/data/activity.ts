@@ -66,9 +66,14 @@ export function diffRecords(
     if (k === 'updated' || k === 'created' || k === 'updatedBy') continue;
     const a = before[k] ?? null;
     const b = after[k] ?? null;
-    if (JSON.stringify(a) !== JSON.stringify(b)) out[k] = { from: a, to: b };
+    if (JSON.stringify(a) !== JSON.stringify(b)) out[k] = { from: fileValue(a), to: fileValue(b) };
   }
   return Object.keys(out).length > 0 ? out : null;
+}
+
+/** Demo mode keeps photos as data URLs; the log says "file" rather than copying the photo. */
+function fileValue(v: unknown): unknown {
+  return typeof v === 'string' && v.startsWith('data:') ? 'file' : v;
 }
 
 function changed(diff: Record<string, unknown> | null, field: string): boolean {
@@ -356,6 +361,10 @@ function summarize(
         return text(
           `changed ${name} to ${STATUS_WORDS[String(after?.status)] ?? String(after?.status)}`,
         );
+      }
+      // The server's wording for a photo change (activity.js lists the changed fields).
+      if (diff && Object.keys(diff).length === 1 && changed(diff, 'photoUrl')) {
+        return text(`edited ${kind} ${name} (photo)`);
       }
       return text(`edited ${kind} ${name}`);
     }

@@ -11,6 +11,7 @@ import { resetFinalEditConfirmations } from '@/features/regattas/useConfirmFinal
 
 const ROWAN = 'athboys00000001';
 const EMERY = 'athboys00000002';
+const QUINN = 'athgirls0000001';
 
 function renderPage(store: MemoryStore = fixtureStore()) {
   const queryClient = testQueryClient();
@@ -139,6 +140,129 @@ describe('AvailabilityPage', () => {
     await user.click(within(copy).getByRole('button', { name: 'Copy availability' }));
     await waitFor(async () =>
       expect(await record(store, EMERY)).toMatchObject({ status: 'unavailable', reason: 'Away' }),
+    );
+  });
+
+  it('imports the absence form: columns, answers, names, then only the checked changes', async () => {
+    const user = userEvent.setup();
+    const store = fixtureStore();
+    // Quinn already has an answer from a coach; the form agrees, so nothing changes for her.
+    await store.create('availability', {
+      regattaId: IDS.regatta,
+      athleteId: QUINN,
+      status: 'unavailable',
+      reason: 'Told the coach',
+    });
+    renderPage(store);
+    await screen.findByRole('region', { name: /Junior boys/ });
+    await user.click(screen.getByRole('button', { name: 'Import from absence form' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Import from absence form' });
+
+    await user.click(within(dialog).getByRole('textbox', { name: 'Form responses' }));
+    await user.paste(
+      [
+        'Timestamp,Email Address,Athlete name,Tail of the Lake,Head of the Lake',
+        '10/1/2026 18:02:11,rt@example.com,Rowan Test,Yes,"No, I can\'t attend"',
+        '10/1/2026 19:00:00,es@example.com,Emery Samples,Yes,Not sure',
+        '10/2/2026 8:00:00,qe@example.com,Quinn Example,,No',
+        '10/2/2026 9:00:00,cn@example.com,Casey Nobody,Yes,No',
+        '10/2/2026 9:30:00,jf@example.com,Jules Fixtur,Yes,No',
+      ].join('\n'),
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Match columns' }));
+
+    // The regatta's column is found by its name, not by position.
+    expect(
+      within(dialog).getByRole('combobox', { name: 'Answers for Head of the Lake' }),
+    ).toHaveTextContent('Head of the Lake');
+    expect(within(dialog).getByText('Matched by the column name.')).toBeInTheDocument();
+    expect(within(dialog).getByRole('combobox', { name: 'Name' })).toHaveTextContent(
+      'Athlete name',
+    );
+    const answers = within(dialog).getByRole('table', { name: 'Answers' });
+    expect(
+      within(answers).getByRole('combobox', { name: 'Meaning of "Not sure"' }),
+    ).toHaveTextContent('Maybe');
+    expect(
+      within(answers).getByRole('combobox', { name: 'Meaning of "No, I can\'t attend"' }),
+    ).toHaveTextContent('Unavailable');
+    await user.click(within(dialog).getByRole('button', { name: 'Match athletes' }));
+
+    // Every team in the regatta: Jules (masters) is not in it, so that row has no match.
+    expect(within(dialog).getByRole('status')).toHaveTextContent(
+      '3 of 5 responses match an athlete. 2 without an athlete will be skipped.',
+    );
+    const close = within(dialog).getByRole('region', { name: 'Close spellings (1)' });
+    expect(within(close).getByText('Emery Samples')).toBeInTheDocument();
+    expect(
+      within(close).getByRole('button', { name: /Athlete for Emery Samples, row 3/ }),
+    ).toHaveTextContent('Emery Sample');
+    const none = within(dialog).getByRole('region', { name: 'No match on the roster (2)' });
+    expect(within(none).getByText('Casey Nobody')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Preview changes' }));
+
+    const preview = within(dialog).getByRole('table', { name: 'Changes to import' });
+    const rows = within(preview).getAllByRole('row').slice(1);
+    expect(rows.map((r) => r.textContent)).toEqual([
+      'Rowan TestBoysAvailableUnavailable',
+      'Emery SampleBoysAvailableMaybe',
+    ]);
+    await user.click(
+      within(preview).getByRole('checkbox', { name: 'Import the change for Emery Sample' }),
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Import 1 change' }));
+
+    await waitFor(async () =>
+      expect(await record(store, ROWAN)).toMatchObject({
+        status: 'unavailable',
+        reason: 'From absence form',
+      }),
+    );
+    expect(await record(store, EMERY)).toBeNull();
+    expect(await record(store, QUINN)).toMatchObject({ reason: 'Told the coach' });
+    expect(await screen.findByText('1 change imported from the absence form')).toBeInTheDocument();
+  });
+
+  it('takes a hand-picked athlete for an unmatched name and a changed meaning', async () => {
+    const user = userEvent.setup();
+    const store = renderPage();
+    await screen.findByRole('region', { name: /Junior boys/ });
+    await user.click(screen.getByRole('button', { name: 'Import from absence form' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Import from absence form' });
+    await user.click(within(dialog).getByRole('textbox', { name: 'Form responses' }));
+    await user.paste('Name,HOTL\nQu Example,Out of town\nRowan Test,Yes');
+    await user.click(within(dialog).getByRole('button', { name: 'Match columns' }));
+
+    // "HOTL" is the regatta's initials.
+    expect(
+      within(dialog).getByRole('combobox', { name: 'Answers for Head of the Lake' }),
+    ).toHaveTextContent('HOTL');
+    await user.click(within(dialog).getByRole('combobox', { name: 'Meaning of "Out of town"' }));
+    await user.click(await screen.findByRole('option', { name: 'Maybe' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Match athletes' }));
+
+    expect(within(dialog).getByRole('status')).toHaveTextContent(
+      '1 of 2 responses match an athlete.',
+    );
+    await user.click(within(dialog).getByRole('button', { name: /Athlete for Qu Example, row 2/ }));
+    await user.click(await screen.findByRole('option', { name: /Quinn Example/ }));
+    expect(within(dialog).getByRole('status')).toHaveTextContent(
+      '2 of 2 responses match an athlete.',
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Preview changes' }));
+    const preview = within(dialog).getByRole('table', { name: 'Changes to import' });
+    expect(
+      within(preview)
+        .getAllByRole('row')
+        .slice(1)
+        .map((r) => r.textContent),
+    ).toEqual(['Quinn ExampleGirlsAvailableMaybe']);
+    await user.click(within(dialog).getByRole('button', { name: 'Import 1 change' }));
+    await waitFor(async () =>
+      expect(await record(store, QUINN)).toMatchObject({
+        status: 'maybe',
+        reason: 'From absence form',
+      }),
     );
   });
 

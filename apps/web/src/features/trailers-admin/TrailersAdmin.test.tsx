@@ -84,6 +84,20 @@ describe('Trailer edit page', () => {
     expect(screen.getByRole('group', { name: 'Spare trailer, end view' })).toBeInTheDocument();
   });
 
+  it('switches the preview between the end view and the isometric view', async () => {
+    const store = fixtureStore({ signedIn: IDS.coach });
+    const user = userEvent.setup();
+    renderAt(`/trailers/${IDS.trailer}`, store);
+    await screen.findByRole('group', { name: 'Boys trailer, end view' });
+    await user.click(screen.getByRole('radio', { name: 'Isometric' }));
+    expect(screen.getByRole('heading', { name: 'Isometric view' })).toBeInTheDocument();
+    const iso = screen.getByRole('figure', { name: 'Boys trailer, isometric view' });
+    expect(within(iso).getByText('Boys trailer, isometric view: no boats.')).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Boys trailer, end view' })).toBeNull();
+    await user.click(screen.getByRole('radio', { name: 'End view' }));
+    expect(screen.getByRole('group', { name: 'Boys trailer, end view' })).toBeInTheDocument();
+  });
+
   it('shows a trailer read only to coaches', async () => {
     const store = fixtureStore({ signedIn: IDS.coach });
     renderAt(`/trailers/${IDS.trailer}`, store);

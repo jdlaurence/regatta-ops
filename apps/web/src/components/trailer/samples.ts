@@ -105,6 +105,7 @@ export function sampleEndViewBoats(load: SampleLoad): EndViewBoat[] {
     name: b.name,
     cls: b.cls,
     beamCm: b.beamCm,
+    lengthCm: b.lengthCm,
     teamColor: load.teamColor,
   }));
 }

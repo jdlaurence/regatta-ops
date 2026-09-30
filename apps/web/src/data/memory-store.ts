@@ -6,8 +6,10 @@
 // entries.boatClass following its event, unique indexes, relation cascades, and change events.
 
 import { COLLECTION_NAMES, type CollectionName, type User, type World } from '@srt/domain';
+import { blobToDataUrl, type ImageCodec } from '../lib/image';
 import { describeChange, type Lookup } from './activity';
 import { isGuarded, sameStamp } from './concurrency';
+import { assertFileField, MEMORY_FILE_MAX_BYTES, preparePhoto } from './files';
 import { parseMentions, type MentionUser } from './mentions';
 import { RELATIONS, STAMPED, UNIQUE, type RelationDef } from './schema';
 import {
@@ -20,6 +22,9 @@ import {
   type ChangeHandler,
   type CreateInput,
   type DataStore,
+  type FileCollection,
+  type FileFieldOf,
+  type FileUrlOptions,
   type ListQuery,
   type Patch,
   type RecordOf,
@@ -43,6 +48,11 @@ export interface MemoryStoreOptions {
   reseed?: () => World;
   /** Stored alongside the world so a changed seed replaces stale demo data. */
   seedHash?: string;
+  /**
+   * Decodes and downscales photos before they are kept as data URLs; default: the browser's.
+   * With none (Node, jsdom), a photo is kept as it is when it is small enough.
+   */
+  imageCodec?: ImageCodec | null;
 }
 
 interface Persisted {
@@ -181,6 +191,50 @@ export class MemoryStore implements DataStore {
     this.held = null;
     for (const fire of held) fire();
     return results;
+  }
+
+  /**
+   * Files live in the record as data URLs (there is no file server in demo mode), downscaled to
+   * 1600 px and at most 1.5 MB so the demo world still fits in localStorage.
+   */
+  async uploadFile<C extends FileCollection>(
+    collection: C,
+    id: string,
+    field: FileFieldOf<C>,
+    file: Blob,
+    name?: string,
+  ): Promise<RecordOf<C>> {
+    assertFileField(collection, field);
+    if (!this.table(collection).has(id)) {
+      throw new StoreError('not_found', 'That record no longer exists.', 404);
+    }
+    const photo = await preparePhoto(file, {
+      name,
+      maxBytes: MEMORY_FILE_MAX_BYTES,
+      codec: this.opts.imageCodec,
+    });
+    const dataUrl = await blobToDataUrl(photo.blob);
+    return clone(this.updateNow(collection, id, { [field]: dataUrl })) as unknown as RecordOf<C>;
+  }
+
+  async removeFile<C extends FileCollection>(
+    collection: C,
+    id: string,
+    field: FileFieldOf<C>,
+  ): Promise<RecordOf<C>> {
+    assertFileField(collection, field);
+    return clone(this.updateNow(collection, id, { [field]: null })) as unknown as RecordOf<C>;
+  }
+
+  /** The data URL itself: demo mode keeps one size, so `thumb` changes nothing. */
+  fileUrl<C extends FileCollection>(
+    _collection: C,
+    record: RecordOf<C>,
+    field: FileFieldOf<C>,
+    _options?: FileUrlOptions,
+  ): string | null {
+    const url = (record as unknown as Record<string, unknown>)[field];
+    return typeof url === 'string' && url ? url : null;
   }
 
   /**

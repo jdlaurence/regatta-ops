@@ -23,6 +23,14 @@ export {
   type Rect,
   type ShelfGeometry,
 } from './geometry';
+export { TrailerIsometric, type TrailerIsometricProps } from './TrailerIsometric';
+export {
+  isometricGeometry,
+  type IsoGeometry,
+  type IsoHull,
+  type IsoOverhang,
+  type IsometricBoat,
+} from './isometric';
 export { toEndViewBoats } from './boats';
 export { cellLabel, laneLabel, sideNamesOf, sideOf, tierLabel, STYLE_LABELS } from './labels';
 export { RuleCard, RuleTag, RegattaTag, type RuleCardProps } from './RuleCard';

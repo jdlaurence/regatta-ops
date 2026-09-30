@@ -12,8 +12,13 @@ const FIRST = 8;
 const MORE = 40;
 
 export function RecentActivity({ regattaId, users }: { regattaId: string; users: User[] }) {
-  const activity = useList('activity_log', { where: { regattaId }, sort: '-created' });
   const [expanded, setExpanded] = useState(false);
+  // One more than shown, so the "Show more" button knows whether there is more.
+  const activity = useList(
+    'activity_log',
+    { where: { regattaId }, sort: '-created', limit: (expanded ? MORE : FIRST) + 1 },
+    { keepPrevious: true },
+  );
   const names = useMemo(() => new Map(users.map((u) => [u.id, u.name])), [users]);
   const all = activity.data ?? [];
   const rows = all.slice(0, expanded ? MORE : FIRST);
