@@ -1,7 +1,8 @@
 // /print/regattas/:id/load/:trailerId (PLAN.md §4.8, §4.11, §6.12): the load sheet. The trailer
 // end view, then shelf by shelf from the top level down with the boats the regatta's load plan
-// puts there, then the checklist of what rides on this trailer with empty Loaded and Returned
-// boxes to tick at the boathouse.
+// puts there, then the bed's zones front to back with what rides in each (§4.9), then the
+// checklist of what rides on this trailer with empty Loaded and Returned boxes to tick at the
+// boathouse.
 
 import { useMemo, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
@@ -170,6 +171,62 @@ function ShelvesTable({ sheet }: { sheet: LoadSheet }) {
   );
 }
 
+/** The bed's zones, front to back, and what rides in each (riggers at the back on SRA's). */
+function BedTable({ sheet }: { sheet: LoadSheet }) {
+  if (sheet.bed.length === 0) return null;
+  return (
+    <div className="mt-6">
+      <TableScroll label="Bed">
+        <table className="w-full min-w-[560px] table-fixed border-collapse text-base">
+          <caption className="pb-1 text-left font-display text-md font-semibold">
+            Bed, front to back
+          </caption>
+          <colgroup>
+            <col className="w-[28%]" />
+            <col className="w-[26%]" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col" className={th}>
+                Zone
+              </th>
+              <th scope="col" className={th}>
+                Where
+              </th>
+              <th scope="col" className={th}>
+                What rides there
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sheet.bed.map((z) => (
+              <tr key={z.id} className="break-inside-avoid">
+                <th scope="row" className={cn(td, 'text-left font-medium')}>
+                  {z.name}
+                </th>
+                <td className={td}>
+                  {z.extent[0]!.toUpperCase() + z.extent.slice(1)}
+                  {z.length && <span className="text-ink-2 tabular-nums"> ({z.length})</span>}
+                </td>
+                <td className={td}>
+                  {z.rows.length === 0 ? (
+                    <span className="text-ink-2">Nothing assigned yet</span>
+                  ) : (
+                    z.rows
+                      .map((r) => (r.quantity > 1 ? `${r.label} × ${r.quantity}` : r.label))
+                      .join(', ')
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableScroll>
+    </div>
+  );
+}
+
 function Checklist({ sheet }: { sheet: LoadSheet }) {
   if (sheet.groups.length === 0) {
     return <p className="text-base text-ink-2">Nothing on the load list for this trailer yet.</p>;
@@ -304,6 +361,7 @@ export default function PrintLoadPage() {
           </p>
         )}
         <ShelvesTable sheet={sheet} />
+        <BedTable sheet={sheet} />
         <section aria-label="Checklist" className="mt-6">
           <h3 className="mb-2 font-display text-lg font-semibold">Checklist</h3>
           <Checklist sheet={sheet} />

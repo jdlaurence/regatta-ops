@@ -293,6 +293,30 @@ describe('load sheet', () => {
     expect(gear.some((r) => r.label === 'Slings')).toBe(false);
   });
 
+  it('lists the bed zones front to back with what rides in each', async () => {
+    const ws = await loadWorkingSet(seedStore(), NW);
+    const sheet = loadSheet(ws, SEED_TRAILER_IDS.boys)!;
+    expect(sheet.bed.map((z) => [z.name, z.extent, z.length])).toEqual([
+      ['Slings', 'from the front to 3.0 m', '3.0 m'],
+      ['Oars', '3.0 to 7.0 m from the front', '4.0 m'],
+      ['Riggers (back of bed)', 'from 7.0 m to the back', '5.2 m'],
+    ]);
+    const [slings, oars, riggers] = sheet.bed;
+    // Riggers of the boats on this trailer ride at the back of the bed.
+    expect(riggers!.rows.length).toBeGreaterThan(5);
+    expect(riggers!.rows.every((r) => r.kind === 'riggers')).toBe(true);
+    expect(riggers!.rows.map((r) => r.label)).toContain('Riggers for LLL');
+    const checklistRiggers = sheet.groups.find((g) => g.kind === 'riggers')!.rows;
+    expect(checklistRiggers.find((r) => r.label === 'Riggers for LLL')).toMatchObject({
+      where: 'Riggers (back of bed)',
+    });
+    // Oar sets: the one typed into the oar zone, and those whose first crew's shell is here.
+    expect(oars!.rows.map((r) => r.label)).toContain('24-C · yellow-white');
+    expect(oars!.rows.every((r) => r.kind === 'oar_set')).toBe(true);
+    // The 2025 slings were typed into a truck bed.
+    expect(slings!.rows).toEqual([]);
+  });
+
   it('returns null for an unknown trailer and an empty plan without placements', async () => {
     const ws = await loadWorkingSet(fixtureStore(), IDS.regatta);
     expect(loadSheet(ws, 'nosuchtrailer00')).toBeNull();
@@ -300,6 +324,7 @@ describe('load sheet', () => {
     expect(sheet.plan).toBeNull();
     expect(sheet.shelves).toHaveLength(1);
     expect(sheet.shelves[0]!.placements).toEqual([]);
+    expect(sheet.bed).toEqual([]);
     expect(sheet.groups[0]!.rows[0]).toMatchObject({ label: 'Spencer', unassigned: true });
   });
 });
