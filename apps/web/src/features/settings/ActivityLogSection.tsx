@@ -295,9 +295,9 @@ function ActivityRow({
   return (
     <li className="flex flex-col">
       {heading && (
-        <h3 className="border-b border-line pt-4 pb-1.5 text-sm font-medium text-ink-2 first:pt-0">
+        <h2 className="border-b border-line pt-4 pb-1.5 text-sm font-medium text-ink-2 first:pt-0">
           {heading}
-        </h3>
+        </h2>
       )}
       <div className="flex gap-3 border-b border-line py-2.5 last:border-b-0">
         <Avatar name={actor} className="size-7" />

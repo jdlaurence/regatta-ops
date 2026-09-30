@@ -146,7 +146,7 @@ export function SideNav() {
             </div>
           )}
         </section>
-        <section aria-label="Club" className="flex flex-col gap-px border-t border-line pt-4">
+        <section aria-label="Club pages" className="flex flex-col gap-px border-t border-line pt-4">
           {CLUB_SECTIONS.map((s) => (
             <NavLink
               key={s.to}
