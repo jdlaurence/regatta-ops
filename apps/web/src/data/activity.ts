@@ -37,17 +37,6 @@ export function isLogged(c: CollectionName): c is LoggedCollection {
   return (LOGGED_COLLECTIONS as readonly string[]).includes(c);
 }
 
-const TARGET_TYPE: Record<LoggedCollection, string> = {
-  entries: 'entry',
-  entry_seats: 'entry_seat',
-  events: 'event',
-  availability: 'availability',
-  load_placements: 'load_placement',
-  load_items: 'load_item',
-  shells: 'shell',
-  oar_sets: 'oar_set',
-};
-
 const STATUS_WORDS: Record<string, string> = {
   in_service: 'in service',
   limited: 'limited',
@@ -114,7 +103,8 @@ export function describeChange(
   if (action === 'update' && !diff) return null;
   const base = {
     action,
-    targetType: TARGET_TYPE[collection],
+    // The collection name, as the server hook and the seed write it.
+    targetType: collection,
     targetId: rec.id,
     diff,
   };
