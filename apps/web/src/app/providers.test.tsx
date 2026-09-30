@@ -53,6 +53,29 @@ describe('AppProviders with a persister', () => {
     expect(restore).toHaveBeenCalledOnce();
   });
 
+  it('refetches what it restored, so a copy saved before the last edit is not shown as current', async () => {
+    const { persister } = mapPersister();
+    const store = fixtureStore();
+    const first = render(
+      <AppProviders store={store} queryClient={testQueryClient()} persister={persister}>
+        <RegattaName />
+      </AppProviders>,
+    );
+    expect(await screen.findByText('Head of the Lake')).toBeInTheDocument();
+    await act(() => persister.flush());
+    first.unmount();
+
+    // A change the saved copy missed (made just before a reload, say), then a fresh page load
+    // within the queries' staleTime.
+    await store.update('regattas', IDS.regatta, { name: 'Head of the Lake, renamed' });
+    render(
+      <AppProviders store={store} queryClient={testQueryClient()} persister={persister}>
+        <RegattaName />
+      </AppProviders>,
+    );
+    expect(await screen.findByText('Head of the Lake, renamed')).toBeInTheDocument();
+  });
+
   it('restores nothing without a signed-in user, and deletes the saved copy', async () => {
     const { persister, restore, remove } = mapPersister();
     render(
