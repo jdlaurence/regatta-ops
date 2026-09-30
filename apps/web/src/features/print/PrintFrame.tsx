@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/select';
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/states';
 import { cn } from '@/lib/cn';
 import { formatWeekday } from '@/lib/dates';
+import { ScrollRegion } from '@/components/ScrollRegion';
 
 export interface PrintFrameState {
   isLoading: boolean;
@@ -160,8 +161,12 @@ export function SheetHeader({
 }
 
 /** Lets a wide table scroll inside its sheet on a phone; on paper it is just the table. */
-export function TableScroll({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto print:overflow-visible">{children}</div>;
+export function TableScroll({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <ScrollRegion label={label} className="overflow-x-auto print:overflow-visible">
+      {children}
+    </ScrollRegion>
+  );
 }
 
 /** A labeled option in the toolbar. */

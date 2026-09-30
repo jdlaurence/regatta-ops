@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import {
   COMPARTMENT_KIND_LABELS,
   defaultUnit,
@@ -60,7 +61,10 @@ export function CompartmentsTable({
           {readOnly ? '' : 'Add the bed, an oar box, or a rigger rack with Add compartment.'}
         </p>
       ) : (
-        <div className="relative overflow-x-auto rounded-card border border-line bg-surface">
+        <ScrollRegion
+          label="Compartments"
+          className="relative overflow-x-auto rounded-card border border-line bg-surface"
+        >
           <table className="w-full border-collapse text-base" aria-labelledby={headingId}>
             <thead>
               <tr className="border-b border-line">
@@ -170,7 +174,7 @@ export function CompartmentsTable({
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
     </section>
   );

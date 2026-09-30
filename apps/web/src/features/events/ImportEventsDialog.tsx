@@ -19,6 +19,7 @@ import { Field, Label, Textarea } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { BATCH_LIMIT, chunk, regattaDays } from '@/features/regattas/duplicate';
 import { useConfirmFinalEdit } from '@/features/regattas/useConfirmFinalEdit';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { nextSortOrder, STAGE_LABELS } from './event-form';
 import {
   importCountText,
@@ -63,7 +64,10 @@ function ColumnsTable({
 }) {
   const samples = parsed.raw.slice(0, SAMPLE_ROWS);
   return (
-    <div className="overflow-x-auto rounded-card border border-line">
+    <ScrollRegion
+      label="Columns in the paste"
+      className="overflow-x-auto rounded-card border border-line"
+    >
       <table className="w-full border-collapse text-sm" aria-label="Columns in the paste">
         <thead>
           <tr className="border-b border-line bg-surface-2/60">
@@ -105,7 +109,7 @@ function ColumnsTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
@@ -341,7 +345,10 @@ function ImportFlow({
             {chosen.length} of {rows.length} selected
           </span>
         </h3>
-        <div className="max-h-[42dvh] overflow-auto rounded-card border border-line">
+        <ScrollRegion
+          label="Events to import"
+          className="max-h-[42dvh] overflow-auto rounded-card border border-line"
+        >
           <table className="w-full border-collapse text-sm" aria-label="Events to import">
             <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b border-line text-left text-ink-2">
@@ -444,7 +451,7 @@ function ImportFlow({
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       </section>
 
       <DialogFooter className="justify-between">

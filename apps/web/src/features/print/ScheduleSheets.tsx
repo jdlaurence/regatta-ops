@@ -142,7 +142,7 @@ export function DayScheduleSheet({
       {rows.length === 0 ? (
         <p className="py-4 text-base text-ink-2">Nothing on the schedule for {heading}.</p>
       ) : (
-        <TableScroll>
+        <TableScroll label={`Schedule for ${heading}`}>
           <table className="w-full min-w-[900px] table-fixed border-collapse text-sm">
             <colgroup>
               <col className="w-[8%]" />
@@ -290,7 +290,7 @@ export function MasterScheduleSheet({
       {rows.length === 0 ? (
         <p className="py-4 text-base text-ink-2">No races on {heading}.</p>
       ) : (
-        <TableScroll>
+        <TableScroll label={`Races on ${heading}`}>
           <table className="w-full min-w-[600px] border-collapse text-md">
             <thead>
               <tr>

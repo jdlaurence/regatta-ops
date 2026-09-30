@@ -14,6 +14,7 @@ import {
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Checkbox } from '@/components/ui/controls';
+import { ScrollRegion } from './ScrollRegion';
 
 export type { ColumnDef } from '@tanstack/react-table';
 
@@ -180,7 +181,10 @@ export function DataTable<T>({
   );
 
   return (
-    <div className={cn('overflow-x-auto rounded-card border border-line bg-surface', className)}>
+    <ScrollRegion
+      label={label}
+      className={cn('overflow-x-auto rounded-card border border-line bg-surface', className)}
+    >
       <table className="w-full border-collapse text-base" aria-label={label}>
         <thead className="sticky top-0 z-10 bg-surface">
           {table.getHeaderGroups().map((hg) => (
@@ -252,7 +256,7 @@ export function DataTable<T>({
           <tbody>{rows.map(renderRow)}</tbody>
         )}
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

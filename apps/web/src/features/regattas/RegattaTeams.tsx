@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/menu';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { loadStatusText, type TeamSummary } from './summary';
 import type { ConfirmFinalEdit } from './useConfirmFinalEdit';
 
@@ -171,7 +172,10 @@ export function RegattaTeams({
   return (
     <div className="flex flex-col gap-3">
       {/* Tablet and desktop: a table. */}
-      <div className="hidden overflow-x-auto rounded-card border border-line bg-surface md:block">
+      <ScrollRegion
+        label="Teams in this regatta"
+        className="hidden overflow-x-auto rounded-card border border-line bg-surface md:block"
+      >
         <table className="w-full border-collapse text-base" aria-label="Teams in this regatta">
           <thead>
             <tr className="border-b border-line text-left text-sm text-ink-2">
@@ -227,7 +231,7 @@ export function RegattaTeams({
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
 
       {/* Phone: one card per team. */}
       <ul className="flex flex-col gap-2 md:hidden" aria-label="Teams in this regatta">

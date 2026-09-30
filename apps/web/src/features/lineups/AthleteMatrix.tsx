@@ -8,6 +8,7 @@ import { teamStyle } from '@/lib/team-colors';
 import { EmptyState } from '@/components/states';
 import { TeamChip } from '@/components/chips';
 import { useInspector } from '@/components/Inspector';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { useLineup } from './context';
 import { athleteMatrix, eventTitle } from './lib';
 import { AthleteBadges } from './Seats';
@@ -37,7 +38,10 @@ export function AthleteMatrix({ onShowEntry }: { onShowEntry: (entryId: string) 
           ? `${busy} ${busy === 1 ? 'athlete races' : 'athletes race'} ${BUSY} or more times.`
           : `No one races ${BUSY} or more times.`}
       </p>
-      <div className="max-w-full overflow-x-auto rounded-card border border-line bg-surface">
+      <ScrollRegion
+        label="Athletes by event"
+        className="max-w-full overflow-x-auto rounded-card border border-line bg-surface"
+      >
         <table className="w-max min-w-full border-collapse text-base">
           <caption className="sr-only">
             {team.name} athletes by event. Cells show the entry and seat.
@@ -146,7 +150,7 @@ export function AthleteMatrix({ onShowEntry }: { onShowEntry: (entryId: string) 
             })}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

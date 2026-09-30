@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Label, Textarea } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { ScrollRegion } from './ScrollRegion';
 
 // ---------------------------------------------------------------------------
 // Pure helpers
@@ -394,7 +395,10 @@ function CsvImportBody<T>({
 
       {step === 'preview' && (
         <div className="flex flex-col gap-4">
-          <div className="max-h-[50dvh] overflow-auto rounded-card border border-line">
+          <ScrollRegion
+            label="Rows to import"
+            className="max-h-[50dvh] overflow-auto rounded-card border border-line"
+          >
             <table className="w-full border-collapse text-sm" aria-label="Rows to import">
               <thead className="sticky top-0 bg-surface">
                 <tr className="border-b border-line text-left text-ink-2">
@@ -464,7 +468,7 @@ function CsvImportBody<T>({
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
           <DialogFooter>
             <Button onClick={() => setStep('map')} disabled={busy}>
               Back
