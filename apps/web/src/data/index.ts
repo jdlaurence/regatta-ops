@@ -5,13 +5,32 @@ export type {
   ChangeEvent,
   CreateInput,
   DataStore,
+  FileCollection,
+  FileFieldOf,
+  FileUrlOptions,
   ListQuery,
   Patch,
   RecordOf,
   SortKey,
+  ThumbSize,
   UpdateOptions,
 } from './store';
 export { StoreError, batchOp, newId } from './store';
+export {
+  useFileUrl,
+  useRemoveFile,
+  useUploadFile,
+  type RemoveFileVars,
+  type UploadFileVars,
+} from './file-hooks';
+export {
+  FILE_FIELDS,
+  MEMORY_FILE_MAX_BYTES,
+  NOT_A_PHOTO,
+  PHOTO_TYPES,
+  SERVER_FILE_MAX_BYTES,
+  looksLikePhoto,
+} from './files';
 export {
   useList,
   useRecord,

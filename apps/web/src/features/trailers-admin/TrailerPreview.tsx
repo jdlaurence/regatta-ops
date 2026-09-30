@@ -10,12 +10,17 @@ import { toEndViewBoats } from '@/components/trailer/boats';
 import { sideNamesOf, tierLabel } from '@/components/trailer/labels';
 import { SAMPLE_LOADS, sampleEndViewBoats, samplePackBoats } from '@/components/trailer/samples';
 import { TrailerEndView, type EndViewBoat } from '@/components/trailer/TrailerEndView';
+import { TrailerIsometric } from '@/components/trailer/TrailerIsometric';
+import { SegmentedControl } from '@/components/ui/controls';
 import { Label } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { capacitySummary, trailerCapacity } from './capacity';
 import { usePlanShellIds, useRegattaBoats, useTrailerLoadPlans } from './hooks';
 
 const NONE = 'none';
+
+/** The end view (default) or the isometric view (PLAN.md §4.10, Phase 3). */
+type PreviewView = 'end' | 'iso';
 
 function parseChoice(v: string): { kind: 'none' | 'sample' | 'regatta' | 'plan'; id: string } {
   const [kind, ...rest] = v.split(':');
@@ -38,6 +43,7 @@ export function TrailerPreview({
 }) {
   const [choice, setChoice] = useState(NONE);
   const [selected, setSelected] = useState<Id | null>(null);
+  const [view, setView] = useState<PreviewView>('end');
   const parsed = parseChoice(choice);
 
   const regattas = useList('regattas', { sort: '-startDate' });
@@ -97,20 +103,46 @@ export function TrailerPreview({
   return (
     <section aria-label="End view and test pack" className={className}>
       <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-3 sm:p-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h2 className="font-display text-lg font-semibold">End view</h2>
-          <p className="text-sm text-ink-2">Seen from the back</p>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 className="font-display text-lg font-semibold">
+              {view === 'end' ? 'End view' : 'Isometric view'}
+            </h2>
+            <p className="text-sm text-ink-2">
+              {view === 'end' ? 'Seen from the back' : 'Seen from behind, on the right side'}
+            </p>
+          </div>
+          <SegmentedControl
+            size="sm"
+            label="Trailer view"
+            value={view}
+            onValueChange={setView}
+            options={[
+              { value: 'end', label: 'End view' },
+              { value: 'iso', label: 'Isometric' },
+            ]}
+          />
         </div>
         <p className="text-sm text-ink-2">{capacitySummary(capacity)}</p>
-        <TrailerEndView
-          trailer={trailer}
-          rules={rules}
-          placements={pack?.placements ?? []}
-          boats={viewBoats}
-          selectedShellId={selected}
-          onChipClick={(id) => setSelected((s) => (s === id ? null : id))}
-          animateMoves
-        />
+        {view === 'end' ? (
+          <TrailerEndView
+            trailer={trailer}
+            rules={rules}
+            placements={pack?.placements ?? []}
+            boats={viewBoats}
+            selectedShellId={selected}
+            onChipClick={(id) => setSelected((s) => (s === id ? null : id))}
+            animateMoves
+          />
+        ) : (
+          <TrailerIsometric
+            trailer={trailer}
+            rules={rules}
+            placements={pack?.placements ?? []}
+            boats={viewBoats}
+            selectedShellId={selected}
+          />
+        )}
 
         <div className="flex flex-col gap-1.5 border-t border-line pt-3">
           <Label htmlFor="test-load">Test pack</Label>

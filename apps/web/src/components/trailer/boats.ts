@@ -15,6 +15,7 @@ export function toEndViewBoats(
       name: b.name,
       cls: b.cls,
       beamCm: b.beamCm,
+      lengthCm: b.lengthCm,
       teamColor: team?.colorKey ?? null,
       teamName: team?.name ?? b.teamName,
     };
