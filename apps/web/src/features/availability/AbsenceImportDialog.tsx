@@ -537,7 +537,7 @@ function ColumnsStep({
                         onValueChange={(v) => onChoiceChange(g.key, v)}
                         options={CHOICE_OPTIONS}
                         label={`Meaning of ${g.label ? `"${g.label}"` : 'no answer'}`}
-                        className="h-8 w-40"
+                        className="h-8 w-36 sm:w-40"
                       />
                     </td>
                   </tr>
@@ -658,7 +658,7 @@ function MatchStep({
           hint="Only each athlete's latest response is used."
         >
           {superseded.map((r) => (
-            <li key={r.line} className="text-sm text-ink-2">
+            <li key={r.line} className="px-3 py-2 text-sm text-ink-2">
               {name(r.athleteId)}: row {r.line} is replaced by row {r.supersededBy}.
             </li>
           ))}

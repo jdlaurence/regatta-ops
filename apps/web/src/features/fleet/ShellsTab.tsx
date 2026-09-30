@@ -505,7 +505,8 @@ function useShellColumns({
         header: () => <span className="sr-only">Photo</span>,
         enableSorting: false,
         size: 48,
-        meta: { className: 'py-1 pr-0', headerClassName: 'pr-0' },
+        // A wide table squeezes columns; keep room for the thumbnail in every row.
+        meta: { className: 'w-12 min-w-12 py-1 pr-0', headerClassName: 'w-12 min-w-12 pr-0' },
         cell: ({ row }) => <ShellThumb shell={row.original} />,
       });
     }
