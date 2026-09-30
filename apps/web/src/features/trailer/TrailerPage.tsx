@@ -63,7 +63,15 @@ import { printLoadPath } from '@/features/print/links';
 import { cn } from '@/lib/cn';
 import { PlacedBoatDetails, UnplacedBoatDetails } from './BoatDetails';
 import { EndViewBoard, type LaneChoice } from './EndViewBoard';
-import { useFlip, useIsPhone, useMyShortName, useRulesDirty, useTrailerWrites } from './hooks';
+import {
+  useFinalGuardedWrites,
+  useFlip,
+  useIsPhone,
+  useMyShortName,
+  useRulesDirty,
+  useTrailerWrites,
+} from './hooks';
+import { useConfirmFinalEdit } from '@/features/regattas/useConfirmFinalEdit';
 import {
   bestSpot,
   buildTrailerPageModel,
@@ -298,7 +306,10 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
   const isPhone = useIsPhone();
   const dragEnabled = canEdit && !isPhone;
   const me = useMyShortName();
-  const writes = useTrailerWrites();
+  // A final regatta asks before the first change to its load plans (PLAN.md §4.1); after a yes,
+  // the rest of the visit goes through. Load list ticks are exempt (they record what happened).
+  const finalEdit = useConfirmFinalEdit(ws.regatta);
+  const writes = useFinalGuardedWrites(useTrailerWrites(), finalEdit);
   const dirtyPlans = useRulesDirty((s) => s.plans);
 
   // The trailer on screen: the URL's, else the first with a plan, else the first. While a boat
@@ -1055,6 +1066,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {finalEdit.dialog}
     </DndContext>
   );
 }

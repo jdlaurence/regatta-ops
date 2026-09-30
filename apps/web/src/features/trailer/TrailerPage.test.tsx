@@ -14,6 +14,7 @@ import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
 import { MemoryStore } from '@/data/memory-store';
 import { testQueryClient } from '@/test/render';
+import { resetFinalEditConfirmations } from '@/features/regattas/useConfirmFinalEdit';
 import { useRulesDirty } from './hooks';
 
 const NW = SEED_REGATTA_IDS.nwYouth2025;
@@ -29,9 +30,18 @@ beforeAll(() => {
   seed = buildSeedWorld().world;
 });
 
-function renderTrailer(path: string, userId: Id = SEED_USER_IDS.coachBoys) {
+function renderTrailer(
+  path: string,
+  userId: Id = SEED_USER_IDS.coachBoys,
+  { final = false }: { final?: boolean } = {},
+) {
   useRulesDirty.setState({ plans: {} });
+  resetFinalEditConfirmations();
   const world = structuredClone(seed);
+  // The seeded NW Youth regatta is final; most tests are about the trailer, not the prompt.
+  if (!final) {
+    for (const r of world.regattas) if (r.id === NW) r.status = 'planning';
+  }
   const store = new MemoryStore({ world, userId });
   const queryClient = testQueryClient();
   const router = createTestRouter({ store, queryClient }, path);
@@ -57,6 +67,19 @@ const endView = () =>
   screen.findByRole('group', { name: 'Boys trailer, end view, seen from the back' }, SLOW);
 
 describe('Trailer page', () => {
+  it('asks once before changing the load plan of a final regatta', async () => {
+    const user = userEvent.setup();
+    const { store } = renderTrailer(`/regattas/${NW}/trailer`, SEED_USER_IDS.coachBoys, {
+      final: true,
+    });
+    await endView();
+    await user.click(screen.getByRole('button', { name: 'Pack trailer' }));
+    const ask = await screen.findByRole('dialog', SLOW);
+    expect(within(ask).getByText(/final/i)).toBeInTheDocument();
+    await user.click(within(ask).getByRole('button', { name: 'Cancel' }));
+    expect((await boysPlan(store)).packedAt ?? null).toBeNull();
+  });
+
   it('shows the end view, the boats to load, and the rules', async () => {
     renderTrailer(`/regattas/${NW}/trailer`);
     const view = await endView();

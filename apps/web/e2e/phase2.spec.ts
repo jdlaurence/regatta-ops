@@ -187,19 +187,13 @@ test.describe('desktop', () => {
   });
 
   test('a final regatta asks before the trailer is repacked', async ({ page }) => {
-    // BUG (WP-M): PLAN.md §4.1 says a final regatta "requires confirmation to edit", and the
-    // trailer page's banner says "This regatta is final. Changes need confirmation." But on the
-    // final 2025 Northwest Youth Championships, "Pack trailer" repacks at once (toast "Trailer
-    // packed", no dialog), and so do drags, rule changes, and load list ticks. The lineup builder
-    // and schedule ask through useConfirmFinalEdit. Either the trailer and load list should ask
-    // too, or the banner and §4.1 should say which pages are exempt (ticking the load list on race
-    // day, when the regatta is final, is the normal case).
-    test.fixme(true, 'Trailer page and load list edit a final regatta without confirmation');
+    // PLAN.md §4.1 and §18: changes to a final regatta's load plans ask first; load list ticks
+    // (what happened at the trailer) don't.
     await signInDemo(page);
     await page.goto(regattaUrl(NW_YOUTH, 'trailer'));
     await expect(page.getByText('This regatta is final. Changes need confirmation.')).toBeVisible();
     await page.getByRole('main').getByRole('button', { name: 'Pack trailer', exact: true }).click();
-    await expect(page.getByRole('dialog', { name: 'Edit a final regatta?' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'This regatta is final' })).toBeVisible();
   });
 });
 
