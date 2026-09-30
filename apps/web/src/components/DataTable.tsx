@@ -61,6 +61,8 @@ export interface DataTableProps<T> {
    * rows inside a group follow the table's sorting.
    */
   groupBy?: (row: T) => RowGroup;
+  /** Controlled selection (the ids of the selected rows); pair with onSelectionChange. */
+  selectedIds?: readonly string[];
 }
 
 /**
@@ -84,9 +86,13 @@ export function DataTable<T>({
   className,
   rowClassName,
   groupBy,
+  selectedIds,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [ownSelection, setRowSelection] = useState<RowSelectionState>({});
+  const rowSelection: RowSelectionState = selectedIds
+    ? Object.fromEntries(selectedIds.map((id) => [id, true]))
+    : ownSelection;
 
   const selectColumn: ColumnDef<T, unknown> = {
     id: '__select',
@@ -125,6 +131,11 @@ export function DataTable<T>({
     state: { sorting, globalFilter, rowSelection },
     onSortingChange: setSorting,
     onRowSelectionChange: (updater) => {
+      if (selectedIds) {
+        const next = typeof updater === 'function' ? updater(rowSelection) : updater;
+        onSelectionChange?.(Object.keys(next).filter((k) => next[k]));
+        return;
+      }
       setRowSelection((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater;
         onSelectionChange?.(Object.keys(next).filter((k) => next[k]));

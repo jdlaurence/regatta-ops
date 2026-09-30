@@ -146,14 +146,27 @@ export interface CsvImportDialogProps<T> {
   /** Singular and plural: ['shell', 'shells']. */
   noun: readonly [string, string];
   fields: readonly CsvField[];
-  /** Field keys shown as preview columns. */
-  previewFields: readonly string[];
-  /** Check every mapped row at once (so duplicates inside the file can be caught). */
-  check: (rows: Record<string, string>[]) => CsvRowCheck<T>[];
+  /** Field keys shown as preview columns; a function picks them from the mapping. */
+  previewFields: readonly string[] | ((mapping: CsvMapping) => readonly string[]);
+  /**
+   * Check every mapped row at once (so duplicates inside the file can be caught). `ctx` has the
+   * parsed file and the mapping, for checks that read a header (a unit in "Weight (kg)").
+   */
+  check: (rows: Record<string, string>[], ctx: CsvContext) => CsvRowCheck<T>[];
   /** Create the records. Throw to keep the dialog open; the caller shows its own error. */
   onImport: (records: T[]) => Promise<void>;
   /** A line under the paste box saying which columns work. */
   hint?: ReactNode;
+  /** Extra controls under the mapping (a unit choice), given the file and the mapping. */
+  options?: (ctx: CsvContext) => ReactNode;
+  /** A mapping rule beyond `required` ("first name or full name"): the problem, or null. */
+  checkMapping?: (mapping: CsvMapping) => string | null;
+}
+
+/** The parsed file and the current mapping, for feature callbacks. */
+export interface CsvContext {
+  table: CsvTable;
+  mapping: CsvMapping;
 }
 
 type Step = 'source' | 'map' | 'preview';
@@ -187,6 +200,8 @@ function CsvImportBody<T>({
   check,
   onImport,
   hint,
+  options,
+  checkMapping,
 }: CsvImportDialogProps<T>) {
   const id = useId();
   const [step, setStep] = useState<Step>('source');
@@ -198,10 +213,16 @@ function CsvImportBody<T>({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const missing = missingRequired(mapping, fields);
+  const mappingProblem = missing.length === 0 && checkMapping ? checkMapping(mapping) : null;
+  const previewKeys = typeof previewFields === 'function' ? previewFields(mapping) : previewFields;
   const results = useMemo(() => {
     if (step !== 'preview' || !table) return [];
     const mapped = table.rows.map((r) => mapRow(r, mapping, fields));
-    return check(mapped).map((res, i) => ({ ...res, row: mapped[i]!, line: i + 2 }));
+    return check(mapped, { table, mapping }).map((res, i) => ({
+      ...res,
+      row: mapped[i]!,
+      line: i + 2,
+    }));
   }, [step, table, mapping, fields, check]);
   const ready = results.filter((r) => r.record && r.errors.length === 0);
 
@@ -347,9 +368,15 @@ function CsvImportBody<T>({
               Not imported: {unusedColumns.map((h) => h || 'unnamed column').join(', ')}.
             </p>
           )}
+          {options && <div className="flex flex-col gap-3">{options({ table, mapping })}</div>}
           {missing.length > 0 && (
             <p role="alert" className="text-sm text-danger">
               Choose a column for {missing.map((f) => f.label.toLowerCase()).join(' and ')}.
+            </p>
+          )}
+          {mappingProblem && (
+            <p role="alert" className="text-sm text-danger">
+              {mappingProblem}
             </p>
           )}
           <DialogFooter>
@@ -357,7 +384,7 @@ function CsvImportBody<T>({
             <Button
               variant="primary"
               onClick={() => setStep('preview')}
-              disabled={missing.length > 0}
+              disabled={missing.length > 0 || !!mappingProblem}
             >
               Preview rows
             </Button>
@@ -377,7 +404,7 @@ function CsvImportBody<T>({
                   <th scope="col" className="h-8 px-2 font-medium">
                     Result
                   </th>
-                  {previewFields.map((k) => (
+                  {previewKeys.map((k) => (
                     <th key={k} scope="col" className="h-8 px-2 font-medium whitespace-nowrap">
                       {fieldLabel(k)}
                     </th>
@@ -407,7 +434,7 @@ function CsvImportBody<T>({
                           </span>
                         )}
                       </td>
-                      {previewFields.map((k) => (
+                      {previewKeys.map((k) => (
                         <td key={k} className="max-w-48 truncate px-2 py-1.5">
                           {r.row[k]}
                         </td>
