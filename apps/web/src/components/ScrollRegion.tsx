@@ -4,6 +4,7 @@
 // extra tab stop. A group rather than a region: the section around it usually is the landmark.
 
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
+import { cn } from '@/lib/cn';
 
 function overflows(el: HTMLElement): boolean {
   return el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
@@ -29,6 +30,7 @@ export function useOverflowing<T extends HTMLElement>() {
 
 export function ScrollRegion({
   label,
+  className,
   children,
   ...props
 }: ComponentProps<'div'> & {
@@ -41,6 +43,9 @@ export function ScrollRegion({
       ref={ref}
       {...(overflowing ? { tabIndex: 0, role: 'group', 'aria-label': label } : {})}
       {...props}
+      // Positioned, so screen-reader-only text (absolute) inside a wide table is clipped with
+      // it instead of stretching the page sideways.
+      className={cn('relative', className)}
     >
       {children}
     </div>
