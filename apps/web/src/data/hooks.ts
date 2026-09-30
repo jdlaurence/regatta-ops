@@ -14,6 +14,13 @@ import { toast } from 'sonner';
 import type { CollectionName, User } from '@srt/domain';
 import { useStore } from './context';
 import {
+  networkMonitor,
+  OFFLINE_TOAST_ID,
+  OfflineError,
+  settleWhenOffline,
+  useOnline,
+} from './online';
+import {
   applyChange,
   change,
   findCached,
@@ -77,11 +84,13 @@ export function useList<C extends CollectionName>(
   options: UseListOptions = {},
 ) {
   const store = useStore();
-  return useQuery({
-    ...listQueryOptions(store, collection, query),
-    enabled: options.enabled ?? true,
-    placeholderData: options.keepPrevious ? keepPreviousData : undefined,
-  });
+  return settleWhenOffline(
+    useQuery({
+      ...listQueryOptions(store, collection, query),
+      enabled: options.enabled ?? true,
+      placeholderData: options.keepPrevious ? keepPreviousData : undefined,
+    }),
+  );
 }
 
 /**
@@ -91,12 +100,14 @@ export function useList<C extends CollectionName>(
 export function useRecord<C extends CollectionName>(collection: C, id: string | null | undefined) {
   const store = useStore();
   const qc = useQueryClient();
-  return useQuery({
-    ...recordQueryOptions(store, collection, id ?? ''),
-    enabled: !!id,
-    // A generic C defeats TanStack's NonFunctionGuard typing; the value is a plain record.
-    placeholderData: (() => (id ? findCached(qc, collection, id) : undefined)) as never,
-  });
+  return settleWhenOffline(
+    useQuery({
+      ...recordQueryOptions(store, collection, id ?? ''),
+      enabled: !!id,
+      // A generic C defeats TanStack's NonFunctionGuard typing; the value is a plain record.
+      placeholderData: (() => (id ? findCached(qc, collection, id) : undefined)) as never,
+    }),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -138,6 +149,9 @@ export function useStoreMutation<TVars, TResult = unknown>(
   return useMutation<TResult, unknown, TVars, { snap: CacheSnapshot; touched: CollectionName[] }>({
     mutationFn: (vars) => opts.mutationFn(store, vars),
     onMutate: async (vars) => {
+      // Editing is off offline (PLAN.md §10.4). useCan hides the controls; this catches the
+      // rest before anything changes on screen, so nothing is queued or half-saved.
+      if (!networkMonitor.isOnline()) throw new OfflineError();
       const changes = opts.optimistic?.(vars, qc) ?? [];
       const touched = Array.from(
         new Set([...changes.map((c) => c.collection), ...(opts.invalidate ?? [])]),
@@ -152,7 +166,10 @@ export function useStoreMutation<TVars, TResult = unknown>(
     onError: (err, vars, ctx) => {
       if (ctx) restore(qc, ctx.snap);
       if (opts.errorMessage !== false) {
-        toast.error(errorMessage(err, opts.errorMessage ?? 'The change was not saved. Try again.'));
+        toast.error(
+          errorMessage(err, opts.errorMessage ?? 'The change was not saved. Try again.'),
+          err instanceof OfflineError ? { id: OFFLINE_TOAST_ID } : undefined,
+        );
       }
       opts.onError?.(err, vars);
     },
@@ -285,10 +302,14 @@ export function useCurrentUser(): User | null {
   );
 }
 
-/** Whether the signed-in user's role allows an action (PLAN.md §2). */
+/**
+ * Whether the signed-in user's role allows an action (PLAN.md §2). False for everything while
+ * offline (§10.4), so every feature's edit controls turn off together.
+ */
 export function useCan(action: Action): boolean {
   const user = useCurrentUser();
-  return can(user?.role, action);
+  const online = useOnline();
+  return can(user?.role, action, { online });
 }
 
 /** Sign-in and sign-out. Signing out clears every cached query. */

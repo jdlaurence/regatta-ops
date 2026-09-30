@@ -1,5 +1,5 @@
 // Role checks (PLAN.md §2, §8.2). The server enforces the same rules; these only decide what
-// the UI offers. Viewers read everything and comment.
+// the UI offers. Viewers read everything and comment. Offline, every action is off (§10.4).
 
 import type { Role } from '@srt/domain';
 
@@ -29,8 +29,20 @@ export const ACTIONS = {
 
 export type Action = keyof typeof ACTIONS;
 
-export function can(role: Role | null | undefined, action: Action): boolean {
-  if (!role) return false;
+export interface CanOptions {
+  /**
+   * Offline, every action is off (PLAN.md §10.4): each one writes, and writes need the server.
+   * Default true.
+   */
+  online?: boolean;
+}
+
+export function can(
+  role: Role | null | undefined,
+  action: Action,
+  { online = true }: CanOptions = {},
+): boolean {
+  if (!role || !online) return false;
   return (ACTIONS[action] as readonly Role[]).includes(role);
 }
 
