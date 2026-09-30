@@ -2,12 +2,13 @@
 // schedule and the load list on a phone, lose the connection, reload, and the pages still
 // render from the device, with the offline banner and no editing controls.
 
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import {
   expectNoEditControls,
   pageHeading,
   PHONE,
   regattaUrl,
+  savedQueryKeys,
   SEED_REGATTA_IDS,
   signInDemo,
   waitForOfflineReady,
@@ -16,30 +17,6 @@ import {
 test.use(PHONE);
 
 const NW_YOUTH = SEED_REGATTA_IDS.nwYouth2025;
-
-/** The query keys saved in IndexedDB by data/persist.ts. */
-async function savedQueryKeys(page: Page): Promise<unknown[][]> {
-  return page.evaluate(async () => {
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open('srt');
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    try {
-      if (!db.objectStoreNames.contains('offline')) return [];
-      const saved = await new Promise<{ clientState: { queries: { queryKey: unknown[] }[] } }>(
-        (resolve, reject) => {
-          const req = db.transaction('offline').objectStore('offline').get('query-cache');
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        },
-      );
-      return saved ? saved.clientState.queries.map((q) => q.queryKey) : [];
-    } finally {
-      db.close();
-    }
-  });
-}
 
 test('the schedule and load list open offline at 390 px, read-only', async ({ page, context }) => {
   await signInDemo(page);
