@@ -207,10 +207,18 @@ export function PlanView({ level, onLevelChange, ...props }: PlanViewProps) {
     level === 'bed' ? 'bed' : tiers.includes(level) ? level : (tiers[0] ?? 'bed');
   const word = tierWordOf(trailer);
   const Word = word[0]!.toUpperCase() + word.slice(1);
+  // On a narrow drawing the levels show their numbers (as the end view does); the word stays
+  // for screen readers.
+  const narrow = width < 480;
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {narrow && (
+          <span aria-hidden className="-mr-1 text-sm text-ink-2">
+            {Word}
+          </span>
+        )}
         <SegmentedControl
           label={`${Word} to show`}
           value={String(shown)}
@@ -219,7 +227,12 @@ export function PlanView({ level, onLevelChange, ...props }: PlanViewProps) {
           options={[
             ...tiers.map((t) => ({
               value: String(t),
-              label: <span className="tabular-nums">{`${Word} ${t}`}</span>,
+              label: (
+                <span className="whitespace-nowrap tabular-nums">
+                  <span className={cn(narrow && 'sr-only')}>{Word} </span>
+                  {t}
+                </span>
+              ),
             })),
             { value: 'bed', label: 'Bed' },
           ]}

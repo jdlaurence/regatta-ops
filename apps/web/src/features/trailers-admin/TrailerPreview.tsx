@@ -33,7 +33,7 @@ type PreviewView = 'end' | 'plan' | 'iso';
 
 const VIEW_TITLES: Record<PreviewView, { title: string; note: string }> = {
   end: { title: 'End view', note: 'Seen from the back' },
-  plan: { title: 'Plan view', note: 'From above, front at the left' },
+  plan: { title: 'Plan view', note: 'One level at a time, or the bed' },
   iso: { title: 'Isometric view', note: 'Seen from behind, on the right side' },
 };
 

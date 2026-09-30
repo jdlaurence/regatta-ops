@@ -92,9 +92,6 @@ export function CompartmentsTable({
           <table className="w-full border-collapse text-base" aria-labelledby={headingId}>
             <thead>
               <tr className="border-b border-line">
-                <th scope="col" className={th}>
-                  Kind
-                </th>
                 <th scope="col" className={cn(th, 'w-full')}>
                   Label
                 </th>
@@ -103,6 +100,9 @@ export function CompartmentsTable({
                 </th>
                 <th scope="col" className={th}>
                   To (cm)
+                </th>
+                <th scope="col" className={th}>
+                  Kind
                 </th>
                 <th scope="col" className={th}>
                   Capacity
@@ -125,6 +125,52 @@ export function CompartmentsTable({
                   <tr key={c.id} className="border-b border-line last:border-b-0">
                     <td className={td}>
                       {readOnly ? (
+                        <ReadValue>{c.label}</ReadValue>
+                      ) : (
+                        <Input
+                          value={c.label}
+                          onChange={(e) => onChange(c.id, { label: e.target.value })}
+                          aria-label={`Compartment ${i + 1}: label`}
+                          aria-invalid={err('label') ? true : undefined}
+                          title={err('label')}
+                          className="min-w-36"
+                        />
+                      )}
+                    </td>
+                    <td className={td}>
+                      {readOnly ? (
+                        <ReadValue>
+                          {positionText(c.startCm, c.endCm !== null ? '0' : 'Whole length')}
+                        </ReadValue>
+                      ) : (
+                        <NumberInput
+                          value={c.startCm}
+                          onValueChange={(startCm) => onChange(c.id, { startCm })}
+                          error={err('startCm')}
+                          placeholder="0"
+                          aria-label={`${name}: from front in cm`}
+                          className="w-20"
+                        />
+                      )}
+                    </td>
+                    <td className={td}>
+                      {readOnly ? (
+                        <ReadValue>
+                          {positionText(c.endCm, c.startCm !== null ? back || 'Back' : '—')}
+                        </ReadValue>
+                      ) : (
+                        <NumberInput
+                          value={c.endCm}
+                          onValueChange={(endCm) => onChange(c.id, { endCm })}
+                          error={err('endCm')}
+                          placeholder={back}
+                          aria-label={`${name}: to in cm`}
+                          className="w-20"
+                        />
+                      )}
+                    </td>
+                    <td className={td}>
+                      {readOnly ? (
                         <ReadValue className="whitespace-nowrap">
                           {COMPARTMENT_KIND_LABELS[c.kind]}
                         </ReadValue>
@@ -145,52 +191,6 @@ export function CompartmentsTable({
                             label: COMPARTMENT_KIND_LABELS[k],
                           }))}
                           className="w-36"
-                        />
-                      )}
-                    </td>
-                    <td className={td}>
-                      {readOnly ? (
-                        <ReadValue>{c.label}</ReadValue>
-                      ) : (
-                        <Input
-                          value={c.label}
-                          onChange={(e) => onChange(c.id, { label: e.target.value })}
-                          aria-label={`Compartment ${i + 1}: label`}
-                          aria-invalid={err('label') ? true : undefined}
-                          title={err('label')}
-                          className="min-w-48"
-                        />
-                      )}
-                    </td>
-                    <td className={td}>
-                      {readOnly ? (
-                        <ReadValue>
-                          {positionText(c.startCm, c.endCm !== null ? '0' : 'Whole length')}
-                        </ReadValue>
-                      ) : (
-                        <NumberInput
-                          value={c.startCm}
-                          onValueChange={(startCm) => onChange(c.id, { startCm })}
-                          error={err('startCm')}
-                          placeholder="0"
-                          aria-label={`${name}: from front in cm`}
-                          className="w-24"
-                        />
-                      )}
-                    </td>
-                    <td className={td}>
-                      {readOnly ? (
-                        <ReadValue>
-                          {positionText(c.endCm, c.startCm !== null ? back || 'Back' : '—')}
-                        </ReadValue>
-                      ) : (
-                        <NumberInput
-                          value={c.endCm}
-                          onValueChange={(endCm) => onChange(c.id, { endCm })}
-                          error={err('endCm')}
-                          placeholder={back}
-                          aria-label={`${name}: to in cm`}
-                          className="w-24"
                         />
                       )}
                     </td>

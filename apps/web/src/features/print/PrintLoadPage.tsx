@@ -207,7 +207,9 @@ function BedTable({ sheet }: { sheet: LoadSheet }) {
                 </th>
                 <td className={td}>
                   {z.extent[0]!.toUpperCase() + z.extent.slice(1)}
-                  {z.length && <span className="text-ink-2 tabular-nums"> ({z.length})</span>}
+                  {z.length && (
+                    <span className="whitespace-nowrap text-ink-2 tabular-nums"> ({z.length})</span>
+                  )}
                 </td>
                 <td className={td}>
                   {z.rows.length === 0 ? (
