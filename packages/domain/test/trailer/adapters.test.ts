@@ -176,7 +176,7 @@ describe('trailerDefFromRecords', () => {
       frameLengthCm: src.frameLengthCm,
       widthCm: src.widthCm,
       postOffsetPct: src.postOffsetPct ?? null,
-      bowForwardDefault: false,
+      bowForwardDefault: true,
       defaultRules: SRA_DEFAULT_RULES,
     };
     const shelves: TrailerShelf[] = src.shelves

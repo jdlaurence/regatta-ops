@@ -61,7 +61,7 @@ export const TRAILER_PRESETS: readonly TrailerPreset[] = [
       postOffsetPct: 33,
       frameLengthCm: 1220,
       widthCm: 240,
-      bowForwardDefault: false,
+      bowForwardDefault: true,
       shelves: LEVELS.flatMap((tier) => {
         const high = tier >= 3;
         const common = {
@@ -100,7 +100,7 @@ export const TRAILER_PRESETS: readonly TrailerPreset[] = [
       style: 'goalpost',
       frameLengthCm: 1250,
       widthCm: 240,
-      bowForwardDefault: false,
+      bowForwardDefault: true,
       shelves: LEVELS.map((tier) =>
         shelf(newId, {
           label: `Rack ${tier}`,
@@ -141,7 +141,7 @@ export const TRAILER_PRESETS: readonly TrailerPreset[] = [
       style: 'center_post',
       frameLengthCm: 1220,
       widthCm: 240,
-      bowForwardDefault: false,
+      bowForwardDefault: true,
       shelves: [1, 2, 3, 4].flatMap((tier) => {
         const common = {
           tier,

@@ -120,7 +120,7 @@ export function sampleSheetPlacements(load: SampleLoad, trailer: TrailerDef): Pl
       shelfId: b.shelf!,
       lane: b.lane ?? 0,
       offsetCm: 0,
-      bowForward: false,
+      bowForward: true,
       locked: false,
       reasons: [],
     }));

@@ -69,7 +69,9 @@ export function FrameForm({
             </ReadField>
           )}
           <ReadField label="Boats face">
-            {draft.bowForwardDefault ? 'Bows forward' : 'Sterns forward, bows trailing'}
+            {draft.bowForwardDefault
+              ? 'Bows forward, over the truck'
+              : 'Sterns forward, bows trailing'}
           </ReadField>
           {draft.notes && (
             <ReadField label="Notes" className="sm:col-span-2">
@@ -169,7 +171,7 @@ export function FrameForm({
               Bows face forward
             </label>
             <p id={`${f('bow')}-hint`} className="text-sm text-ink-2">
-              Off: sterns toward the truck and bows trailing, the usual way.
+              On: bows over the truck, the club’s way. Off: sterns toward the truck.
             </p>
           </div>
         </div>

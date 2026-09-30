@@ -21,7 +21,7 @@ function addTrailer(w: World, def: TrailerDef, id: string): void {
     frameLengthCm: def.frameLengthCm,
     widthCm: def.widthCm,
     postOffsetPct: def.postOffsetPct ?? null,
-    bowForwardDefault: def.bowForwardDefault ?? false,
+    bowForwardDefault: def.bowForwardDefault ?? true,
     notes: NOTES,
     defaultRules: remapRuleShelfIds(SRA_DEFAULT_RULES, SHELF_IDS),
   });

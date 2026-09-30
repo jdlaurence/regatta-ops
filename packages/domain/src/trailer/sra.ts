@@ -114,7 +114,7 @@ export const SRA_BOYS_TRAILER: TrailerDef = {
   postOffsetPct: 33,
   frameLengthCm: 1220,
   widthCm: 240,
-  bowForwardDefault: false,
+  bowForwardDefault: true,
   shelves: offsetPostShelves('', 1220, {
     1: LOW,
     2: LOW,
@@ -143,7 +143,7 @@ export const SRA_GIRLS_TRAILER: TrailerDef = {
   postOffsetPct: 33,
   frameLengthCm: 1070,
   widthCm: 240,
-  bowForwardDefault: false,
+  bowForwardDefault: true,
   shelves: offsetPostShelves('g', 1070, {
     1: LOW,
     2: GIRLS_HIGH,

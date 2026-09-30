@@ -576,7 +576,7 @@ function addLoadPlans(w: World): void {
         shelfId,
         lane: cell.lane,
         offsetCm: -front,
-        bowForward: false,
+        bowForward: true,
         locked: false,
         reasons: [
           {

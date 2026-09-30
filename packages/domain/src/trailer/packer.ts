@@ -556,7 +556,7 @@ export function packTrailer(
   const m = buildModel(trailer, boats, rules);
   const lay = new Layout(m);
   const warnings: string[] = [];
-  const bowDefault = trailer.bowForwardDefault ?? false;
+  const bowDefault = trailer.bowForwardDefault ?? true;
   const bow = new Map<number, boolean>();
   const keptReasons = new Map<number, Reason[]>();
   const foreign: Placement[] = [];
@@ -738,7 +738,7 @@ export function dropBoat(
 
   const previous = placements.find((p) => p.shellId === shellId);
   const bowForward =
-    options.bowForward ?? previous?.bowForward ?? trailer.bowForwardDefault ?? false;
+    options.bowForward ?? previous?.bowForward ?? trailer.bowForwardDefault ?? true;
   const moved = toPlacement(
     lay,
     b,

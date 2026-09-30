@@ -827,7 +827,7 @@ export function explain(rule: Rule, trailer: TrailerDef): string;   // the sente
 - **End to end.** Boats in the same lane are placed end to end with `gapCm` (default 30) between them. Their total length must fit in `lengthCm + frontOverhangMaxCm + rearOverhangMaxCm`. Placement order in a lane: the packer places the longer boat first and fills with shorter ones; `offsetCm` records each boat's start relative to the front of the frame.
 - **Overhang.** For each lane, front overhang = `max(0, −minOffset)`, rear overhang = `max(0, maxEnd − lengthCm)`. Overhang limits are per shelf because they differ by tier: a 19.9 m eight on a 12.5 m frame needs about 7.5 m of overhang, which only the tiers above the tow vehicle can provide. This is why manufacturers rate a 5-tier trailer as nine eights (three tiers) plus six fours (two tiers), and the seeded trailer encodes it (§14). The packer prefers front overhang up to the shelf maximum before using rear overhang when the `forward-bias` rule is on (it is on by default; §16 explains why).
 - **Lane access.** On an `outer_first` shelf (the two-wide side of SRA's trailers), lane 0 is against the post and lane 1 is outside it. A boat in lane 0 cannot come off until lane 1 is empty, so the `unload-order` rule treats lane 1 as more accessible and the plan view draws the loading order. Nothing else about fit changes.
-- **Orientation.** `bowForward` defaults to false (sterns forward, bows trailing) per the common convention that blunt ends face the tow vehicle; a trailer-level setting flips the default. Orientation does not affect fit in v1.
+- **Orientation.** `bowForward` defaults to true: SRA loads bows forward, over the tow vehicle (owner, v0.3; §18). A trailer-level setting (`bowForwardDefault`) flips the default. Orientation does not affect fit in v1, and a single boat can't be turned on the trailer page yet.
 
 #### 9.3.3 Rule catalog
 
@@ -1184,7 +1184,7 @@ Sources: [MO Trailer Corp shell trailers](https://www.motrailers.com/shell-trail
 - Put weight forward: overhang over the tow vehicle is preferred to overhang behind the trailer, and tongue weight should be near the maximum allowed for the hitch.
 - Keep heavier boats low when the rack layout allows it.
 - Boats are transported hull up with riggers removed; wing-riggered eights can be awkward on the outside of low tiers.
-- Blunt ends (sterns) toward the tow vehicle is a common convention; SRA's own convention should be confirmed (§15 Q5).
+- Blunt ends (sterns) toward the tow vehicle is a common convention elsewhere; SRA loads bows forward, over the truck (owner, v0.3), and that is the default.
 
 Sources: [X-Press Boat Club trailering guide](https://www.xpressbc.org.uk/safety/trailering), [rec.sport.rowing trailer loading thread](https://rec.sport.rowing.narkive.com/KJs7UNNV/trailer-loading), [SRA Rower's Handbook 2019 (trailer loading is a member responsibility; boats labeled by rack spot such as A6)](https://www.sammamishrowing.org/uploads/7/1/9/6/71968221/2019_sra_rowers_handbook.pdf).
 
@@ -1269,14 +1269,14 @@ The last rule is what a coach adds when they say "we can squeeze three fours on 
 ```json
 {
   "placements": [
-    { "shellId": "sh_peggy", "shelfId": "r5", "lane": 1, "offsetCm": -450, "bowForward": false, "locked": false,
+    { "shellId": "sh_peggy", "shelfId": "r5", "lane": 1, "offsetCm": -450, "bowForward": true, "locked": false,
       "reasons": [
         { "ruleId": "r_fit", "hard": true, "text": "Fits: 19.9 m in 12.2 m plus 4.5 m front and 3.0 m rear overhang" },
         { "ruleId": "r_eights_top", "hard": false, "score": 30, "text": "Prefer eights on levels 5 and 4" },
         { "ruleId": "r_unload", "hard": false, "score": 5, "text": "Boats racing first should be easiest to reach (outer lane)" },
         { "ruleId": "r_forward", "hard": false, "score": -2, "text": "Put overhang in front, over the truck, rather than behind" }
       ] },
-    { "shellId": "sh_laurel", "shelfId": "l2", "lane": 0, "offsetCm": 0, "bowForward": false, "locked": false,
+    { "shellId": "sh_laurel", "shelfId": "l2", "lane": 0, "offsetCm": 0, "bowForward": true, "locked": false,
       "reasons": [ { "ruleId": "r_fit", "hard": true, "text": "Fits end to end with Light Speed (16.7 m of 17.7 m including overhang)" } ] }
   ],
   "unplaced": [
@@ -1339,3 +1339,4 @@ Changes made while building v1, each reflected in the code. Earlier sections car
 27. **Schedule entries switch** (owner request). The schedule's list view has a "Show entries" switch (on by default; URL `entries=hide|show`, last choice remembered on the device). On, each race lists its entries with the compact horizontal lineup strips, shells, oars, and badges; off, the schedule is bare: races and logistics lines only.
 28. **Vertical lineups; cox-first strips** (owner request, 2026-09-30; §4.4, §5.1, §5.4, §6.4). `BoatStrip` has two orientations. Vertical (`orientation="vertical"`, the lineup builder and the printed lineup sheet): the hull stands on end with the rounded stern and the cox on top, one seat per row from stroke down to bow, and the pointed bow at the bottom; rigger ticks sit on their real side. Horizontal (the default; schedule, share page): the rounded stern with the cox on the left, bow pointing right, port ticks on top. The cox is always drawn first, including in bow-loaded fours (nothing yet marks a bow-loaded shell; open question). Lineup entries are vertical cards in a grid of equal columns (at least 224 px; three across at 1280 px): label and menu, status and badges, shell, oars, then the boat; rows above the boat have fixed heights so seats line up across cards. The roster sits beside the entries when the builder has 728 px. Keyboard: Up/Down within a boat, Home/End to its top and bottom, Left/Right to the same row of the neighboring card; filling a seat moves focus down.
 29. **Bed zones along the length** (owner request, 2026-09-30; §4.9, §8.1, §9.3.1, §16.4, §17.1). Compartments carry `startCm`/`endCm` from the front of the frame (migration `1791000100_compartment_positions.js`). SRA's default beds, front to back: boys (1220 cm) oars 0–610, slings 610–760, riggers 760–1220; girls (1070 cm) oars 0–535, slings 535–665, riggers 665–1070 — placeholders until measured. The plan view has a "Bed" level (a zone too narrow for its name turns it sideways); the end view shows the riggers across the back with "Slings and oars ahead"; the isometric view draws the bed as a box 61 cm (2 ft) deep, to scale, with the first rack 10 cm (4 in) above its walls and each zone's name on the near wall; the print load sheet lists the zones and what rides in each; the trailers admin edits "From front" and "To" per compartment and warns on overlaps; the load list offers each zone as a place to ride and defaults riggers, oars, and slings to their zone on the right trailer.
+30. **Bows forward** (owner, 2026-09-30; §9.3.2, §16.3). Boats load bows forward, over the truck: the packer's default when a trailer doesn't say, SRA's two trailers, the trailers admin presets, and the seeded load plans. "Bows face forward" on a trailer's page flips it for that trailer.

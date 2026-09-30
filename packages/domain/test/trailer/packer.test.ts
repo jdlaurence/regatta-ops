@@ -376,6 +376,19 @@ describe('§9.3.5 case 8: unload order across shelves', () => {
   });
 });
 
+describe('orientation', () => {
+  it('loads bows forward, over the truck, unless the trailer says otherwise (owner, v0.3)', () => {
+    const sra = packTrailer(SRA_BOYS_TRAILER, boysLoad(), SRA_DEFAULT_RULES, []);
+    expect(sra.placements.length).toBeGreaterThan(0);
+    expect(sra.placements.every((p) => p.bowForward)).toBe(true);
+    const unset = trailer('t', [shelf('a', 'Level 1', 1, 'full', { widthCm: 90, lengthCm: 1400 })]);
+    expect(unset.bowForwardDefault).toBeUndefined();
+    expect(packTrailer(unset, [boat('Dan', '4+')], [], []).placements[0]!.bowForward).toBe(true);
+    const sterns = { ...unset, bowForwardDefault: false };
+    expect(packTrailer(sterns, [boat('Dan', '4+')], [], []).placements[0]!.bowForward).toBe(false);
+  });
+});
+
 describe('§9.3.5 case 9: determinism', () => {
   it('same input twice gives deep-equal output', () => {
     const boats = [...boysLoad(), boat('Snoopy', '4x'), boat('Laurel', '1x'), boat('Hardy', '1x')];

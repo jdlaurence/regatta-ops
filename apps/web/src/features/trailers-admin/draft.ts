@@ -179,7 +179,7 @@ export function draftFromDef(def: TrailerDef, rules: Rule[], notes = ''): Traile
     frameLengthCm: def.frameLengthCm,
     widthCm: def.widthCm,
     postOffsetPct: def.style === 'offset_post' ? (def.postOffsetPct ?? 33) : null,
-    bowForwardDefault: def.bowForwardDefault ?? false,
+    bowForwardDefault: def.bowForwardDefault ?? true,
     notes,
     defaultRules: rules,
     shelves: def.shelves.map(shelfDraftFromDef),
