@@ -1,25 +1,293 @@
-// Placeholder from WP-D. WP-K (after WP-M) replaces this file (PLAN.md §4.11, §6.12): the load
-// sheet for /print/regattas/:id/load/:trailerId. Keep the default export.
+// /print/regattas/:id/load/:trailerId (PLAN.md §4.8, §4.11, §6.12): the load sheet. The trailer
+// end view, then shelf by shelf from the top level down with the boats the regatta's load plan
+// puts there, then the checklist of what rides on this trailer with empty Loaded and Returned
+// boxes to tick at the boathouse.
 
-import { useRecord } from '@/data';
+import { useMemo, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
+import type { LoadPlacement, Trailer, TrailerShelf } from '@srt/domain';
+import { useRegattaWorkingSet } from '@/data';
 import { useRegattaId, useTrailerIdParam } from '@/app/params';
 import { regattaPath } from '@/app/nav-items';
-import { EmptyState } from '@/components/states';
-import { PrintFrame } from './PrintFrame';
+import { Select } from '@/components/ui/select';
+import { cn } from '@/lib/cn';
+import { formatDayRange } from '@/lib/dates';
+import { teamStyle } from '@/lib/team-colors';
+import { PrintFrame, PrintSheet, SheetHeader, TableScroll, ToolbarField } from './PrintFrame';
+import { loadSheet, placementShellText, type LoadSheet } from './derive';
+import { printedText, instantText } from './format';
+import { TickBox, usePrintedAt } from './parts';
+
+/**
+ * SLOT for WP-M's trailer end view (components/trailer/TrailerEndView.tsx), merged separately.
+ * Replace the body with the diagram at print size, for example:
+ *
+ *   <TrailerEndView trailer={trailer} shelves={shelves} placements={placements} size="print" />
+ *
+ * Until then the slot shows a note on screen and nothing on paper.
+ */
+export function TrailerDiagramSlot(props: {
+  trailer: Trailer;
+  shelves: TrailerShelf[];
+  placements: LoadPlacement[];
+}) {
+  void props;
+  return (
+    <div
+      data-slot="trailer-end-view"
+      data-print="hide"
+      className="mb-4 rounded-card border border-dashed border-line-strong p-4 text-sm text-ink-2 print:hidden"
+    >
+      The trailer end view prints here once the trailer diagram is in place.
+    </div>
+  );
+}
+
+const th = 'border-b-2 border-ink px-1.5 py-1 text-left text-sm font-medium text-ink-2';
+const td = 'border-b border-line px-1.5 py-1.5 align-top';
+
+function ShelvesTable({ sheet }: { sheet: LoadSheet }) {
+  return (
+    <TableScroll>
+      <table className="w-full min-w-[560px] border-collapse text-base">
+        <caption className="pb-1 text-left font-display text-md font-semibold">Shelves</caption>
+        <thead>
+          <tr>
+            <th scope="col" className={cn(th, 'w-[72px]')}>
+              Level
+            </th>
+            <th scope="col" className={th}>
+              Side
+            </th>
+            <th scope="col" className={cn(th, 'w-[88px]')}>
+              Lane
+            </th>
+            <th scope="col" className={th}>
+              Shell
+            </th>
+            <th scope="col" className={cn(th, 'w-[56px]')}>
+              Class
+            </th>
+            <th scope="col" className={th}>
+              Team
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sheet.shelves.map(({ shelf, levelText, sideText, placements }) => {
+            const first = (
+              <>
+                <th
+                  scope="row"
+                  className={cn(td, 'text-left font-display font-semibold tabular-nums')}
+                >
+                  {levelText}
+                </th>
+                <td className={td}>{sideText}</td>
+              </>
+            );
+            if (placements.length === 0) {
+              return (
+                <tr key={shelf.id} className="break-inside-avoid">
+                  {first}
+                  <td colSpan={4} className={cn(td, 'text-ink-2')}>
+                    {shelf.active ? 'Empty' : 'Not in use'}
+                  </td>
+                </tr>
+              );
+            }
+            return placements.map((p, i) => (
+              <tr key={p.placement.id} className="break-inside-avoid">
+                {i === 0 ? (
+                  first
+                ) : (
+                  <>
+                    <td className={td} aria-hidden />
+                    <td className={td} aria-hidden />
+                  </>
+                )}
+                <td className={cn(td, 'tabular-nums')}>{p.laneText}</td>
+                <td className={cn(td, 'font-medium')}>{placementShellText(p.shell)}</td>
+                <td className={cn(td, 'font-display font-semibold')}>{p.shell?.boatClass ?? ''}</td>
+                <td className={td}>
+                  <span className="flex flex-wrap gap-x-2">
+                    {p.teams.map((t) => (
+                      <span
+                        key={t.id}
+                        style={teamStyle(t.colorKey)}
+                        className="border-l-[3px] border-team pl-1.5"
+                      >
+                        {t.shortName || t.name}
+                      </span>
+                    ))}
+                  </span>
+                </td>
+              </tr>
+            ));
+          })}
+        </tbody>
+      </table>
+    </TableScroll>
+  );
+}
+
+function Checklist({ sheet }: { sheet: LoadSheet }) {
+  if (sheet.groups.length === 0) {
+    return <p className="text-base text-ink-2">Nothing on the load list for this trailer yet.</p>;
+  }
+  return (
+    <div className="flex flex-col gap-4">
+      {sheet.groups.map((g) => (
+        <TableScroll key={g.kind}>
+          <table className="w-full min-w-[560px] table-fixed border-collapse text-base">
+            <caption className="pb-1 text-left font-display text-md font-semibold">
+              {g.title}
+            </caption>
+            <colgroup>
+              <col className="w-[64px]" />
+              <col className="w-[72px]" />
+              <col />
+              <col className="w-[48px]" />
+              <col className="w-[36%]" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col" className={cn(th, 'text-center')}>
+                  Loaded
+                </th>
+                <th scope="col" className={cn(th, 'text-center')}>
+                  Returned
+                </th>
+                <th scope="col" className={th}>
+                  Item
+                </th>
+                <th scope="col" className={cn(th, 'text-right')}>
+                  Qty
+                </th>
+                <th scope="col" className={th}>
+                  Where
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {g.rows.map((r) => (
+                <tr key={r.key} className="break-inside-avoid">
+                  <td className={cn(td, 'text-center')}>
+                    <TickBox />
+                  </td>
+                  <td className={cn(td, 'text-center')}>
+                    <TickBox />
+                  </td>
+                  <td className={cn(td, 'font-medium')}>
+                    {r.label}
+                    {(r.orphaned || r.spare) && (
+                      <span className="font-normal text-ink-2"> (spare, no entry uses it)</span>
+                    )}
+                  </td>
+                  <td className={cn(td, 'text-right tabular-nums')}>{r.quantity}</td>
+                  <td
+                    className={cn(td, r.unassigned ? 'font-medium text-warn print:text-ink' : '')}
+                  >
+                    {r.where}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableScroll>
+      ))}
+    </div>
+  );
+}
 
 export default function PrintLoadPage() {
   const regattaId = useRegattaId();
   const trailerId = useTrailerIdParam();
-  const trailer = useRecord('trailers', trailerId);
+  const navigate = useNavigate();
+  const ws = useRegattaWorkingSet(regattaId);
+  const data = ws.data;
+  const printedAt = usePrintedAt();
+  const sheet = useMemo(
+    () => (data && trailerId ? loadSheet(data, trailerId) : null),
+    [data, trailerId],
+  );
+  const title = sheet ? `Load sheet: ${sheet.trailer.name}` : 'Load sheet';
+
+  const controls = data && data.trailers.length > 1 && trailerId && (
+    <ToolbarField label="Trailer">
+      <Select
+        label="Trailer"
+        value={trailerId}
+        onValueChange={(v) => navigate(`/print/regattas/${regattaId}/load/${v}`, { replace: true })}
+        options={data.trailers.map((t) => ({ value: t.id, label: t.name }))}
+        className="h-8 min-w-40"
+      />
+    </ToolbarField>
+  );
+
+  let body: ReactNode = null;
+  if (data && !sheet) {
+    body = (
+      <p className="w-full max-w-[210mm] rounded-card border border-line bg-surface p-5 text-ink-2">
+        This trailer does not exist. Go back and pick another.
+      </p>
+    );
+  } else if (data && sheet) {
+    const tz = data.regatta.timezone;
+    const placements = sheet.plan
+      ? data.placements.filter((p) => p.loadPlanId === sheet.plan!.id)
+      : [];
+    const shelves = data.shelves.filter((s) => s.trailerId === sheet.trailer.id);
+    const placed = sheet.shelves.reduce((n, s) => n + s.placements.length, 0);
+    body = (
+      <PrintSheet label={`${sheet.trailer.name} load sheet`}>
+        <SheetHeader
+          title={`${sheet.trailer.name} load sheet`}
+          subtitle={`${data.regatta.name} · ${formatDayRange(data.regatta.startDate, data.regatta.endDate)}`}
+          meta={
+            <>
+              <span className="block font-medium text-ink">
+                {sheet.plan
+                  ? `Load plan: ${sheet.plan.status === 'final' ? 'final' : 'draft'}, ${placed} ${placed === 1 ? 'boat' : 'boats'}`
+                  : 'No load plan yet'}
+              </span>
+              {sheet.plan?.packedAt && (
+                <span className="block">Packed {instantText(sheet.plan.packedAt, tz)}</span>
+              )}
+              <span className="block">Printed {printedText(printedAt, tz)}</span>
+            </>
+          }
+        />
+        <TrailerDiagramSlot trailer={sheet.trailer} shelves={shelves} placements={placements} />
+        {!sheet.plan && (
+          <p className="mb-4 text-base text-ink-2">
+            No boats are placed on this trailer for this regatta. Pack the trailer on the Trailer
+            page, then print again.
+          </p>
+        )}
+        <ShelvesTable sheet={sheet} />
+        <section aria-label="Checklist" className="mt-6">
+          <h3 className="mb-2 font-display text-lg font-semibold">Checklist</h3>
+          <Checklist sheet={sheet} />
+          {sheet.elsewhere.length > 0 && (
+            <p className="mt-3 text-sm text-ink-2">
+              Loaded elsewhere: {sheet.elsewhere.map((e) => `${e.where} (${e.count})`).join(', ')}.
+              See the load list.
+            </p>
+          )}
+        </section>
+      </PrintSheet>
+    );
+  }
+
   return (
     <PrintFrame
-      title={`Load sheet: ${trailer.data?.name ?? 'Trailer'}`}
+      title={title}
       backTo={regattaPath(regattaId, trailerId ? `trailer/${trailerId}` : 'trailer')}
+      controls={controls || undefined}
+      state={ws}
     >
-      <EmptyState
-        title="The load sheet is not built yet"
-        description="It will print the trailer shelf by shelf with the end-view diagram and the checklist."
-      />
+      {body}
     </PrintFrame>
   );
 }
