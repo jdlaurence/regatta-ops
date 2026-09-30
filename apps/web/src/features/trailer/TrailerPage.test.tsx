@@ -74,7 +74,7 @@ describe('Trailer page', () => {
     });
     await endView();
     await user.click(screen.getByRole('button', { name: 'Pack trailer' }));
-    const ask = await screen.findByRole('dialog', SLOW);
+    const ask = await screen.findByRole('dialog', {}, SLOW);
     expect(within(ask).getByText(/final/i)).toBeInTheDocument();
     await user.click(within(ask).getByRole('button', { name: 'Cancel' }));
     expect((await boysPlan(store)).packedAt ?? null).toBeNull();
