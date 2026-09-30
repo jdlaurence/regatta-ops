@@ -1,6 +1,7 @@
 // Activity log sentences (PLAN.md §4.6, §8.3). MemoryStore uses this to emulate the server's
-// activity.pb.js hook; the summaries read as "<actor> <summary>": "Sam moved entry Girls V4+
-// from Event 12 to Event 14". Keep the wording in step with backend/pb_hooks/activity.pb.js.
+// activity hook; the summaries read as "<actor> <summary>": "Sam moved entry Girls V4+ to
+// Event 14". The server's wording (backend/pb_hooks/srt/activity.js) is the reference and is
+// richer (it joins several changes into one line); this covers the common single changes.
 
 import {
   athleteName,
@@ -14,7 +15,10 @@ import {
 } from '@srt/domain';
 import type { RecordOf } from './store';
 
-export type Lookup = <C extends CollectionName>(collection: C, id: string) => RecordOf<C> | undefined;
+export type Lookup = <C extends CollectionName>(
+  collection: C,
+  id: string,
+) => RecordOf<C> | undefined;
 
 export const LOGGED_COLLECTIONS = [
   'entries',
@@ -51,7 +55,10 @@ const STATUS_WORDS: Record<string, string> = {
   retired: 'retired',
 };
 
-type Draft = Pick<ActivityEntry, 'regattaId' | 'action' | 'targetType' | 'targetId' | 'summary' | 'diff'>;
+type Draft = Pick<
+  ActivityEntry,
+  'regattaId' | 'action' | 'targetType' | 'targetId' | 'summary' | 'diff'
+>;
 
 type AnyRecord = Record<string, unknown> & { id: string };
 
@@ -147,33 +154,41 @@ function summarize(
       const name = entryName(lookup, entry);
       if (action === 'create') {
         const ev = entry.eventId ? lookup('events', entry.eventId) : undefined;
-        return text(ev ? `added entry ${name} to ${eventName(ev)}` : `added entry ${name} as unscheduled`);
+        return text(ev ? `added entry ${name} in ${eventName(ev)}` : `added entry ${name}`);
       }
-      if (action === 'delete') return text(`deleted entry ${name}`);
+      if (action === 'delete') {
+        const ev = entry.eventId ? lookup('events', entry.eventId) : undefined;
+        return text(ev ? `deleted entry ${name} from ${eventName(ev)}` : `deleted entry ${name}`);
+      }
       const prev = before as unknown as Entry;
       if (changed(diff, 'eventId')) {
         const to = entry.eventId ? lookup('events', entry.eventId) : undefined;
-        if (!to) return text(`made entry ${name} unscheduled`);
+        if (!to) {
+          const from = prev.eventId ? lookup('events', prev.eventId) : undefined;
+          return text(`took entry ${name} out of ${eventName(from)}`);
+        }
         return text(`moved entry ${name} to ${eventName(to)}`);
       }
       if (changed(diff, 'shellId')) {
         const shell = entry.shellId ? lookup('shells', entry.shellId) : undefined;
         return text(
-          shell ? `put ${shellLabel(shell)} on entry ${name}` : `removed the shell from entry ${name}`,
+          shell
+            ? `set the shell of ${name} to ${shellLabel(shell)}`
+            : `cleared the shell of ${name}`,
         );
       }
       if (changed(diff, 'oarSetId')) {
         const oars = entry.oarSetId ? lookup('oar_sets', entry.oarSetId) : undefined;
         return text(
-          oars ? `picked oars ${oarSetLabel(oars)} for entry ${name}` : `removed the oars from entry ${name}`,
+          oars ? `set the oars of ${name} to ${oars.name}` : `cleared the oars of ${name}`,
         );
       }
       if (changed(diff, 'status')) return text(`marked entry ${name} ${entry.status}`);
       if (changed(diff, 'hotSeatAckBy')) {
         return text(
           entry.hotSeatAckBy
-            ? `acknowledged the hot seat for entry ${name}`
-            : `reopened the hot seat for entry ${name}`,
+            ? `acknowledged the hot seat for ${name}`
+            : `reopened the hot seat for ${name}`,
         );
       }
       if (changed(diff, 'label')) {
@@ -185,25 +200,41 @@ function summarize(
       const seat = (after ?? before)!;
       const entry = lookup('entries', seat.entryId as string);
       const where = `${seatName(seat.seat as string)} of ${entry ? entryName(lookup, entry) : 'an entry'}`;
-      if (action === 'delete') return before?.athleteId ? text(`cleared ${where}`) : null;
+      const who = (id: unknown) => {
+        const a = typeof id === 'string' ? lookup('athletes', id) : undefined;
+        return a ? athleteName(a) : 'an athlete';
+      };
+      if (action === 'delete') {
+        return text(
+          before?.athleteId ? `removed ${who(before.athleteId)} from ${where}` : `removed ${where}`,
+        );
+      }
       const athleteId = after?.athleteId as string | null | undefined;
-      if (!athleteId) return action === 'create' ? null : text(`cleared ${where}`);
+      if (!athleteId) {
+        if (action === 'create') return null;
+        return text(
+          before?.athleteId
+            ? `cleared ${where} (was ${who(before.athleteId)})`
+            : `cleared ${where}`,
+        );
+      }
       if (action === 'update' && !changed(diff, 'athleteId')) return text(`edited ${where}`);
-      const athlete = lookup('athletes', athleteId);
-      return text(`set ${where} to ${athlete ? athleteName(athlete) : 'an athlete'}`);
+      return text(`set ${where} to ${who(athleteId)}`);
     }
     case 'events': {
       const ev = (after ?? before) as unknown as RegattaEvent;
+      const title =
+        ev.eventNumber && ev.name ? `Event ${ev.eventNumber}, ${ev.name}` : eventName(ev);
       if (action === 'create') {
+        return text(ev.kind === 'logistics' ? `added logistics item ${ev.name}` : `added ${title}`);
+      }
+      if (action === 'delete') {
         return text(
-          ev.kind === 'race' && ev.eventNumber
-            ? `added Event ${ev.eventNumber}, ${ev.name}`
-            : `added ${eventName(ev)}`,
+          ev.kind === 'logistics' ? `deleted logistics item ${ev.name}` : `deleted ${title}`,
         );
       }
-      if (action === 'delete') return text(`deleted ${eventName(ev)}`);
       if (changed(diff, 'scheduledAt')) {
-        if (!ev.scheduledAt) return text(`marked ${eventName(ev)} unscheduled`);
+        if (!ev.scheduledAt) return text(`cleared the time of ${eventName(ev)}`);
         const tz = lookup('regattas', ev.regattaId)?.timezone ?? 'America/Los_Angeles';
         return text(`moved ${eventName(ev)} to ${clockAt(ev.scheduledAt, tz)}`);
       }
@@ -225,14 +256,17 @@ function summarize(
       const rec = (after ?? before)!;
       const shell = lookup('shells', rec.shellId as string);
       const shelf = lookup('trailer_shelves', rec.shelfId as string);
+      const trailer = shelf ? lookup('trailers', shelf.trailerId) : undefined;
+      const trailerName = trailer ? `the ${trailer.name}` : 'the trailer';
       const boat = shell ? shellLabel(shell) : 'a shell';
-      const spot = shelf ? shelf.label : 'the trailer';
+      const spot = shelf?.label ? `${trailerName}, ${shelf.label}` : trailerName;
       if (action === 'create') return text(`placed ${boat} on ${spot}`);
-      if (action === 'delete') return text(`took ${boat} off the trailer`);
+      if (action === 'delete') return text(`took ${boat} off ${trailerName}`);
       if (changed(diff, 'shelfId') || changed(diff, 'lane') || changed(diff, 'offsetCm')) {
         return text(`moved ${boat} to ${spot}`);
       }
-      if (changed(diff, 'locked')) return text(after?.locked ? `locked ${boat} in place` : `unlocked ${boat}`);
+      if (changed(diff, 'locked'))
+        return text(after?.locked ? `locked ${boat} in place` : `unlocked ${boat}`);
       return text(`edited the placement of ${boat}`);
     }
     case 'load_items': {
@@ -241,7 +275,9 @@ function summarize(
       if (action === 'create') return text(`added ${label} to the load list`);
       if (action === 'delete') return text(`removed ${label} from the load list`);
       if (changed(diff, 'loadedAt')) {
-        return text(after?.loadedAt ? `checked ${label} as loaded` : `unchecked ${label} as loaded`);
+        return text(
+          after?.loadedAt ? `checked ${label} as loaded` : `unchecked ${label} as loaded`,
+        );
       }
       if (changed(diff, 'returnedAt')) {
         return text(
@@ -261,7 +297,9 @@ function summarize(
       if (action === 'create') return text(`added ${kind} ${name}`);
       if (action === 'delete') return text(`deleted ${kind} ${name}`);
       if (changed(diff, 'status')) {
-        return text(`changed ${name} to ${STATUS_WORDS[String(after?.status)] ?? String(after?.status)}`);
+        return text(
+          `changed ${name} to ${STATUS_WORDS[String(after?.status)] ?? String(after?.status)}`,
+        );
       }
       return text(`edited ${kind} ${name}`);
     }

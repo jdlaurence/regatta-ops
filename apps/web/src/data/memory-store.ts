@@ -349,7 +349,11 @@ export class MemoryStore implements DataStore {
     this.emit({ action: 'create', collection: 'activity_log', record: rec });
   }
 
-  private emit(event: { action: ChangeEvent['action']; collection: CollectionName; record: AnyRecord }) {
+  private emit(event: {
+    action: ChangeEvent['action'];
+    collection: CollectionName;
+    record: AnyRecord;
+  }) {
     const handlers = this.listeners.get(event.collection);
     if (!handlers || handlers.size === 0) return;
     const payload = { ...event, record: clone(event.record) } as unknown as ChangeEvent;

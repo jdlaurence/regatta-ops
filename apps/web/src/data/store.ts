@@ -42,10 +42,9 @@ export interface UpdateOptions {
 
 /** One write in an atomic batch: all apply or none do. */
 export type BatchOp<C extends CollectionName = CollectionName> = C extends CollectionName
-  ?
-      | { op: 'create'; collection: C; data: CreateInput<RecordOf<C>> }
-      | { op: 'update'; collection: C; id: string; patch: Patch<RecordOf<C>> }
-      | { op: 'delete'; collection: C; id: string }
+  ? | { op: 'create'; collection: C; data: CreateInput<RecordOf<C>> }
+    | { op: 'update'; collection: C; id: string; patch: Patch<RecordOf<C>> }
+    | { op: 'delete'; collection: C; id: string }
   : never;
 
 /** Typed constructors for batch operations. */
@@ -196,11 +195,16 @@ function compareValues(a: unknown, b: unknown): number {
 export function sortKeys<T>(sort: ListQuery<T>['sort']): { field: string; dir: 1 | -1 }[] {
   if (!sort) return [];
   const keys = (Array.isArray(sort) ? sort : [sort]) as string[];
-  return keys.map((k) => (k.startsWith('-') ? { field: k.slice(1), dir: -1 } : { field: k, dir: 1 }));
+  return keys.map((k) =>
+    k.startsWith('-') ? { field: k.slice(1), dir: -1 } : { field: k, dir: 1 },
+  );
 }
 
 /** A sorted copy. Stable: records that compare equal keep their order. */
-export function sortRecords<T extends object>(records: readonly T[], sort?: ListQuery<T>['sort']): T[] {
+export function sortRecords<T extends object>(
+  records: readonly T[],
+  sort?: ListQuery<T>['sort'],
+): T[] {
   const keys = sortKeys(sort);
   if (keys.length === 0) return [...records];
   return [...records].sort((x, y) => {

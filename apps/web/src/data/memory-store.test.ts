@@ -11,7 +11,10 @@ describe('MemoryStore reads', () => {
     });
     expect(events.map((e) => e.eventNumber)).toEqual(['12', '14']);
 
-    const desc = await store.list('events', { where: { regattaId: IDS.regatta }, sort: '-sortOrder' });
+    const desc = await store.list('events', {
+      where: { regattaId: IDS.regatta },
+      sort: '-sortOrder',
+    });
     expect(desc.map((e) => e.sortOrder)).toEqual([2, 1]);
 
     const athletes = await store.list('athletes', { in: { teamId: [IDS.girls, IDS.masters] } });
@@ -143,7 +146,7 @@ describe('MemoryStore writes', () => {
     const log = await store.list('activity_log', { sort: 'created' });
     expect(log.map((l) => l.summary)).toEqual([
       'moved Event 12 to 10:05',
-      'placed Spencer on Level 5, left',
+      'placed Spencer on the Boys trailer, Level 5, left',
     ]);
   });
 
@@ -181,9 +184,16 @@ describe('MemoryStore writes', () => {
 
   it('refuses a stale write when expectedUpdated no longer matches', async () => {
     let t = 0;
-    const store = fixtureStore({ now: () => new Date(Date.UTC(2026, 9, 1, 0, 0, t++)).toISOString() });
+    const store = fixtureStore({
+      now: () => new Date(Date.UTC(2026, 9, 1, 0, 0, t++)).toISOString(),
+    });
     const ev = await store.update('events', IDS.event1, { notes: 'Stamp it' });
-    const first = await store.update('events', ev.id, { name: 'A' }, { expectedUpdated: ev.updated });
+    const first = await store.update(
+      'events',
+      ev.id,
+      { name: 'A' },
+      { expectedUpdated: ev.updated },
+    );
     await expect(
       store.update('events', ev.id, { name: 'B' }, { expectedUpdated: ev.updated }),
     ).rejects.toMatchObject({ code: 'conflict', status: 409 });
@@ -195,7 +205,9 @@ describe('MemoryStore batch', () => {
   it('swaps two athletes under the unique (entry, athlete) index', async () => {
     const store = fixtureStore();
     const [a, b] = ['seatentry1s0001', 'seatentry1s0002'];
-    await expect(store.update('entry_seats', a, { athleteId: 'athmasters00001' })).rejects.toMatchObject({
+    await expect(
+      store.update('entry_seats', a, { athleteId: 'athmasters00001' }),
+    ).rejects.toMatchObject({
       code: 'unique',
     });
     await store.batch([

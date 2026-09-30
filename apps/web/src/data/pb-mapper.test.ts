@@ -175,7 +175,9 @@ describe('list parameters', () => {
   });
 
   it('uses any-of for multi relations and returns null for an empty in list', () => {
-    expect(toPbListParams<RegattaEvent>('events', { where: { teamFilter: 't1' as never } })).toMatchObject({
+    expect(
+      toPbListParams<RegattaEvent>('events', { where: { teamFilter: 't1' as never } }),
+    ).toMatchObject({
       filter: 'team_filter ?= {:p0}',
     });
     expect(toPbListParams<EntrySeat>('entry_seats', { in: { entryId: [] } })).toBeNull();

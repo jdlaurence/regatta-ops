@@ -171,7 +171,10 @@ export function useStoreMutation<TVars, TResult = unknown>(
  */
 export function useCreate<C extends CollectionName>(
   collection: C,
-  options: Pick<StoreMutationOptions<CreateInput<RecordOf<C>>, RecordOf<C>>, 'errorMessage' | 'onSuccess' | 'onError'> = {},
+  options: Pick<
+    StoreMutationOptions<CreateInput<RecordOf<C>>, RecordOf<C>>,
+    'errorMessage' | 'onSuccess' | 'onError'
+  > = {},
 ) {
   const m = useStoreMutation<CreateInput<RecordOf<C>> & { id: string }, RecordOf<C>>({
     ...options,
@@ -200,7 +203,10 @@ export interface UpdateVars<C extends CollectionName> {
 /** Update a record: `update.mutate({ id, patch: { shellId } })`. */
 export function useUpdate<C extends CollectionName>(
   collection: C,
-  options: Pick<StoreMutationOptions<UpdateVars<C>, RecordOf<C>>, 'errorMessage' | 'onSuccess' | 'onError'> = {},
+  options: Pick<
+    StoreMutationOptions<UpdateVars<C>, RecordOf<C>>,
+    'errorMessage' | 'onSuccess' | 'onError'
+  > = {},
 ) {
   return useStoreMutation<UpdateVars<C>, RecordOf<C>>({
     ...options,
@@ -221,7 +227,10 @@ export function useUpdate<C extends CollectionName>(
  *   ]);
  */
 export function useBatch(
-  options: Pick<StoreMutationOptions<BatchOp[], unknown>, 'errorMessage' | 'onSuccess' | 'onError'> = {},
+  options: Pick<
+    StoreMutationOptions<BatchOp[], unknown>,
+    'errorMessage' | 'onSuccess' | 'onError'
+  > = {},
 ) {
   const m = useStoreMutation<BatchOp[], (RecordOf<CollectionName> | null)[]>({
     ...options,

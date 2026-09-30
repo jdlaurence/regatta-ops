@@ -28,7 +28,12 @@ describe('useRegattaWorkingSet', () => {
     expect(ws.participatingTeams.map((t) => t.shortName)).toEqual(['Boys', 'Girls']);
     expect(ws.teams).toHaveLength(3);
     // Participating teams' athletes plus the borrowed masters athlete seated in a boys' boat.
-    expect(ws.athletes.map((a) => a.firstName).sort()).toEqual(['Emery', 'Jules', 'Quinn', 'Rowan']);
+    expect(ws.athletes.map((a) => a.firstName).sort()).toEqual([
+      'Emery',
+      'Jules',
+      'Quinn',
+      'Rowan',
+    ]);
     expect(ws.byId.shells.get(IDS.shell)!.name).toBe('Spencer');
     expect(ws.trailers).toHaveLength(1);
     expect(ws.shelves).toHaveLength(1);
@@ -98,7 +103,9 @@ describe('optimistic writes', () => {
     );
     await waitFor(() => expect(result.current.ws.data).toBeDefined());
     act(() => result.current.update.mutate({ id: IDS.entry1, patch: { label: '2V4+' } }));
-    await waitFor(() => expect(result.current.ws.data!.byId.entries.get(IDS.entry1)!.label).toBe('2V4+'));
+    await waitFor(() =>
+      expect(result.current.ws.data!.byId.entries.get(IDS.entry1)!.label).toBe('2V4+'),
+    );
     await act(async () => release(true));
     await waitFor(() => expect(result.current.update.isSuccess).toBe(true));
     expect(result.current.ws.data!.byId.entries.get(IDS.entry1)!.label).toBe('2V4+');
@@ -107,12 +114,17 @@ describe('optimistic writes', () => {
   it('rolls back when the store refuses', async () => {
     const { store, release } = gatedStore(fixtureStore());
     const { result } = renderHook(
-      () => ({ ws: useRegattaWorkingSet(IDS.regatta), update: useUpdate('entries', { errorMessage: false }) }),
+      () => ({
+        ws: useRegattaWorkingSet(IDS.regatta),
+        update: useUpdate('entries', { errorMessage: false }),
+      }),
       { wrapper: dataWrapper(store) },
     );
     await waitFor(() => expect(result.current.ws.data).toBeDefined());
     act(() => result.current.update.mutate({ id: IDS.entry1, patch: { label: 'Nope' } }));
-    await waitFor(() => expect(result.current.ws.data!.byId.entries.get(IDS.entry1)!.label).toBe('Nope'));
+    await waitFor(() =>
+      expect(result.current.ws.data!.byId.entries.get(IDS.entry1)!.label).toBe('Nope'),
+    );
     await act(async () => release(false));
     await waitFor(() => expect(result.current.update.isError).toBe(true));
     expect(result.current.ws.data!.byId.entries.get(IDS.entry1)!.label).toBe('V4+');

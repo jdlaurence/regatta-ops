@@ -246,7 +246,10 @@ export function useRegattaWorkingSet(regattaId: string | null | undefined): Work
     const club = clubSettings.data![0] ?? null;
     const allTeams = teams.data!;
     const rtTeamIds = new Set(regattaTeams.data!.map((rt) => rt.teamId));
-    const athleteRows = [...athletes.data!, ...(borrowedIds.length > 0 ? (borrowed.data ?? []) : [])];
+    const athleteRows = [
+      ...athletes.data!,
+      ...(borrowedIds.length > 0 ? (borrowed.data ?? []) : []),
+    ];
     const seatsByEntry = new Map<Id, EntrySeat[]>();
     for (const s of seats.data!) {
       const list = seatsByEntry.get(s.entryId) ?? [];
@@ -327,4 +330,3 @@ export function useRegattaWorkingSet(regattaId: string | null | undefined): Work
     refetch: refetchFailed,
   };
 }
-

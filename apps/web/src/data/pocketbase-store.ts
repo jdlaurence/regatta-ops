@@ -51,7 +51,10 @@ function toStoreError(err: unknown, op: 'read' | 'write' = 'read'): StoreError {
     }
     if (status === 401) return new StoreError('auth', 'Sign in to continue.', 401);
     if (status === 400) {
-      const data = (err.response?.data ?? {}) as Record<string, { code?: string; message?: string }>;
+      const data = (err.response?.data ?? {}) as Record<
+        string,
+        { code?: string; message?: string }
+      >;
       const unique = Object.values(data).some((d) => d?.code === 'validation_not_unique');
       if (unique) return new StoreError('unique', 'That already exists.', 400);
       const first = Object.values(data)[0]?.message;
@@ -160,13 +163,17 @@ export class PocketBaseStore implements DataStore {
   async batch(ops: BatchOp[]): Promise<(RecordOf<CollectionName> | null)[]> {
     if (ops.length === 0) return [];
     if (ops.length > MAX_BATCH) {
-      throw new StoreError('validation', `Too many changes at once (${ops.length}; the limit is ${MAX_BATCH}).`);
+      throw new StoreError(
+        'validation',
+        `Too many changes at once (${ops.length}; the limit is ${MAX_BATCH}).`,
+      );
     }
     try {
       const batch = this.pb.createBatch();
       for (const op of ops) {
         const target = batch.collection(op.collection);
-        if (op.op === 'create') target.create(toPb(op.collection, op.data as Record<string, unknown>));
+        if (op.op === 'create')
+          target.create(toPb(op.collection, op.data as Record<string, unknown>));
         else if (op.op === 'update') {
           target.update(op.id, toPb(op.collection, op.patch as Record<string, unknown>));
         } else target.delete(op.id);

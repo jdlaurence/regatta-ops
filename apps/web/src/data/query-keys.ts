@@ -31,7 +31,8 @@ export function normalizeQuery<T>(query?: ListQuery<T>): NormalizedQuery {
     }
     if (Object.keys(inn).length > 0) out.in = inn;
   }
-  if (query?.sort) out.sort = (Array.isArray(query.sort) ? [...query.sort] : [query.sort]) as string[];
+  if (query?.sort)
+    out.sort = (Array.isArray(query.sort) ? [...query.sort] : [query.sort]) as string[];
   return out;
 }
 
