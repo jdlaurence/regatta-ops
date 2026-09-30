@@ -37,17 +37,20 @@ const comp = (
 });
 
 describe("SRA's bed zones", () => {
-  it('run slings, oars, then riggers to the back of the frame, across the full width', () => {
+  it('run oars (the front half), slings, then riggers to the back, across the full width', () => {
     for (const trailer of [SRA_BOYS_TRAILER, SRA_GIRLS_TRAILER]) {
       const zones = bedZones(trailer);
-      expect(zones.map((z) => z.compartment.label)).toEqual(['Slings', 'Oars', 'Riggers']);
+      expect(zones.map((z) => z.compartment.label)).toEqual(['Oars', 'Slings', 'Riggers']);
       expect(zones[0]!.startCm).toBe(0);
       // Each zone starts where the one ahead of it ends, and the riggers reach the back.
       expect(zones[1]!.startCm).toBe(zones[0]!.endCm);
       expect(zones[2]!.startCm).toBe(zones[1]!.endCm);
       expect(zones[2]!.endCm).toBe(trailer.frameLengthCm);
-      // Sweeps are about 3.7 m: the oar zone takes them.
-      expect(zones[1]!.endCm - zones[1]!.startCm).toBeGreaterThanOrEqual(380);
+      // Oars are long: they take roughly the front half of the bed (sweeps are about 3.7 m).
+      expect(zones[0]!.endCm).toBe(Math.round(trailer.frameLengthCm / 2));
+      // Slings are a small section in the middle; riggers take the rest of the back.
+      expect(zones[1]!.endCm - zones[1]!.startCm).toBeLessThan(200);
+      expect(zones[2]!.endCm - zones[2]!.startCm).toBeGreaterThan(400);
       expect(zones.every((z) => z.rows === 1 && z.row === 0 && z.positioned)).toBe(true);
       expect(zoneOverlaps(trailer)).toEqual([]);
       expect(compartmentFor(trailer, 'riggers')!.kind).toBe('rigger_rack');
@@ -56,16 +59,16 @@ describe("SRA's bed zones", () => {
     }
   });
 
-  it('are seen from the back as the riggers, with oars and slings ahead', () => {
+  it('are seen from the back as the riggers, with slings and oars ahead', () => {
     const { back, ahead } = bedFromBehind(bedZones(SRA_BOYS_TRAILER));
     expect(back.map((z) => z.compartment.label)).toEqual(['Riggers']);
-    expect(ahead.map((z) => z.compartment.label)).toEqual(['Oars', 'Slings']);
-    expect(aheadCaption(ahead)).toBe('Oars and slings ahead');
+    expect(ahead.map((z) => z.compartment.label)).toEqual(['Slings', 'Oars']);
+    expect(aheadCaption(ahead)).toBe('Slings and oars ahead');
     expect(aheadCaption([])).toBeNull();
   });
 
   it('name the rigger zone as the back of the bed', () => {
-    const [slings, oars, riggers] = SRA_BOYS_TRAILER.compartments;
+    const [oars, slings, riggers] = SRA_BOYS_TRAILER.compartments;
     expect(zoneName(riggers!, 1220)).toBe('Riggers (back of bed)');
     expect(zoneName(oars!, 1220)).toBe('Oars');
     expect(zoneContainer('Boys trailer', riggers!, 1220)).toBe(
@@ -159,7 +162,7 @@ describe('zone words', () => {
     expect(zoneExtent(span(0, 1220), f)).toBe('the whole length');
     expect(zoneExtent({ startCm: 0, endCm: f, positioned: false }, f)).toBe('the whole length');
     const [, , riggers] = bedZones(SRA_BOYS_TRAILER);
-    expect(zoneWords(riggers!, f)).toBe('Riggers, from 7.0 m to the back (5.2 m)');
+    expect(zoneWords(riggers!, f)).toBe('Riggers, from 7.6 m to the back (4.6 m)');
     const [box] = bedZones({ frameLengthCm: f, compartments: [comp('b', 'Oar box')] });
     expect(zoneWords(box!, f)).toBe('Oar box, the whole length');
     expect(

@@ -203,8 +203,8 @@ describe('trailers', () => {
       // The bed as zones along the frame, riggers at the back; the stored records read back as
       // the same packer definition (a start of 0 is stored blank, as PocketBase keeps it).
       expect(compartments.map((c) => [c.label, c.capacityUnit])).toEqual([
-        ['Slings', 'pairs'],
         ['Oars', 'oars'],
+        ['Slings', 'pairs'],
         ['Riggers', 'riggers'],
       ]);
       expect(compartments[0]).toMatchObject({ startCm: null, endCm: def.compartments[0]!.endCm });

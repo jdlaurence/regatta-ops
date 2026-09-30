@@ -132,7 +132,7 @@ describe('endViewGeometry: offset post (SRA)', () => {
     const [riggers] = g.compartments;
     expect(riggers!.rect.x).toBeCloseTo(g.bed.x + 4, 5);
     expect(riggers!.rect.width).toBeCloseTo(g.bed.width - 8, 5);
-    expect(g.bedCaption?.text).toBe('Oars and slings ahead');
+    expect(g.bedCaption?.text).toBe('Slings and oars ahead');
     // The name sits above the caption, both inside the bed.
     expect(riggers!.labelRect.y + riggers!.labelRect.height).toBeLessThanOrEqual(
       g.bedCaption!.rect.y,

@@ -219,6 +219,8 @@ export interface PlanZone {
   y: number;
   width: number;
   height: number;
+  /** Too narrow for a name across it (the slings, on a phone): the name turns sideways. */
+  narrow: boolean;
   /** "Riggers, from 7.0 m to the back (5.2 m)", for screen readers. */
   words: string;
 }
@@ -239,6 +241,8 @@ const BED_BAND_HEIGHT = PLAN_LANE_HEIGHT * 3 + PLAN_LANE_GAP * 2;
 const BED_INSET = 4;
 const BED_ROW_GAP = 4;
 const BED_BOTTOM = 14;
+/** Below this width a zone's name and length don't fit across it. */
+const NARROW_ZONE_PX = 56;
 
 function zoneNote(z: BedZone, frameLengthCm: number): string | null {
   if (!z.positioned) return 'whole length';
@@ -289,6 +293,7 @@ export function bedPlanGeometry(input: {
       y: frame.y1 + BED_INSET + z.row * (rowH + BED_ROW_GAP),
       width: Math.max(0, xb - xa),
       height: rowH,
+      narrow: xb - xa < NARROW_ZONE_PX,
       words: zoneWords(z, frameLen),
     };
   });

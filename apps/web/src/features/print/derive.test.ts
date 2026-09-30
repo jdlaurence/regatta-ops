@@ -297,11 +297,11 @@ describe('load sheet', () => {
     const ws = await loadWorkingSet(seedStore(), NW);
     const sheet = loadSheet(ws, SEED_TRAILER_IDS.boys)!;
     expect(sheet.bed.map((z) => [z.name, z.extent, z.length])).toEqual([
-      ['Slings', 'from the front to 3.0 m', '3.0 m'],
-      ['Oars', '3.0 to 7.0 m from the front', '4.0 m'],
-      ['Riggers (back of bed)', 'from 7.0 m to the back', '5.2 m'],
+      ['Oars', 'from the front to 6.1 m', '6.1 m'],
+      ['Slings', '6.1 to 7.6 m from the front', '1.5 m'],
+      ['Riggers (back of bed)', 'from 7.6 m to the back', '4.6 m'],
     ]);
-    const [slings, oars, riggers] = sheet.bed;
+    const [oars, slings, riggers] = sheet.bed;
     // Riggers of the boats on this trailer ride at the back of the bed.
     expect(riggers!.rows.length).toBeGreaterThan(5);
     expect(riggers!.rows.every((r) => r.kind === 'riggers')).toBe(true);

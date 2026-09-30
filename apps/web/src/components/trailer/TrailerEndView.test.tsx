@@ -53,11 +53,9 @@ describe('TrailerEndView', () => {
     expect(screen.getAllByText('Level 5')).toHaveLength(1 + 3);
     expect(screen.getByText('Wide side (outer first)')).toBeInTheDocument();
     expect(screen.getByText('Riggers')).toBeInTheDocument();
-    expect(screen.getByText('Oars and slings ahead')).toBeInTheDocument();
-    expect(
-      within(table).getByRole('row', { name: /^Bed Front to back: Slings/ }),
-    ).toHaveTextContent(
-      'Front to back: Slings, from the front to 3.0 m (3.0 m); Oars, 3.0 to 7.0 m from the front (4.0 m); Riggers, from 7.0 m to the back (5.2 m)',
+    expect(screen.getByText('Slings and oars ahead')).toBeInTheDocument();
+    expect(within(table).getByRole('row', { name: /^Bed Front to back: Oars/ })).toHaveTextContent(
+      'Front to back: Oars, from the front to 6.1 m (6.1 m); Slings, 6.1 to 7.6 m from the front (1.5 m); Riggers, from 7.6 m to the back (4.6 m)',
     );
   });
 

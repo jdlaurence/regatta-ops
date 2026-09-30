@@ -174,13 +174,13 @@ test.describe('desktop', () => {
     // The bed front to back, riggers filling the back of it (PLAN.md §4.9).
     const bed = sheet.getByRole('table', { name: 'Bed, front to back' });
     await expect(bed.getByRole('rowheader')).toHaveText([
-      'Slings',
       'Oars',
+      'Slings',
       'Riggers (back of bed)',
     ]);
     await expect(
       bed.getByRole('row', {
-        name: /^Riggers \(back of bed\) From 7\.0 m to the back .*Riggers for LLL/,
+        name: /^Riggers \(back of bed\) From 7\.6 m to the back .*Riggers for LLL/,
       }),
     ).toBeVisible();
 

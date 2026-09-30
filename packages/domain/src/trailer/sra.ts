@@ -55,7 +55,7 @@ function offsetPostShelves(
 
 /** Where each load starts along the bed, cm from the front, and how much the zone holds. */
 interface BedLayout {
-  oarsFromCm: number;
+  slingsFromCm: number;
   riggersFromCm: number;
   slings: number;
   oars: number;
@@ -63,27 +63,27 @@ interface BedLayout {
 }
 
 /**
- * SRA's bed as zones along the frame, front to back (PLAN.md §4.9, §16.4): slings, then oars
- * (a zone of at least 380 cm, for 3.7 m sweeps), then riggers filling the back of the bed
- * across its full width to the rear end. The owner said riggers take the back of the bed and
- * slings run along it too; the order and the lengths are placeholders until measured (§15 Q1).
+ * SRA's bed as zones along the frame, front to back (PLAN.md §4.9, §16.4), as the owner
+ * describes it: oars, which are long, take roughly the front half; slings a small section in
+ * the middle; riggers the rest of the back of the bed, across its full width. The lengths are
+ * placeholders until measured (§15 Q1).
  */
 function bedZonesAlong(prefix: string, frameLengthCm: number, bed: BedLayout): CompartmentDef[] {
   return [
-    {
-      id: `${prefix}slings`,
-      kind: 'storage',
-      label: 'Slings',
-      capacity: bed.slings,
-      startCm: 0,
-      endCm: bed.oarsFromCm,
-    },
     {
       id: `${prefix}oars`,
       kind: 'oar_rack',
       label: 'Oars',
       capacity: bed.oars,
-      startCm: bed.oarsFromCm,
+      startCm: 0,
+      endCm: bed.slingsFromCm,
+    },
+    {
+      id: `${prefix}slings`,
+      kind: 'storage',
+      label: 'Slings',
+      capacity: bed.slings,
+      startCm: bed.slingsFromCm,
       endCm: bed.riggersFromCm,
     },
     {
@@ -122,10 +122,10 @@ export const SRA_BOYS_TRAILER: TrailerDef = {
     4: BOYS_HIGH,
     5: BOYS_HIGH,
   }),
-  // Slings 3.0 m, oars 4.0 m, riggers the last 5.2 m.
+  // Oars the front half (6.1 m), slings 1.5 m, riggers the last 4.6 m.
   compartments: bedZonesAlong('', 1220, {
-    oarsFromCm: 300,
-    riggersFromCm: 700,
+    slingsFromCm: 610,
+    riggersFromCm: 760,
     slings: 16,
     oars: 64,
     riggers: 96,
@@ -151,10 +151,10 @@ export const SRA_GIRLS_TRAILER: TrailerDef = {
     4: GIRLS_HIGH,
     5: GIRLS_HIGH,
   }),
-  // Slings 2.5 m, oars 3.9 m, riggers the last 4.3 m.
+  // Oars the front half (5.35 m), slings 1.3 m, riggers the last 4.05 m.
   compartments: bedZonesAlong('g', 1070, {
-    oarsFromCm: 250,
-    riggersFromCm: 640,
+    slingsFromCm: 535,
+    riggersFromCm: 665,
     slings: 12,
     oars: 48,
     riggers: 80,

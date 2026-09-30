@@ -176,9 +176,9 @@ describe('print routes', () => {
     const zones = within(bed)
       .getAllByRole('rowheader')
       .map((h) => h.textContent);
-    expect(zones).toEqual(['Slings', 'Oars', 'Riggers (back of bed)']);
+    expect(zones).toEqual(['Oars', 'Slings', 'Riggers (back of bed)']);
     expect(within(bed).getAllByRole('row')[3]).toHaveTextContent(
-      /^Riggers \(back of bed\)From 7\.0 m to the back \(5\.2 m\)Riggers for /,
+      /^Riggers \(back of bed\)From 7\.6 m to the back \(4\.6 m\)Riggers for /,
     );
     const checklist = within(sheet).getByRole('region', { name: 'Checklist' });
     const shells = within(checklist).getByRole('table', { name: 'Shells' });

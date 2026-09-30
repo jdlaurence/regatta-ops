@@ -550,16 +550,26 @@ function BedPlan({ trailer, width }: { trailer: TrailerDef; width: number }) {
           {g.zones.map((z) => (
             <span
               key={z.id}
-              className="absolute flex flex-col items-center justify-center gap-0.5 overflow-hidden px-1.5 text-center leading-tight"
+              className={cn(
+                'absolute flex flex-col items-center justify-center gap-0.5 overflow-hidden text-center leading-tight',
+                z.narrow ? 'px-0' : 'px-1.5',
+              )}
               style={{ left: z.x, top: z.y, width: z.width, height: z.height }}
             >
-              <span className="max-w-full truncate text-sm font-medium text-ink">{z.label}</span>
-              {z.note && (
+              {z.narrow ? (
+                // A short zone (the slings, on a phone): its name turned to read along the band.
+                <span className="max-h-full truncate text-xs font-medium text-ink [writing-mode:vertical-rl]">
+                  {z.label}
+                </span>
+              ) : (
+                <span className="max-w-full truncate text-sm font-medium text-ink">{z.label}</span>
+              )}
+              {!z.narrow && z.note && (
                 <span className="line-clamp-3 max-w-full text-xs break-words text-ink-2">
                   {z.note[0]!.toUpperCase() + z.note.slice(1)}
                 </span>
               )}
-              {z.positioned && (
+              {!z.narrow && z.positioned && (
                 <span className="text-xs text-ink-2 tabular-nums">
                   {meters(z.endCm - z.startCm)} m
                 </span>

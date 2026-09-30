@@ -226,8 +226,8 @@ describe('writes', () => {
     const boys = src.trailers.find((t) => t.id === SEED_TRAILER_IDS.boys)!;
     expect(containerPicks([boys], src.compartments)).toEqual([
       'Boys trailer',
-      'Boys trailer · Slings',
       'Boys trailer · Oars',
+      'Boys trailer · Slings',
       'Boys trailer · Riggers (back of bed)',
       'Truck 1 bed',
       'Truck 2 bed',

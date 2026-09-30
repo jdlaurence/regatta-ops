@@ -10,6 +10,8 @@ import {
 } from '@srt/domain';
 import { presetByKey } from '@/features/trailers-admin/presets';
 import {
+  BED_WALL_CM,
+  FIRST_RACK_ABOVE_WALL_CM,
   bedSummary,
   boatLengthCm,
   hullProfile,
@@ -148,26 +150,37 @@ describe('isometric bed zones', () => {
   it('lays the zones along the bed, front to back, each across its full width', () => {
     const g = geometry([], 800);
     expect(g.zones.map((z) => [z.label, z.startCm, z.endCm])).toEqual([
-      ['Slings', 0, 300],
-      ['Oars', 300, 700],
-      ['Riggers', 700, 1220],
+      ['Oars', 0, 610],
+      ['Slings', 610, 760],
+      ['Riggers', 760, 1220],
     ]);
-    const [slings, oars, riggers] = g.zones;
+    const [oars, slings, riggers] = g.zones;
     // Along the length: the front is up and to the right, so each zone ahead is further right.
-    expect(slings!.top[0]!.x).toBeGreaterThan(oars!.top[0]!.x);
-    expect(oars!.top[0]!.x).toBeGreaterThan(riggers!.top[0]!.x);
+    expect(oars!.top[0]!.x).toBeGreaterThan(slings!.top[0]!.x);
+    expect(slings!.top[0]!.x).toBeGreaterThan(riggers!.top[0]!.x);
     // Across the full width: from near the far edge of the bed to near its near edge.
     const bedDepth = g.bedTop[3]!.y - g.bedTop[0]!.y;
     expect(riggers!.top[3]!.y - riggers!.top[0]!.y).toBeGreaterThan(bedDepth * 0.9);
-    // A divider down the near side between zones, none at the back.
-    expect(slings!.divider).not.toBeNull();
+    // A divider up the near wall between zones, none at the back.
+    expect(oars!.divider).not.toBeNull();
     expect(riggers!.divider).toBeNull();
-    // Names hang under the frame clear of the wheels (behind them, for the riggers).
-    const wheel = g.wheels[1]!;
-    expect(riggers!.name!.at.x).toBeLessThan(wheel.cx - wheel.r);
-    for (const z of g.zones) expect(z.name!.at.y + 18).toBeLessThanOrEqual(g.height);
+    // The bed is a box about 2 ft deep, to scale, and the first rack is 4 in above its walls.
+    expect(BED_WALL_CM).toBe(61);
+    expect(FIRST_RACK_ABOVE_WALL_CM).toBe(10);
+    const [floor, , , wallTop] = g.bedWalls.near;
+    expect(floor!.y - wallTop!.y).toBeCloseTo(BED_WALL_CM * g.scale, 5);
+    expect(oars!.divider!.a.y - oars!.divider!.b.y).toBeCloseTo(BED_WALL_CM * g.scale, 5);
+    // Names are written on the near wall, halfway up, centered on each zone.
+    for (const z of g.zones) {
+      // The zone's near edge on the floor, halfway along, then half the wall's height up.
+      const floorMidY = (z.top[2]!.y + z.top[3]!.y) / 2;
+      const floorMidX = (z.top[2]!.x + z.top[3]!.x) / 2;
+      expect(Math.abs(z.name!.at.y - (floorMidY - (BED_WALL_CM / 2) * g.scale))).toBeLessThan(2);
+      expect(Math.abs(z.name!.at.x - floorMidX)).toBeLessThan(2);
+    }
+    expect(slings!.name!.room).toBeGreaterThan(40);
     expect(bedSummary(g.zones)).toBe(
-      'Bed, front to back: slings (3.0 m), oars (4.0 m), and riggers (5.2 m).',
+      'Bed, front to back: oars (6.1 m), slings (1.5 m), and riggers (4.6 m).',
     );
     expect(bedSummary([])).toBeNull();
   });
@@ -176,7 +189,7 @@ describe('isometric bed zones', () => {
     render(<TrailerIsometric trailer={SRA_BOYS_TRAILER} rules={SRA_DEFAULT_RULES} width={800} />);
     const svg = screen.getByRole('figure').querySelector('svg')!;
     expect(svg.querySelectorAll('[data-zone]')).toHaveLength(3);
-    for (const name of ['Slings', 'Oars', 'Riggers']) {
+    for (const name of ['Oars', 'Slings', 'Riggers']) {
       expect(within(svg as unknown as HTMLElement).getByText(name)).toBeInTheDocument();
     }
 
@@ -264,7 +277,7 @@ describe('TrailerIsometric', () => {
     expect(within(empty).getByText('Spare trailer: no boats.')).toBeInTheDocument();
     // No overhang to report; the caption names the bed's zones.
     expect(empty.querySelector('figcaption')).toHaveTextContent(
-      /^Bed, front to back: slings \(3\.0 m\), oars \(4\.0 m\), and riggers \(5\.2 m\)\.$/,
+      /^Bed, front to back: oars \(6\.1 m\), slings \(1\.5 m\), and riggers \(4\.6 m\)\.$/,
     );
     expect(empty.querySelectorAll('line[stroke-dasharray]').length).toBeGreaterThan(0);
   });

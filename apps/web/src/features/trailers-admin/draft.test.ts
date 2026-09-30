@@ -158,9 +158,9 @@ describe('compartments along the frame', () => {
     };
     const draft = draftFromRecords(pb);
     expect(draft.compartments.map((c) => [c.label, c.startCm, c.endCm])).toEqual([
-      ['Slings', 0, 300],
-      ['Oars', 300, 700],
-      ['Riggers', 700, 1220],
+      ['Oars', 0, 610],
+      ['Slings', 610, 760],
+      ['Riggers', 760, 1220],
     ]);
     // Nothing to save: 0 and blank are the same start.
     expect(saveOps(pb, draft)).toEqual([]);
@@ -173,19 +173,19 @@ describe('compartments along the frame', () => {
     const moved = {
       ...draft,
       compartments: draft.compartments.map((c) =>
-        c.id === 'riggers' ? { ...c, startCm: 650 } : c.id === 'oars' ? { ...c, endCm: 650 } : c,
+        c.id === 'riggers' ? { ...c, startCm: 700 } : c.id === 'slings' ? { ...c, endCm: 700 } : c,
       ),
     };
     expect(saveOps(saved, moved)).toEqual<BatchOp[]>([
-      { op: 'update', collection: 'trailer_compartments', id: 'oars', patch: { endCm: 650 } },
-      { op: 'update', collection: 'trailer_compartments', id: 'riggers', patch: { startCm: 650 } },
+      { op: 'update', collection: 'trailer_compartments', id: 'slings', patch: { endCm: 700 } },
+      { op: 'update', collection: 'trailer_compartments', id: 'riggers', patch: { startCm: 700 } },
     ]);
-    const whole = updateCompartment(draft, 'slings', { startCm: null, endCm: null });
+    const whole = updateCompartment(draft, 'oars', { startCm: null, endCm: null });
     const [op] = saveOps(saved, whole);
     expect(op).toEqual({
       op: 'update',
       collection: 'trailer_compartments',
-      id: 'slings',
+      id: 'oars',
       patch: { endCm: null },
     });
   });
@@ -215,8 +215,8 @@ describe('compartments along the frame', () => {
   it('warns about overlaps without stopping a save', () => {
     const draft = draftFromRecords(saved);
     expect(draftWarnings(draft)).toEqual([]);
-    const overlap = updateCompartment(draft, 'slings', { endCm: 350 });
-    expect(draftWarnings(overlap)).toEqual(['Slings and Oars overlap by 50 cm.']);
+    const overlap = updateCompartment(draft, 'oars', { endCm: 660 });
+    expect(draftWarnings(overlap)).toEqual(['Oars and Slings overlap by 50 cm.']);
     expect(validateDraft(overlap)).toEqual({});
     const box = {
       ...draft,
@@ -234,8 +234,8 @@ describe('compartments along the frame', () => {
       ],
     };
     expect(draftWarnings(box)).toEqual([
-      'Compartment 4 runs the whole length, so it overlaps Slings. Give it a place along the frame.',
       'Compartment 4 runs the whole length, so it overlaps Oars. Give it a place along the frame.',
+      'Compartment 4 runs the whole length, so it overlaps Slings. Give it a place along the frame.',
       'Compartment 4 runs the whole length, so it overlaps Riggers. Give it a place along the frame.',
     ]);
   });

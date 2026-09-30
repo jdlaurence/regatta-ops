@@ -112,16 +112,42 @@ function HullLabel({ hull }: { hull: IsoHull }) {
 }
 
 /** A zone's name under the frame's near side, when the stretch clear of the wheels holds it. */
+const NARROW_CHARS = new Set("fijlrtI.,:;!|' ");
+const WIDE_CHARS = new Set('mwMW');
+
+/**
+ * About how wide a name is at 12 px, in px: narrow letters (i, l, t…) take about half a wide
+ * one. Close enough to decide whether a name fits its zone without measuring the DOM.
+ */
+export function textWidth12(text: string): number {
+  let w = 0;
+  for (const ch of text) {
+    w += NARROW_CHARS.has(ch)
+      ? 3.4
+      : WIDE_CHARS.has(ch)
+        ? 9.4
+        : ch === ch.toUpperCase()
+          ? 7.6
+          : 6.2;
+  }
+  return w;
+}
+
+/** A name on the bed's wall needs little margin: the wall's edges already frame it. */
+function wallLabelWidth(text: string): number {
+  return textWidth12(text) + 4;
+}
+
 function ZoneName({ zone }: { zone: IsoZone }) {
-  if (!zone.name || zone.name.room < labelWidth(zone.label)) return null;
+  if (!zone.name || zone.name.room < wallLabelWidth(zone.label)) return null;
   const { at, angle } = zone.name;
   return (
     <text
       x={at.x}
-      y={at.y + 4}
+      y={at.y}
       transform={`rotate(${angle.toFixed(2)} ${at.x.toFixed(1)} ${at.y.toFixed(1)})`}
       textAnchor="middle"
-      dominantBaseline="hanging"
+      dominantBaseline="central"
       className="pointer-events-none fill-ink-2 text-xs"
     >
       {zone.label}
@@ -161,6 +187,19 @@ function Drawing({ g, selectedShellId }: { g: IsoGeometry; selectedShellId: Id |
         strokeWidth={thin}
         className="fill-line stroke-line-strong"
       />
+      {/* The bed is a box about 2 ft deep: its far and front walls sit behind the floor. */}
+      <polygon
+        points={points(g.bedWalls.far)}
+        strokeWidth={thin}
+        strokeLinejoin="round"
+        className="fill-surface-2 stroke-line-strong"
+      />
+      <polygon
+        points={points(g.bedWalls.front)}
+        strokeWidth={thin}
+        strokeLinejoin="round"
+        className="fill-line stroke-line-strong"
+      />
       <polygon
         points={points(g.bedTop)}
         strokeWidth={thin}
@@ -175,8 +214,29 @@ function Drawing({ g, selectedShellId }: { g: IsoGeometry; selectedShellId: Id |
             strokeLinejoin="round"
             className="fill-surface stroke-line-strong"
           />
-          {z.divider && (
+        </g>
+      ))}
+      {/* The near and back walls, see-through so the zones on the floor show. */}
+      <polygon
+        points={points(g.bedWalls.near)}
+        strokeWidth={thin}
+        strokeLinejoin="round"
+        className="fill-line stroke-line-strong"
+        fillOpacity={0.35}
+      />
+      <polygon
+        points={points(g.bedWalls.back)}
+        strokeWidth={thin}
+        strokeLinejoin="round"
+        className="fill-line stroke-line-strong"
+        fillOpacity={0.5}
+      />
+      {/* Where one zone gives way to the next, marked up the near wall. */}
+      {g.zones.map(
+        (z) =>
+          z.divider && (
             <line
+              key={`divider-${z.id}`}
               x1={z.divider.a.x}
               y1={z.divider.a.y}
               x2={z.divider.b.x}
@@ -184,9 +244,8 @@ function Drawing({ g, selectedShellId }: { g: IsoGeometry; selectedShellId: Id |
               strokeWidth={thin}
               className="stroke-ink-2"
             />
-          )}
-        </g>
-      ))}
+          ),
+      )}
       {g.zones.map((z) => (
         <ZoneName key={z.id} zone={z} />
       ))}

@@ -98,10 +98,15 @@ export interface IsoGeometry {
   frameLengthCm: number;
   /** px per cm along the length. */
   scale: number;
-  /** The bed seen from above, and its near side and back. */
+  /** The bed's floor seen from above, and the deck's near edge and back edge. */
   bedTop: Pt[];
   bedSide: Pt[];
   bedBack: Pt[];
+  /**
+   * The bed's walls, about 2 ft (61 cm) above the floor: `far` and `front` are painted behind
+   * the floor's zones, `near` and `back` in front of them (see-through, so the zones show).
+   */
+  bedWalls: { far: Pt[]; front: Pt[]; near: Pt[]; back: Pt[] };
   hitch: Pt[];
   /** Compartments along the bed, front to back. */
   zones: IsoZone[];
@@ -123,7 +128,11 @@ const WIDTH_ANGLE = (32 * Math.PI) / 180;
 const WIDTH_FORESHORTEN = 0.75;
 const BED_Z = 62;
 const BED_DEPTH = 16;
-const FIRST_RACK = 44;
+/** SRA's beds are boxes about 2 ft deep (the owner, 2026-09-30); to scale with the length. */
+export const BED_WALL_CM = 61;
+/** The first rack sits about 4 in above the top of the bed's walls. */
+export const FIRST_RACK_ABOVE_WALL_CM = 10;
+const FIRST_RACK = BED_WALL_CM + FIRST_RACK_ABOVE_WALL_CM;
 const WHEEL_R = 38;
 const HULL_DEPTH = 14;
 const HULL_BEAM_SCALE = 2;
@@ -169,23 +178,6 @@ const ZONE_INSET = 8;
 const ZONE_NAME_PX = 18;
 /** Wheel positions along the frame (fraction of its length), near side. */
 const WHEELS_AT = [0.56, 0.68];
-
-/**
- * The longest stretch of [start, end] clear of the wheels (cm), where a zone's name can hang
- * under the frame without running into them.
- */
-function clearOfWheels(start: number, end: number, frameL: number): [number, number] {
-  const reach = WHEEL_R / Math.cos(LENGTH_ANGLE) + 4;
-  const blocked: [number, number] = [
-    frameL * WHEELS_AT[0]! - reach,
-    frameL * WHEELS_AT[WHEELS_AT.length - 1]! + reach,
-  ];
-  const parts: [number, number][] = [
-    [start, Math.min(end, blocked[0])],
-    [Math.max(start, blocked[1]), end],
-  ];
-  return parts.reduce((best, p) => (p[1] - p[0] > best[1] - best[0] ? p : best), [start, start]);
-}
 
 export interface IsoInput {
   trailer: TrailerDef;
@@ -286,6 +278,14 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
     P(frameL, W, BED_Z - BED_DEPTH),
     P(frameL, 0, BED_Z - BED_DEPTH),
   ];
+  // The walls, floor to top. The drawing looks at the back and near side, from above.
+  const WALL = BED_Z + BED_WALL_CM;
+  const bedWalls = {
+    far: [P(0, 0, BED_Z), P(frameL, 0, BED_Z), P(frameL, 0, WALL), P(0, 0, WALL)],
+    front: [P(0, 0, BED_Z), P(0, W, BED_Z), P(0, W, WALL), P(0, 0, WALL)],
+    near: [P(0, W, BED_Z), P(frameL, W, BED_Z), P(frameL, W, WALL), P(0, W, WALL)],
+    back: [P(frameL, 0, BED_Z), P(frameL, W, BED_Z), P(frameL, W, WALL), P(frameL, 0, WALL)],
+  };
   const front = P(-HITCH_CM, W / 2, BED_Z - BED_DEPTH);
   const hitch = [P(0, 0, BED_Z - BED_DEPTH / 2), front, P(0, W, BED_Z - BED_DEPTH / 2)];
   // Compartments along the bed (§4.9): each zone's patch of the bed, across the full width
@@ -301,17 +301,16 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
     const nearRow = z.row === z.rows - 1;
     const divider =
       nearRow && z.endCm < frameL - 0.5
-        ? { a: P(z.endCm, W, BED_Z), b: P(z.endCm, W, BED_Z - BED_DEPTH) }
+        ? { a: P(z.endCm, W, BED_Z), b: P(z.endCm, W, WALL) }
         : null;
-    const [c1, c2] = clearOfWheels(z.startCm, z.endCm, frameL);
-    const name =
-      nearRow && c2 > c1
-        ? {
-            at: P((c1 + c2) / 2, W, BED_Z - BED_DEPTH),
-            angle: -(LENGTH_ANGLE * 180) / Math.PI,
-            room: (c2 - c1) * Math.cos(LENGTH_ANGLE),
-          }
-        : null;
+    // The name is written on the near wall, halfway up, centered on the zone.
+    const name = nearRow
+      ? {
+          at: P((z.startCm + z.endCm) / 2, W, BED_Z + BED_WALL_CM / 2),
+          angle: -(LENGTH_ANGLE * 180) / Math.PI,
+          room: Math.max(0, z.endCm - z.startCm - ZONE_INSET) * Math.cos(LENGTH_ANGLE),
+        }
+      : null;
     return {
       id: z.compartment.id,
       label: z.compartment.label.trim() || 'Bed',
@@ -490,6 +489,7 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
     bedTop,
     bedSide,
     bedBack,
+    bedWalls,
     hitch,
     zones,
     front,
