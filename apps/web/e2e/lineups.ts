@@ -66,8 +66,10 @@ export async function typeIntoFocusedSeat(page: Page, seatLabel: string, name: s
 }
 
 /**
- * Drag with the mouse the way dnd-kit expects: press, move past its 5 px activation distance,
- * then glide to the target in steps and release. `during` runs while hovering over the target.
+ * Drag with the mouse the way dnd-kit expects: press, move past its activation distance (5 or
+ * 6 px), then glide to the target in steps and release. The target is measured again once the
+ * drag has started, because dnd-kit scrolls the page when the pointer starts near an edge.
+ * `during` runs while hovering over the target.
  */
 export async function dragAndDrop(
   page: Page,
@@ -78,14 +80,20 @@ export async function dragAndDrop(
   await source.scrollIntoViewIfNeeded();
   await target.scrollIntoViewIfNeeded();
   const from = await source.boundingBox();
-  const to = await target.boundingBox();
-  if (!from || !to) throw new Error('Drag source or target is not visible');
+  if (!from) throw new Error('Drag source is not visible');
   const fx = from.x + from.width / 2;
   const fy = from.y + from.height / 2;
   await page.mouse.move(fx, fy);
   await page.mouse.down();
   await page.mouse.move(fx + 12, fy + 6, { steps: 4 });
-  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 });
+  let to = await target.boundingBox();
+  for (let pass = 0; pass < 3 && to; pass++) {
+    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 });
+    const again = await target.boundingBox();
+    if (again && Math.abs(again.x - to.x) < 2 && Math.abs(again.y - to.y) < 2) break;
+    to = again;
+  }
+  if (!to) throw new Error('Drag target is not visible');
   await during?.();
   await page.mouse.up();
 }
