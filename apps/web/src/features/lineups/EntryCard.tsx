@@ -2,7 +2,7 @@
 // seat rows on a phone), and a line of facts. Clicking the card selects it; the label opens
 // the entry's details in the inspector.
 
-import type { MouseEvent } from 'react';
+import { useRef, type MouseEvent } from 'react';
 import {
   ArrowRightLeft,
   Check,
@@ -61,11 +61,12 @@ export function StatusText({ status }: { status: EntryStatus }) {
 function EntryMenu({ entry }: { entry: Entry }) {
   const { actions, canEdit } = useLineup();
   const ui = useLineupUi.getState;
-  const { setOpen } = useInspector();
+  const { openAndFocus } = useInspector();
+  const trigger = useRef<HTMLButtonElement>(null);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label={`More for ${entry.label}`}>
+        <Button ref={trigger} variant="ghost" size="icon-sm" aria-label={`More for ${entry.label}`}>
           <Ellipsis aria-hidden />
         </Button>
       </DropdownMenuTrigger>
@@ -73,7 +74,7 @@ function EntryMenu({ entry }: { entry: Entry }) {
         <DropdownMenuItem
           onSelect={() => {
             ui().select(entry.id);
-            setOpen(true);
+            openAndFocus(trigger.current);
           }}
         >
           <PanelRight aria-hidden />
@@ -165,7 +166,7 @@ export function EntryCard({ entry, showClass }: { entry: Entry; showClass?: bool
   const asList = !stripFits(entry.boatClass, entriesWidth);
   const selected = useLineupUi((s) => s.selectedEntryId === entry.id);
   const flashing = useLineupUi((s) => s.flashEntryId === entry.id);
-  const { setOpen } = useInspector();
+  const { openAndFocus } = useInspector();
   const findings = findingsByEntry.get(entry.id) ?? [];
   const conflicts = seatConflicts(findings, index, entry.id);
   const worst = worstSeverity(findings);
@@ -193,9 +194,10 @@ export function EntryCard({ entry, showClass }: { entry: Entry; showClass?: bool
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <button
           type="button"
-          onClick={() => {
+          onClick={(e) => {
             useLineupUi.getState().select(entry.id);
-            setOpen(true);
+            // Keyboard users land in the details and come back here with Escape.
+            openAndFocus(e.currentTarget);
           }}
           className={cn(
             'min-w-0 truncate text-left text-md font-medium text-ink hover:underline pointer-coarse:min-h-11 pointer-coarse:min-w-11',

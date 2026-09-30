@@ -33,6 +33,10 @@ interface InspectorState {
   isDesktop: boolean;
   /** The panel element content is portaled into (set by the shell). */
   slot: HTMLElement | null;
+  /** The panel itself, for moving keyboard focus into it (set by the shell). */
+  panel: HTMLElement | null;
+  /** Where focus goes back to when the panel is left with Escape or closed from inside. */
+  returnTo: HTMLElement | null;
   /** Mounted <Inspector> ids, most recent last. */
   stack: string[];
   titles: Record<string, string>;
@@ -46,6 +50,14 @@ interface InspectorState {
   restoreOpen: () => void;
   setDesktop: (isDesktop: boolean) => void;
   setSlot: (el: HTMLElement | null) => void;
+  setPanel: (el: HTMLElement | null) => void;
+  /**
+   * Open the panel and move keyboard focus into it, remembering `from` (default: the focused
+   * element) to come back to. For buttons whose job is to show something in the panel.
+   */
+  openAndFocus: (from?: HTMLElement | null) => void;
+  /** Send focus back to where it was before the panel took it (the page when unknown). */
+  returnFocus: () => void;
   push: (id: string, title: string) => void;
   pop: (id: string) => void;
 }
@@ -73,6 +85,8 @@ export const useInspectorStore = create<InspectorState>((set, get) => ({
   sheetOpen: false,
   isDesktop: true,
   slot: null,
+  panel: null,
+  returnTo: null,
   stack: [],
   titles: {},
   setOpen: (open, { remember = true } = {}) => {
@@ -85,6 +99,22 @@ export const useInspectorStore = create<InspectorState>((set, get) => ({
   restoreOpen: () => set({ columnOpen: initialOpen() }),
   setDesktop: (isDesktop) => set({ isDesktop, sheetOpen: false }),
   setSlot: (slot) => set({ slot }),
+  setPanel: (panel) => set({ panel }),
+  openAndFocus: (from) => {
+    const active = document.activeElement;
+    set({ returnTo: from ?? (active instanceof HTMLElement ? active : null) });
+    get().setOpen(true);
+    // After the panel shows (and after a closing menu hands focus back to its trigger).
+    setTimeout(() => get().panel?.focus(), 30);
+  },
+  returnFocus: () => {
+    const target = get().returnTo;
+    set({ returnTo: null });
+    const fallback =
+      document.querySelector<HTMLElement>('[data-inspector-toggle]') ??
+      document.getElementById('main');
+    (target?.isConnected ? target : fallback)?.focus();
+  },
   push: (id, title) =>
     set((s) => ({
       stack: [...s.stack.filter((x) => x !== id), id],
@@ -107,7 +137,8 @@ export function useInspector() {
   const open = useInspectorStore(selectOpen);
   const setOpen = useInspectorStore((s) => s.setOpen);
   const toggle = useInspectorStore((s) => s.toggle);
-  return { open, setOpen, toggle };
+  const openAndFocus = useInspectorStore((s) => s.openAndFocus);
+  return { open, setOpen, toggle, openAndFocus };
 }
 
 /** True while a page has put its own content in the inspector. */

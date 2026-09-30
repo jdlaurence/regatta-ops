@@ -73,11 +73,12 @@ export const useLineupUi = create<LineupUiState>((set, get) => ({
   select: (id) => set({ selectedEntryId: id }),
   reveal: (id) => {
     set({ selectedEntryId: id, flashEntryId: id });
-    // Wait a frame for the card to render (a view switch or a fresh load), then scroll to it.
+    // Wait a frame for the card to render (a view switch or a fresh load), then scroll to it
+    // and put keyboard focus on it (its label, which opens the details).
     setTimeout(() => {
-      document
-        .querySelector(`[data-lineup-entry="${id}"]`)
-        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+      const card = document.querySelector(`[data-lineup-entry="${id}"]`);
+      card?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+      card?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
     }, 80);
     setTimeout(() => {
       if (get().flashEntryId === id) set({ flashEntryId: null });
