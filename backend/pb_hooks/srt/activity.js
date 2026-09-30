@@ -12,6 +12,8 @@
 const time = require(`${__hooks}/srt/time.js`);
 
 const LOGGED = [
+  'teams',
+  'athletes',
   'regattas',
   'regatta_teams',
   'entries',
@@ -500,6 +502,57 @@ const TIMING_WORDS = {
   rerigMin: 're-rig time',
 };
 
+function teams(_find, action, before, after) {
+  const rec = after || before;
+  const name = rec.name || 'a team';
+  if (action === 'create') return { regatta: '', team: rec.id, summary: 'added team ' + name };
+  if (action === 'delete') return { regatta: '', team: '', summary: 'deleted team ' + name };
+  const changed = changedKeys(before, after, 'teams');
+  const has = (k) => changed.indexOf(k) !== -1;
+  const clauses = [];
+  const handled = [];
+  if (has('name')) {
+    clauses.push('renamed team ' + before.name + ' to ' + name);
+    handled.push('name');
+  }
+  if (has('archived')) {
+    clauses.push((after.archived ? 'archived team ' : 'restored team ') + name);
+    handled.push('archived');
+  }
+  const rest = changed.filter((k) => handled.indexOf(k) === -1);
+  if (rest.length) clauses.push(editedClause('team ' + name, rest));
+  return clauses.length ? { regatta: '', team: rec.id, summary: clauses.join('; ') } : null;
+}
+
+function athletes(find, action, before, after) {
+  const rec = after || before;
+  const who = athleteName(rec);
+  const team = find('teams', rec.team);
+  const teamName = team ? team.name : 'a team';
+  const base = { regatta: '', team: rec.team || '' };
+  if (action === 'create') {
+    return Object.assign(base, { summary: 'added ' + who + ' to ' + teamName });
+  }
+  if (action === 'delete') {
+    return Object.assign(base, { summary: 'removed ' + who + ' from ' + teamName });
+  }
+  const changed = changedKeys(before, after, 'athletes');
+  const has = (k) => changed.indexOf(k) !== -1;
+  const clauses = [];
+  const handled = [];
+  if (has('team')) {
+    clauses.push('moved ' + who + ' to ' + teamName);
+    handled.push('team');
+  }
+  if (has('status')) {
+    clauses.push('marked ' + who + ' ' + (after.status === 'inactive' ? 'inactive' : 'active'));
+    handled.push('status');
+  }
+  const rest = changed.filter((k) => handled.indexOf(k) === -1);
+  if (rest.length) clauses.push(editedClause(who, rest));
+  return clauses.length ? Object.assign(base, { summary: clauses.join('; ') }) : null;
+}
+
 function regattas(_find, action, before, after) {
   const rec = after || before;
   const name = rec.name || 'a regatta';
@@ -584,6 +637,8 @@ function shareLinks(find, action, before, after) {
 }
 
 const DESCRIBERS = {
+  teams: teams,
+  athletes: athletes,
   regattas: regattas,
   regatta_teams: regattaTeams,
   entries: entries,

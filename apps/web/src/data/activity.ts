@@ -21,6 +21,8 @@ export type Lookup = <C extends CollectionName>(
 ) => RecordOf<C> | undefined;
 
 export const LOGGED_COLLECTIONS = [
+  'teams',
+  'athletes',
   'regattas',
   'regatta_teams',
   'entries',
@@ -286,6 +288,30 @@ function summarize(
         );
       }
       return text(`edited ${label} on the load list`);
+    }
+    case 'teams': {
+      const rec = (after ?? before)!;
+      const name = String(rec.name ?? 'a team');
+      if (action === 'create') return text(`added team ${name}`);
+      if (action === 'delete') return text(`deleted team ${name}`);
+      if (changed(diff, 'name')) return text(`renamed team ${String(before?.name)} to ${name}`);
+      if (changed(diff, 'archived')) {
+        return text(`${after?.archived ? 'archived' : 'restored'} team ${name}`);
+      }
+      return text(`edited team ${name}`);
+    }
+    case 'athletes': {
+      const rec = (after ?? before)! as unknown as RecordOf<'athletes'>;
+      const who = athleteName(rec);
+      const team = lookup('teams', rec.teamId);
+      const teamName = team?.name ?? 'a team';
+      if (action === 'create') return text(`added ${who} to ${teamName}`);
+      if (action === 'delete') return text(`removed ${who} from ${teamName}`);
+      if (changed(diff, 'teamId')) return text(`moved ${who} to ${teamName}`);
+      if (changed(diff, 'status')) {
+        return text(`marked ${who} ${rec.status === 'inactive' ? 'inactive' : 'active'}`);
+      }
+      return text(`edited ${who}`);
     }
     case 'regattas': {
       const rec = (after ?? before)!;

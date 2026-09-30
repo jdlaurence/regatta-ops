@@ -11,6 +11,8 @@ onRecordCreateRequest(
   (e) => {
     require(`${__hooks}/srt/activity.js`).handle(e, 'create');
   },
+  'teams',
+  'athletes',
   'regattas',
   'regatta_teams',
   'entries',
@@ -28,6 +30,8 @@ onRecordUpdateRequest(
   (e) => {
     require(`${__hooks}/srt/activity.js`).handle(e, 'update');
   },
+  'teams',
+  'athletes',
   'regattas',
   'regatta_teams',
   'entries',
@@ -45,6 +49,8 @@ onRecordDeleteRequest(
   (e) => {
     require(`${__hooks}/srt/activity.js`).handle(e, 'delete');
   },
+  'teams',
+  'athletes',
   'regattas',
   'regatta_teams',
   'entries',

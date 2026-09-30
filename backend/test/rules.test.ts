@@ -504,6 +504,18 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
       expect((await latestActivity(rt.id))?.summary).toBe('removed Junior girls from the regatta');
     });
 
+    it('describes roster and team changes', async () => {
+      await coach.collection('athletes').update(IDS.athletes[1], { status: 'inactive' });
+      const marked = await latestActivity(IDS.athletes[1]);
+      expect(marked?.summary).toBe('marked Emery Sample inactive');
+      expect(marked?.team).toBe(IDS.boys);
+      await coach.collection('athletes').update(IDS.athletes[1], { status: 'active' });
+      const team = await admin.collection('teams').getOne(IDS.girls);
+      await admin.collection('teams').update(IDS.girls, { archived: true });
+      expect((await latestActivity(IDS.girls))?.summary).toBe(`archived team ${team.name}`);
+      await admin.collection('teams').update(IDS.girls, { archived: false });
+    });
+
     it('skips updates that change nothing', async () => {
       const before = await latestActivity(IDS.shellFour);
       await coach.collection('shells').update(IDS.shellFour, { name: 'Spencer' });
