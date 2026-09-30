@@ -10,6 +10,7 @@ import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input, Label } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { scrollBehavior } from '@/lib/motion';
 import { useLineup } from './context';
 import { autoLabel, entryName, eventTitleText } from './lib';
 import { CopyFromDialog } from './CopyFromDialog';
@@ -39,7 +40,7 @@ function focusEntry(id: string) {
   setTimeout(() => {
     const card = document.querySelector<HTMLElement>(`[data-lineup-entry="${id}"]`);
     if (!card) return;
-    card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    card.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     card.querySelector<HTMLElement>('[data-lineup-seat]')?.focus({ preventScroll: true });
   }, 60);
 }

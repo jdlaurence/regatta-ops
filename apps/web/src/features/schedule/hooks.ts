@@ -7,6 +7,7 @@ import { zonedToInstant, type Regatta, type RegattaEvent } from '@srt/domain';
 import { useBatch, useUpdate, batchOp } from '@/data';
 import type { TimelineGroupBy } from '@/components/timeline-lib';
 import { toast } from '@/components/toast';
+import { scrollBehavior } from '@/lib/motion';
 import { parseBoatClass, type ScheduleFilters, type ShiftChange } from './lib';
 
 export type ScheduleView = 'list' | 'timeline';
@@ -92,8 +93,7 @@ export function useEventLink(
       return;
     }
     const row = document.querySelector<HTMLElement>(`[data-event-id="${event.id}"]`);
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    row?.scrollIntoView?.({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    row?.scrollIntoView?.({ block: 'center', behavior: scrollBehavior() });
     row?.focus({ preventScroll: true });
     if (row) row.dataset.highlight = 'true';
     set({

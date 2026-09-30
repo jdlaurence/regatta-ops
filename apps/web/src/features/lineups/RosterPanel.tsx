@@ -11,6 +11,7 @@ import { athleteName, type Athlete } from '@srt/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { TeamChip } from '@/components/chips';
+import { prefersReducedMotion } from '@/lib/motion';
 import { useLineup } from './context';
 import {
   EMPTY_FILTERS,
@@ -26,12 +27,6 @@ import { useLineupUi } from './store';
 export interface RosterDragData {
   kind: 'athlete';
   athleteId: string;
-}
-
-function prefersReducedMotion(): boolean {
-  return typeof window.matchMedia === 'function'
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    : false;
 }
 
 /** The strike through a boated name: drawn left to right in 180 ms when it appears. */

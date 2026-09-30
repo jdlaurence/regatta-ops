@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import type { Id, Seat } from '@srt/domain';
+import { scrollBehavior } from '@/lib/motion';
 import type { SeatRef } from './lib';
 
 export interface PickerState extends SeatRef {
@@ -76,7 +77,7 @@ export const useLineupUi = create<LineupUiState>((set, get) => ({
     setTimeout(() => {
       document
         .querySelector(`[data-lineup-entry="${id}"]`)
-        ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        ?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     }, 80);
     setTimeout(() => {
       if (get().flashEntryId === id) set({ flashEntryId: null });
