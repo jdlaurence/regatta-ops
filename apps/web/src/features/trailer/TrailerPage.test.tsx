@@ -92,7 +92,10 @@ describe('Trailer page', () => {
     const toLoad = screen.getByRole('region', { name: 'To load' });
     expect(within(toLoad).getByRole('button', { name: /^Hans, 8\+, Boys/ })).toBeInTheDocument();
     expect(within(toLoad).getByRole('button', { name: /^Fowler, 4\+, Boys/ })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Loading rules' })).toBeInTheDocument();
+    // The rules panel starts folded under its heading.
+    const rulesToggle = screen.getByRole('button', { name: 'Loading rules' });
+    expect(rulesToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('region', { name: 'Rules for this regatta' })).toBeNull();
     expect(screen.getByRole('link', { name: /Girls trailer/ })).toHaveAttribute(
       'href',
       `/regattas/${NW}/trailer/${SEED_TRAILER_IDS.girls}`,
@@ -179,6 +182,7 @@ describe('Trailer page', () => {
     const { store } = renderTrailer(`/regattas/${NW}/trailer`);
     await endView();
     const before = await store.list('load_placements', {});
+    await user.click(screen.getByRole('button', { name: /^Loading rules/ }));
     await user.click(screen.getByRole('switch', { name: 'Use this rule: Keep heavier boats low' }));
     await waitFor(async () => {
       const rule = (await boysPlan(store)).rules.find((r) => r.type === 'heavy-low');
@@ -239,6 +243,7 @@ describe('Trailer page', () => {
     expect(screen.queryByRole('button', { name: /start a load plan/i })).toBeNull();
     expect(await store.list('load_plans', { where: { regattaId: HOTL } })).toHaveLength(0);
     // The rules are editable before anything is loaded; the first edit creates the plan.
+    await user.click(screen.getByRole('button', { name: /^Loading rules/ }));
     await user.click(screen.getByRole('switch', { name: 'Use this rule: Keep heavier boats low' }));
     await waitFor(async () =>
       expect(await store.list('load_plans', { where: { regattaId: HOTL } })).toHaveLength(1),

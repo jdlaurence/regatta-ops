@@ -1,6 +1,8 @@
 // The rules panel (PLAN.md §4.10, §6.6 right column): the plan's loading rules in the shared
 // RulesEditor, regatta mode. Changes are this regatta's overrides (the first one starts the
 // trailer's load plan); they never repack by themselves ("Rules changed · Auto pack to apply").
+// The panel folds under its heading and starts closed; the heading shows the override count and
+// "Changed" so a closed panel still says what matters.
 
 import { useState } from 'react';
 import { ChevronDown, Info } from 'lucide-react';
@@ -16,7 +18,6 @@ export function RulesPanel({
   canEdit,
   dirty,
   onChange,
-  collapsible,
   className,
 }: {
   tm: TrailerModel;
@@ -26,11 +27,9 @@ export function RulesPanel({
   /** Rules were edited since the last pack. */
   dirty: boolean;
   onChange: (rules: Rule[]) => void;
-  /** Phones: the panel folds under a heading button. */
-  collapsible?: boolean;
   className?: string;
 }) {
-  const [open, setOpen] = useState(!collapsible);
+  const [open, setOpen] = useState(false);
   const overrides = tm.rules.filter((r) => r.origin === 'regatta').length;
   const body = (
     <div className="flex flex-col gap-3">
@@ -52,17 +51,11 @@ export function RulesPanel({
         readOnly={!canEdit}
         shells={boats.map((b) => ({ id: b.shellId, name: b.name, cls: b.cls }))}
         teams={teams.map((t) => ({ id: t.id, name: t.name }))}
-        title={collapsible ? 'Rules for this regatta' : 'Loading rules'}
-        headingLevel={collapsible ? 3 : 2}
+        title="Rules for this regatta"
+        headingLevel={3}
       />
     </div>
   );
-  if (!collapsible) {
-    return (
-      // The rules editor inside is the "Loading rules" region; a second one here would repeat it.
-      <div className={cn('rounded-card border border-line bg-surface p-3', className)}>{body}</div>
-    );
-  }
   return (
     <section className={cn('rounded-card border border-line bg-surface', className)}>
       <h2>

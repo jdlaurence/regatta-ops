@@ -94,7 +94,9 @@ test.describe('desktop', () => {
     });
 
     await test.step('turn a rule off and pack again', async () => {
-      const rules = main.getByRole('region', { name: 'Loading rules' }).first();
+      // The rules panel starts folded under its heading.
+      await main.getByRole('button', { name: /^Loading rules/ }).click();
+      const rules = main.getByRole('region', { name: 'Rules for this regatta' });
       const toggle = rules.getByRole('switch', { name: `Use this rule: ${EIGHTS_ON_TOP}` });
       await toggle.click();
       await expect(toggle).not.toBeChecked();

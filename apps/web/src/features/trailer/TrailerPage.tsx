@@ -981,7 +981,6 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
               teams={ws.teams}
               canEdit={canEdit}
               dirty={dirty}
-              collapsible={isPhone}
               onChange={(rules) => writes.setRules(planRef(tm), rules)}
               className="self-start @4xl:col-start-2 @7xl:col-start-3 @7xl:row-start-1"
             />

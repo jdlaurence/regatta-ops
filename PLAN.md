@@ -472,7 +472,7 @@ Roster table across all participating teams with a per-athlete toggle (and per-d
 
 - Left: unplaced shells (draggable), then the gear checklist.
 - Center: end view by default, drawn as the real cross-section (post at one third, one lane left, two lanes right, bed compartments below); plan view per level via the toggle. Selecting a cell or chip shows reasons in the inspector. A trailer switcher at the top moves between the boys' and girls' trailers; unplaced boats can be dragged onto either.
-- Right: rules panel. Editing a rule and clicking "Auto pack trailer" re-packs; locked chips stay.
+- Right: rules panel, folded under its "Loading rules" heading and closed when the page opens (the heading shows how many rules are this regatta's and "Changed" after an edit). Editing a rule and clicking "Auto pack trailer" re-packs; locked chips stay.
 - Bottom: weight per side, per-tier overhang, warnings.
 
 ### 6.7 Load list `/regattas/:id/load`
