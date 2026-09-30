@@ -507,14 +507,17 @@ function DescriptionTable({
   );
 }
 
+const NO_PLACEMENTS: readonly EndViewPlacement[] = [];
+const NO_BOATS: readonly EndViewBoat[] = [];
+const NO_RULES: readonly Rule[] = [];
 const THUMB_WIDTH = 112;
 const FALLBACK_WIDTH = 560;
 
 export function TrailerEndView({
   trailer,
   rules,
-  placements = [],
-  boats = [],
+  placements = NO_PLACEMENTS,
+  boats = NO_BOATS,
   size = 'full',
   width: fixedWidth,
   label,
@@ -532,7 +535,10 @@ export function TrailerEndView({
 }: TrailerEndViewProps) {
   const [measureRef, measured] = useContainerWidth(FALLBACK_WIDTH);
   const width = fixedWidth ?? (size === 'thumb' ? THUMB_WIDTH : measured);
-  const effective = useMemo(() => effectiveShelvesFor(trailer, rules ?? []), [trailer, rules]);
+  const effective = useMemo(
+    () => effectiveShelvesFor(trailer, rules ?? NO_RULES),
+    [trailer, rules],
+  );
   const g = useMemo(
     () => endViewGeometry({ trailer, shelves: effective, placements, width, size }),
     [trailer, effective, placements, width, size],
