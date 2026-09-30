@@ -1,0 +1,81 @@
+name,nickname,boat_class,compatible_classes,gender_affinity,size_tier,model,serial,weight_class_lb,year,location,spread_or_span,rig,stroke_side,cox_position,shoes,unavailable,notes
+WUBA,,8+,,women,,Hudson S8. 21,QVU82032A222,140-175,2022,C5,85.0,Starboard rig,starboard,stern,,False,
+Rob Munn,,8+,,women,,Hudson Rec 8,QVU85284F121,140-175,2021,C1,85.5,Port rig,port,stern,Bont,False,
+Bulletproof,Bullet,8+,,women,,Hudson S8. 21,QVU82036C919,140-175,2019,B5,85.0,Port rig,port,stern,,False,
+Lee Henderson,Hendo,8+,,women,,Hudson S8. 21,QVU82051F818,140-175,2018,C4,85.0,Port rig,port,stern,,False,
+Perseverance,Percy,8+,,women,,Hudson S8. 21,QVU82042C717,140-175,2017,C3,85.0,Port rig,port,stern,,False,
+Cardiana,,8+,,women,,Hudson S8. 21,QVU82008A717,140-175,2017,C2,,Port rig,port,stern,,False,
+Don Quixote,DonQ,8+,,women,,Hudson S8. 21,QVU82035B616,140-175,2016,Meadow,,Port rig,port,stern,Bont,False,
+de Reckoning,DeReck,8+,,women,,Hudson S8. 21,QVU82002A616,140-175,2016,C6,,Port rig,port,stern,,False,
+Ladies' Liberty,,8+,,women,,Vespoli ES8 Wing,MK311k414,135-165,2015,Meadow,85.0,Port rig,port,stern,,False,
+Limitless,,8+,,women,,Vespoli ES8 Wing,MK132E515,135-165,2015,Meadow,85.0,Port rig,port,stern,,False,
+Smooth Recovery,,8+,,women,,Vespoli ES8 Wing,VUAMF480K707,130-160,2008,Meadow,85.0,Port rig,port,stern,,False,
+Live.Laugh.Love,LLL,8+,,men,,Hudson S8. 32,QVU83279c222,165-200,2022,B5,84.0,Port rig,port,stern,,False,
+Waltar Estate,Waltar,8+,,men,,Hudson S8. 32,QVU83119C222,165-200,2022,B4,84.0,Port rig,port,stern,,False,
+Hans Struzyna,Hans,8+,,men,,Hudson Rec 8,QVU85285F121,165-200,2021,B1,85.0,Port rig,port,stern,Bont,False,
+Peggy's Delight,Peggy,8+,,men,,Hudson S8. 32,QVU83426J222,165-200,2022,A6,84.0,Port rig,port,stern,,False,
+Tom Woodman,Woodman,8+,,men,,Hudson S8. 32,QVU83052F818,165-200,2018,B3,84.0,Port rig,port,stern,,False,
+Supersonic,Sonic,8+,,men,,Hudson S8. 32,QVU83035B818,165-200,2018,B2,,Port rig,port,stern,,False,
+Statement,,8+,,men,,Vespoli EM8 Wing,LK126E515,155-185,2015,Meadow,84.0,Port rig,port,stern,,False,
+Ryan Monahan,Monahan,8+,,men,,Vespoli EM8 Wing,VUALF481K707,155-185,2008,Meadow,84.0,Port rig,port,stern,,False,
+Stoudt,,8+,,men,,Vespoli Adv 8 Euro,VUAXXA3471707,140-190,2007,Meadow,84.0,Port rig,port,stern,,False,
+Lundberg,,4+,,women,,Hudson s5.20,QVU52036C020,145-175,2020,D3,86.0,4+ Starboard,starboard,bow,,False,SPPS
+Scoot,,4+,,women,,Hudson s5.21,QVU52105K818,145-175,2018,E2,86.0,4+ Port,port,bow,,False,
+Free Speed,Freespeed,4+,,women,,Hudson s5.20,QVU52010A818,145-175,2018,D3,86.0,4+ Port,port,bow,,False,
+Waltar Legacy,Legacy,4+,,women,,Vespoli,VK029B616,145-180,2016,Meadow,86.0,4+ Port,port,stern,,False,
+Julin,,4x+,,women,,Filippi Euro,DA601  ?,LWT,2006,Meadow,160.0,4X+,,stern,,False,Stern Cox
+Tahoma,,4+,,women,,Hudson s5.21,QVU52481H424,145-175,2024,D5,86.0,4+ Starboard,starboard,bow,,False,SPPS - 1 Hole to bow from center
+"A.D. ""Dan"" Ayrault Jr",Dan,4+,,men,,Hudson S5.31,QVU53277C222,165-195,2023,A4,85.0,4+ Port,port,bow,,False,two holes to bow from center
+Alma Marie,Alma,4+,,men,,Hudson S5.30,QVU53071F818,165-195,2018,A2,85.0,4+ Starboard,starboard,bow,,False,two holes to bow from center
+Spencer Bros,Spencer,4+,,men,,Hudson S5.31,QVU53001A717,165-195,2017,A1,85.0,4+ Port,port,bow,,False,One hole to bow from center
+Fowler,,4+,,men,,Pocock Hyper C,GRPK45C1A505,160-180,2016,Meadow,85.0,4+ Port,port,stern,,False,Serious hull damage do not row.
+U2,,4x+,,men,,Filippi,F19FA53E,HvyWt,2005,Meadow,160.0,4X+,,stern,,False,
+Kokanee,,4+,,men,,Hudson s5.31,QVU53482H242,165-195,2024,A5,85.0,4+ Port,port,bow,,False,two holes to bow from center
+Trust,,4+,,men,,Hudson S5.41,QVU54559J424,190-225,2024,D6,85.0,4+ Port,port,bow,PSSP,False,two holes to bow from center - PSSP
+Snoopy,,4x,4x;4-,,,Hudson S4.22,QVU42057E919,145-175,2019,D1,86/159,4X,,,,False,When a 4x: Riggers set 1 hole to stern of middle
+Third Thursday,Thursday,4-,4x;4-,,,Hudson S4.31,QVU43278C222,165-195,2022,C6,85.5/160,4- Port,port,,,False,4x 1 hole to stern
+Sharon Strong,Sharon,4x,4x;4-,,,Hudson S4.22*,QVU42339F323,130-175,2023,D2,86/160,4X,,,,False,Add rigger shims for 150+ crew. When a 4x: Riggers set 1 hole to stern of middle
+Susan C Ayrault,Susan,4x,4x;4-,,,Hudson S4.31,QVU43337F323,165-195,2023,A3,165-195,4X,,,,False,4x 1 hole to stern
+Relentless,,4x,4x;4-,,,Filippi,CA6S8,Lwt,2006,Meadow,160.0,4X,,,,False,
+McDouble,,2-,,,Large,Hudson S2.41,QVU2428E121,190-220,2021,FFF6,,Pair (P),,,,False,
+Double Trouble,,2x,,,Large,Hudson S2.31,QVU23035C020,175-195,2020,FFF4,,Double,,,,False,1 hole to stern
+Paddlestar Galactica,,2x,,,Large,Hudson S2.31,QVU23057E919,175-195,2018,FFF5,,Double,,,,False,
+Luum,,2-,,,Large,Hudson S2.31,QVU23035F212,175-195,2012,E5,,Pair (P),,,,False,
+Berserker,,2x,,,Large,Filippi,F24FA4A1,F24FA4A1,2004,Rolling Rack,,Double,,,,False,
+Kelley & Whitney,,2x,,,Medium,Hudson S2.2,QVU22041C717,145-175,2017,FFF3,,Double,,,,False,Both seat raised with pucks.  1 hole to  ster
+Betsy & Mary McCagg,,2x,,,Medium,Hudson S2.2,QVU22342F323,145-175,2023,E4,,Double,,,,False,Double: riggers: 2 holes to stern from center
+Shadowfax,,2x,,,Medium,Pocock,GPRDK2S5D1593,140-165,2015,Rolling Rack,,Double,,,,False,
+Marc & Patrick,,2-,,,Medium,Wintech,RWCR2155G808,155.0,2008,Rolling Rack,,Pair,,,,False,
+Sean Wilson,,2x,,,Small,Hudson S2.1,QVU2123E121,115-145,2021,FFF2,,Double,,,,False,
+Hanna & Wendy,,2-,,,Small,Hudson S2.1,QVU21075F818,115-145,2018,FFF1,,Pair,,,,False,
+Little Thunder,,2x,,,Small,Filippi,3F13CA597,140.0,2004,Rollling Rack,,Double,,,,False,
+Kirkland Barrett,,2x,,,Rec,Maas,,<240,2018,Meadow,,Double,,,,False,Kirland Barrett
+Mahalo,,2x,,,Rec,Wintech Explorer,RWCE20341212,<240,2012,Meadow,,Double,,,,False,
+Geezer,,1x,,,Large,Hudson S1.33,QVU13137G020,160-190,2020,EE6,,,,,,False,
+Usain Boat,,1x,,,Large,Hudson S1.30,S#QVU13064E919,165-195,2019,DD6,,,,,,False,
+Hans Semi-Private,,1x,,,Large,Fluidesign,,200.0,,F5,,,,,,False,
+Steve Isaac,,1x,,,Large,Hudson,S#QVU1X186K606,190-220,2006,DD5,,,,,,False,
+Albert,,1x,,,Large,Drew Harris,4687100B,190-220,2004,Rolling Rack,,,,,,False,
+Norton III,,1x,,,Large,Hudson S1.42,QUV14558J424,190-220,2024,EE7,,,,,,False,
+Laurel,,1x,,,Medium,Hudson S1.21,QVU12221G020,145-175,2020,EE4,,,,,,False,
+Gretchen Fredrick,,1x,,,Medium,Hudson S1.21,QVU12063E919,145-175,2019,EE5,,,,,,False,
+Pennywise DO NOT USE,,1x,,,Medium,Wintech,,145-175,,F6,,,,,,True,Temp location
+Regatta d'Blanc,,1x,,,Medium,Old Pocock,,,1990,Berm,,,,,,False,
+Light Speed,,1x,,,Small,Hudson S1.11,QVU11220G020,115-145,2020,EE3,,,,,,False,
+Notorious RBG,,1x,,,Small,Hudson S1.11,QVU11134G020,115-145,2020,EE2,,,,,,False,
+Marcy Chartier,,1x,,,Small,Hudson S1.11,QVU11089F818,115-145,2018,EE1,,,,,,False,
+SLW / Veronica Corningstone,,1x,,,Small,Wintech,RWC15561S505,115-145,2005,Berm,,,,,,False,
+MO,,1x,,,Rec,Maas 27,,135-235,2021,Berm,,,,,,False,
+NOMO,,1x,,,Rec,Maas 27,,135-235,2021,Berm,,,,,,False,
+Buckley,,1x,,,Rec,Maas 24, XBQ60419B020,<240,2020,Berm,,,,,,False,
+Briggs,,1x,,,Rec,Maas 24,,<240,2019,Berm,,,,,,False,
+Bella,,1x,,,Rec,Maas 24,,<240,2020,Berm,,,,,,False,
+Francine,,1x,,,Rec,Maas 24,,<240,2020,Berm,,,,,,False,
+Champion ship,,1x,,,Rec,Maas 24,,<240,2020,Berm,,,,,,False,
+Sparkle Donkey,,1x,,,Rec,Maas 24,,<240,2020,Berm,,,,,,True,Do not row
+Woohoo,,1x,,,Rec,Maas 24,,<240,2017,Berm,,,,,,False,
+JK,,1x,,,Rec,Maas Aero,,<240,2014,Berm,,,,,,False,
+Explorer 21 Silver,,1x,,,Rec,Wintech Exp 21,RWCE1125J707,120-230,2007,Meadow,,,,,,False,
+Explorer 21 White,,1x,,,Rec,Wintech Exp 21,RWCE1129J707,120-230,2007,Meadow,,,,,,False,
+Big Duke,,1x,,,Rec,Maas FlyWt,XQB44232B020,<145,2020,Berm,,,,,,False,
+Griddlle,,1x,,,Rec,Maas FlyWt,XBQ33020D999,<145,2000,Berm,,,,,,False,

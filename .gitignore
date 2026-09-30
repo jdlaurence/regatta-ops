@@ -1,0 +1,10 @@
+# Club spreadsheets containing athlete names stay local. See data/reference/README.md.
+data/*Roster*.xlsx
+data/*Lineups*.xlsx
+.DS_Store
+node_modules/
+dist/
+backend/bin/
+backend/pb_data/
+.env
+.env.local

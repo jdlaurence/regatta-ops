@@ -1,0 +1,64 @@
+day,time,kind,name,boat_class,stage,shell,oars
+2025-05-16,,logistics,"Bus Departs Hotel @ 6:15 AM - V8, 2V8, U178 A, U17 8 B (36 boys)",,,,
+2025-05-16,,logistics,"Bus Departs Hotel @ 8:00 AM - N8 a, N8 b, u16 8 a, u16 8 b",,,,
+2025-05-16,08:00,race,Youth Mens 8+,8+,Time Trial,Peggy,24-C
+2025-05-16,08:16,race,2V Men's 8+,8+,Time Trial,Live.Laugh.Love,23-C
+2025-05-16,09:04,race,U17 Men's 8+ A,8+,Time Trial,Waltar,21-B
+2025-05-16,09:04,race,U17 Men's 8+ B,8+,Time Trial,Woodman,24-D
+2025-05-16,09:52,race,Novice Men's 8+ A,8+,Time Trial,Live.Laugh.Love,23-D
+2025-05-16,09:52,race,Novice Men's 8+ B,8+,Time Trial,Hans,19-A
+2025-05-16,10:36,race,Novice Men's 4+,4+,Time Trial,Spencer,24-D
+2025-05-16,10:36,race,Novice Men's 4+,4+,Time Trial,Fowler,24-D
+2025-05-16,11:08,race,2V Men's 4+,4+,Time Trial,Alma,23-C
+2025-05-16,,logistics,LUNCH TIME STARTS ~ 11:00,,,,
+2025-05-16,,logistics,"Bus Departs Hotel @ 11:30 AM - 3V8, 4V8, 4V8b (i.e. everyone still there; all afternoon-only racers)",,,,
+2025-05-16,12:44,race,U16 Men's 8+ A,8+,Time Trial,Waltar,19-A
+2025-05-16,12:44,race,U16 Men's 8+ B,8+,Time Trial,Woodman,23-D
+2025-05-16,,logistics,Break in Racing,,,,
+2025-05-16,14:00,race,Youth Men's 4+,4+,Time Trial,RSA,24-C
+2025-05-16,14:16,race,3V Men's 4+,4+,Time Trial,Alma,24-C
+2025-05-16,14:24,race,4V Men's 4+ A,4+,Time Trial,Spencer,24-D
+2025-05-16,14:24,race,4V Men's 4+ B,4+,Time Trial,Fowler,24-D
+2025-05-16,15:36,race,U17 Men's 4+ A,4+,Time Trial,Dan,23-C
+2025-05-16,15:36,race,U17 Men's 4+ B,4+,Time Trial,Alma,23-D
+2025-05-16,16:32,race,3V Men's 8+,8+,Time Trial,Live.Laugh.Love,24-D
+2025-05-16,16:48,race,4V Men's 8+ A,8+,Time Trial,Waltar,23-D
+2025-05-16,16:48,race,4V Men's 8+ B,8+,Time Trial,Woodman,19-A
+2025-05-16,17:04,race,U16 4x+,4x+,Time Trial,Lundberg 4x+ (rerig),Blue Sculls
+2025-05-16,17:20,race,Youth Men's 4-,4-,Time Trial,Sharon,24-C
+2025-05-16,,logistics,Bus Departs Course ~ 5:45pm,,,,
+2025-05-16,,logistics,DINNER TIME,,,,
+2025-05-17,,logistics,"Bus Departs Hotel @ 6:15 AM - V8+, 2V8+",,,,
+2025-05-17,,logistics,Bus Departs Hotel @ 7:15 AM - everyone else,,,,
+2025-05-17,08:00,race,Youth Men's 8+,8+,Final A,Peggy,24-C
+2025-05-17,08:21,race,2V Men's 8+,8+,Final A,Live.Laugh.Love,23-C
+2025-05-17,10:06,race,U17 Men's 8+ A,8+,Final A,Waltar,21-B
+2025-05-17,10:06,race,U17 Men's 8+ B,8+,Final A,Woodman,24-D
+2025-05-17,11:02,race,Novice Men's 8+ A,8+,Final A,Live.Laugh.Love,23-D
+2025-05-17,11:09,race,Novice Men's 8+ B,8+,Final B,Hans,19-A
+2025-05-17,,logistics,LUNCH TIME,,,,
+2025-05-17,12:58,race,Novice Men's 4+ A,4+,Final A,Spencer,24-D
+2025-05-17,12:58,race,Novice Men's 4+ B,4+,Final A,Fowler,24-D
+2025-05-17,13:54,race,2V Men's 4+,4+,Final A,Alma,23-C
+2025-05-17,16:42,race,U16 Men's 8+ A,8+,Final A,Waltar,19-A
+2025-05-17,16:42,race,U16 Men's 8+ B,8+,Final A,Woodman,23-D
+2025-05-17,,logistics,Bus Departs Course @ ~5:15 - everyone,,,,
+2025-05-17,,logistics,DINNER,,,,
+2025-05-18,,logistics,"Bus Departs Course @ 6:15 AM - V4+, 3V4+, 4v4a, 4v4b",,,,
+2025-05-18,,logistics,Bus Departs Course @ 7:15 AM - everyone,,,,
+2025-05-18,08:00,race,Youth Men's 4+,4+,Final A,RSA,24-C
+2025-05-18,08:28,race,3V Men's 4+,4+,Final A,Alma,24-C
+2025-05-18,08:56,race,4V Men's 4+ A,4+,Final A,Spencer,24-D
+2025-05-18,08:56,race,4V Men's 4+ B,4+,Final A,Fowler,24-D
+2025-05-18,10:41,race,U17 Men's 4+ A,4+,Final A,Dan,23-C
+2025-05-18,10:41,race,U17 Men's 4+ B,4+,Final A,Alma,23-D
+2025-05-18,,logistics,LUNCH?,,,,
+2025-05-18,13:10,race,3V Men's 8+,8+,Final A,Live.Laugh.Love,24-D
+2025-05-18,13:31,race,4V Men's 8+,8+,Final A,Waltar,23-D
+2025-05-18,13:31,race,4V Men's 8+ B,8+,Final A,Woodman,19-A
+2025-05-18,13:59,race,U16 4x+,4x+,Final B,Lundberg 4x+ (rerig),Blue Sculls
+2025-05-18,14:20,race,Youth Men's 4-,4-,Final A,Sharon,24-C
+2025-05-18,,logistics,1) Finish Trailer,,,,
+2025-05-18,,logistics,2) Awards Ceremony,,,,
+2025-05-18,,logistics,3) Pizza,,,,
+2025-05-18,,logistics,4) Busses Depart Course - Follow Thursday bus assignment,,,,

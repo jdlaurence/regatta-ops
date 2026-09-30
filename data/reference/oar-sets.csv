@@ -1,0 +1,43 @@
+name,type,gender_affinity,color,blade,length_cm,inboard_cm,grip_mm,unavailable,notes
+25-C,sweep,men,Yellow-silver,S2V Skinny,374.0,114.0,34.5,False,
+25-D,sweep,men,Yellow-red,S2V Skinny,374.0,114.0,34.5,False,
+24-C,sweep,men,yellow-white,S2V Skinny,374.0,114.0,34.5,False,
+23-C,sweep,men,yellow-orange,S2V Skinny,374.0,114.0,34.5,False,
+21-B,sweep,men,yellow-brown,S2V,374.0,114.0,34.5,False,
+Ladies,sweep,men,,S2V,372.0,114.0,37.0,False,
+24-D,sweep,men,red-white,S2V Skinny,370.0,114.0,34.5,False,
+23-D,sweep,men,red-orange,S2V Skinny,370.0,114.0,34.5,False,
+19-A,sweep,men,red-brown,S2V Skinny,370.0,114.0,34.5,False,
+Swedes,sweep,men,,Fat2,369.5,115.0,37.0,False,
+Yellows,sweep,men,,S2V (Old)i,369.5,114.0,37.0,False,
+Huskies,sweep,men,,Fat2 Skinny,369.0,114.0,34.5,False,
+Leanders,sweep,men,,Fat2,369.0,115.0,37.0,False,
+Badgers,sweep,men,,Fat2,367.5,113.5,37.0,False,
+Canucks,sweep,men,,Fat2,364.5,116.0,37.0,False, on way out
+Aussies,sweep,men,,Fat2,,,,False, on way out
+25-A,sweep,women,green-brown,S2V Skinny,372.0,115.0,32.0,False,
+25-B,sweep,women,green-purple,S2V Skinny,372.0,115.0,32.0,False,
+24-A,sweep,women,green-white,S2V Skinny,369.0,114.0,32.0,False,
+24-B,sweep,women,green-orange,S2V Skinny,369.0,115.0,32.0,False,
+23-A,sweep,women,blue-white,S2V Skinny,369.0,115.0,32.0,False,
+23-B,sweep,women,blue-orange,S2V Skinny,370.0,114.0,32.0,False,
+21A,sweep,women,blue-brown,S2V,367.5,115.0,34.5,False,
+Irish,sweep,women,,S2V Skinny,370.0,115.0,37.0,False,
+Whites,sweep,women,,S2V (old),370.0,114.5,,False,
+Greens,sweep,women,,1846.5,369.5,114.0,34.5,False,
+Buckeyes,sweep,women,,S2V Skinny,369.0,115.0,34.5,False,
+Brits,sweep,women,,S2V,368.0,115.0,37.0,False,
+Blues,sweep,women,,BB52 Skinny,365.0,115.0,34.5,False,
+Oranges,sweep,women,,S2V (old),,115.0,37.0,False,
+Westerns,sweep,women,,Fat2,364.5,115.0,37.0,False, on way out
+Blue,scull,any,,SmoothV skinny,287.0,88.0,,False,*inb 86 on 2 sets
+Red,scull,any,,SmoothieV,287.0,87.5,,False,only 3 pairs
+Brown,scull,any,,SmoothieV,287.0,88.0,,False,
+Yellow,scull,any,,SmoothieV,287.0,88.0,,False,
+Purple,scull,any,,SmoothieV,286.5,87.5,,False,
+Greek,scull,any,,SmoothieV,286.0,88.0,,False,
+White,scull,any,,SmoothieV,286.0,88.0,,False,
+Pinks,scull,any,,Smoothie 2 V,286.0,88.5,,False,only 3 pairs
+Silver,scull,any,,SmoothieV,285.5,88.5,,False,
+Green,scull,any,,Fat2,284.0,88.0,,False,SB 87.5
+Rainbow,scull,any,,,278.0,81.0,,False,
