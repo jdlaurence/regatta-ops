@@ -1,0 +1,252 @@
+// A small hand-built world for the rule tests. Invented people only.
+
+import { DEFAULT_CLUB_SETTINGS, stableId, type SeedAccount, type World } from '@srt/domain';
+
+export const PASSWORD = 'test-password-1';
+
+const id = (key: string) => stableId(`test:${key}`);
+
+export const IDS = {
+  admin: id('user:admin'),
+  coach: id('user:coach'),
+  coach2: id('user:coach2'),
+  viewer: id('user:viewer'),
+  outsider: id('user:outsider'),
+  boys: id('team:boys'),
+  girls: id('team:girls'),
+  athletes: [0, 1, 2, 3, 4].map((i) => id(`athlete:${i}`)),
+  shellFour: id('shell:four'),
+  shellQuad: id('shell:quad'),
+  oars: id('oars:sweep'),
+  regatta: id('regatta'),
+  eventFour: id('event:four'),
+  eventQuad: id('event:quad'),
+  entry: id('entry:1'),
+  seat1: id('seat:1'),
+  trailer: id('trailer'),
+  shelf: id('shelf'),
+  plan: id('plan'),
+  placement: id('placement'),
+};
+
+export const EMAILS = {
+  admin: 'admin@srt.test',
+  coach: 'coach@srt.test',
+  coach2: 'coach2@srt.test',
+  viewer: 'viewer@srt.test',
+  outsider: 'someone@elsewhere.test',
+};
+
+export function testWorld(): { world: World; accounts: SeedAccount[] } {
+  const world: World = {
+    users: [
+      { id: IDS.admin, name: 'Ada Admin', email: EMAILS.admin, role: 'admin', preferences: {} },
+      { id: IDS.coach, name: 'Cam Coach', email: EMAILS.coach, role: 'coach', preferences: {} },
+      { id: IDS.coach2, name: 'Cy Coach', email: EMAILS.coach2, role: 'coach', preferences: {} },
+      { id: IDS.viewer, name: 'Val Viewer', email: EMAILS.viewer, role: 'viewer', preferences: {} },
+      {
+        id: IDS.outsider,
+        name: 'Out Sider',
+        email: EMAILS.outsider,
+        role: 'coach',
+        preferences: {},
+      },
+    ],
+    teams: [
+      {
+        id: IDS.boys,
+        name: 'Junior boys',
+        shortName: 'Boys',
+        program: 'juniors',
+        colorKey: 'navy',
+        sortOrder: 1,
+        archived: false,
+      },
+      {
+        id: IDS.girls,
+        name: 'Junior girls',
+        shortName: 'Girls',
+        program: 'juniors',
+        colorKey: 'raspberry',
+        sortOrder: 2,
+        archived: false,
+      },
+    ],
+    athletes: [
+      'Rowan Test',
+      'Emery Sample',
+      'Quinn Example',
+      'Jules Fixture',
+      'Sky Placeholder',
+    ].map((full, i) => {
+      const [firstName, lastName] = full.split(' ') as [string, string];
+      return {
+        id: IDS.athletes[i]!,
+        teamId: IDS.boys,
+        firstName,
+        lastName,
+        side: i === 4 ? 'none' : i % 2 === 0 ? 'port' : 'starboard',
+        canScull: true,
+        canCox: i === 4,
+        weightKg: 70 + i,
+        birthYear: 2009,
+        level: 'experienced',
+        status: 'active',
+      };
+    }),
+    regattas: [
+      {
+        id: IDS.regatta,
+        name: 'Test regatta',
+        venue: 'Lake Sammamish',
+        city: 'Redmond, WA',
+        startDate: '2026-05-16',
+        endDate: '2026-05-17',
+        timezone: 'America/Los_Angeles',
+        format: 'sprint',
+        status: 'planning',
+        settings: {},
+        createdBy: IDS.admin,
+      },
+    ],
+    regatta_teams: [{ id: id('rt:boys'), regattaId: IDS.regatta, teamId: IDS.boys }],
+    availability: [],
+    events: [
+      {
+        id: IDS.eventFour,
+        regattaId: IDS.regatta,
+        kind: 'race',
+        eventNumber: '14',
+        name: "Men's Junior 4+",
+        boatClass: '4+',
+        day: '2026-05-16',
+        scheduledAt: '2026-05-16T16:40:00.000Z',
+        stage: 'final',
+        sortOrder: 1,
+      },
+      {
+        id: IDS.eventQuad,
+        regattaId: IDS.regatta,
+        kind: 'race',
+        eventNumber: '21',
+        name: "Men's Junior 4x",
+        boatClass: '4x',
+        day: '2026-05-16',
+        scheduledAt: '2026-05-16T18:10:00.000Z',
+        stage: 'final',
+        sortOrder: 2,
+      },
+    ],
+    entries: [
+      {
+        id: IDS.entry,
+        regattaId: IDS.regatta,
+        eventId: IDS.eventFour,
+        teamId: IDS.boys,
+        label: 'V4+',
+        boatClass: '4+',
+        shellId: IDS.shellFour,
+        oarSetId: IDS.oars,
+        status: 'planned',
+        hotSeatAckBy: IDS.coach2,
+        hotSeatPlan: 'Meet at dock B',
+        hotSeatFingerprint: 'abc123',
+        createdBy: IDS.admin,
+      },
+    ],
+    entry_seats: [{ id: IDS.seat1, entryId: IDS.entry, seat: '1', athleteId: IDS.athletes[0] }],
+    shells: [
+      {
+        id: IDS.shellFour,
+        name: 'Spencer',
+        boatClass: '4+',
+        compatibleClasses: [],
+        rigging: 'sweep',
+        riggerType: 'side',
+        riggerCount: 4,
+        genderAffinity: 'men',
+        homeTeamId: IDS.boys,
+        status: 'in_service',
+        isPrivate: false,
+      },
+      {
+        id: IDS.shellQuad,
+        name: 'Lundberg',
+        nickname: 'Lundy',
+        boatClass: '4x+',
+        compatibleClasses: ['4x+', '4x'],
+        rigging: 'convertible',
+        riggerType: 'wing',
+        genderAffinity: 'any',
+        status: 'in_service',
+        isPrivate: false,
+      },
+    ],
+    oar_sets: [
+      {
+        id: IDS.oars,
+        name: '24-C',
+        type: 'sweep',
+        color: 'yellow-white',
+        count: 8,
+        genderAffinity: 'men',
+        status: 'in_service',
+      },
+    ],
+    gear_items: [],
+    trailers: [
+      {
+        id: IDS.trailer,
+        name: 'Boys trailer',
+        style: 'offset_post',
+        frameLengthCm: 1220,
+        widthCm: 240,
+        postOffsetPct: 33,
+        bowForwardDefault: false,
+        defaultRules: [],
+      },
+    ],
+    trailer_shelves: [
+      {
+        id: IDS.shelf,
+        trailerId: IDS.trailer,
+        label: 'Level 3 right',
+        tier: 3,
+        columnKey: 'right',
+        widthCm: 150,
+        lengthCm: 1220,
+        frontOverhangMaxCm: 250,
+        rearOverhangMaxCm: 300,
+        laneAccess: 'outer_first',
+        accessRank: 2,
+        active: true,
+        sortOrder: 3,
+      },
+    ],
+    trailer_compartments: [],
+    load_plans: [
+      { id: IDS.plan, regattaId: IDS.regatta, trailerId: IDS.trailer, status: 'draft', rules: [] },
+    ],
+    load_placements: [
+      {
+        id: IDS.placement,
+        loadPlanId: IDS.plan,
+        shellId: IDS.shellFour,
+        shelfId: IDS.shelf,
+        lane: 0,
+        offsetCm: -40,
+        bowForward: false,
+        locked: false,
+        reasons: [{ ruleId: 'fit', text: 'Fits the shelf.', hard: true }],
+      },
+    ],
+    load_items: [],
+    comments: [],
+    activity_log: [],
+    presence: [],
+    share_links: [],
+    club_settings: [{ id: id('club'), ...DEFAULT_CLUB_SETTINGS }],
+  };
+  const accounts = world.users.map((u) => ({ userId: u.id, email: u.email, password: PASSWORD }));
+  return { world, accounts };
+}
