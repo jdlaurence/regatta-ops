@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { ChevronDown, Keyboard, Plus, Printer, Rows3, Table2 } from 'lucide-react';
+import { ChevronDown, Keyboard, Plus, Printer, Rows3, Share2, Table2 } from 'lucide-react';
 import type { Finding, Id, Team } from '@srt/domain';
 import { useCan, useCurrentUser, useFindings, type RegattaWorkingSet } from '@/data';
 import { useRegattaId, useTeamIdParam } from '@/app/params';
@@ -26,6 +26,7 @@ import { BoatStripSkeleton } from '@/components/BoatStrip';
 import { TeamDot } from '@/components/chips';
 import { Inspector, useInspector, useInspectorStore } from '@/components/Inspector';
 import { PageHeader } from '@/components/PageHeader';
+import { ShareLinksDialog } from '@/components/ShareLinksDialog';
 import { EmptyState, ErrorState, Skeleton } from '@/components/states';
 import { Button } from '@/components/ui/button';
 import { SegmentedControl, Switch } from '@/components/ui/controls';
@@ -236,6 +237,7 @@ function Builder({ regattaId }: { regattaId: string }) {
   const { setOpen: setInspectorOpen } = useInspector();
   const view = params.get('view') === 'athlete' ? 'athlete' : 'event';
   const [showAll, setShowAll] = useState(readAllEvents);
+  const [shareOpen, setShareOpen] = useState(false);
   const racing = ws.participatingTeams;
 
   // Links from the schedule, the activity feed, and emails point at one entry: ?entry=<id>.
@@ -301,6 +303,12 @@ function Builder({ regattaId }: { regattaId: string }) {
         actions={
           <>
             <PublishSlot regattaId={regattaId} teamId={team.id} />
+            {canEdit && (
+              <Button size="sm" onClick={() => setShareOpen(true)}>
+                <Share2 aria-hidden />
+                Share
+              </Button>
+            )}
             <Button asChild size="sm">
               <Link to={`/print/regattas/${regattaId}/lineups/${team.id}`}>
                 <Printer aria-hidden />
@@ -376,6 +384,14 @@ function Builder({ regattaId }: { regattaId: string }) {
 
       <SelectedEntryInspector />
       <LineupDialogs />
+      {canEdit && (
+        <ShareLinksDialog
+          regattaId={regattaId}
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          defaultTeamId={team.id}
+        />
+      )}
       {isPhone && <SeatSheet />}
       <CarryBanner />
       <LiveRegion />
