@@ -28,12 +28,12 @@ function kitchenSink(): ConflictInput {
       .shell('Monahan', '8+')
       .shell('Lundberg', '4+', { rigging: 'convertible', compatibleClasses: ['4x+'] })
       .shell('Hans', '8+', { status: 'out_of_service' })
-      .shell('Woodman', '8+', { status: 'limited', crewWeightMaxKg: 60 })
+      .shell('Woodman', '8+', { status: 'limited' })
       .oars('24-C', 'sweep', 8)
       .oars('23-D', 'sweep', 8)
       .oars('Blue', 'scull', 6)
-      .athlete('Rowan Vale', { side: 'starboard', birthYear: 2009, weightKg: 80 })
-      .athlete('Emery Stone', { canScull: false, weightKg: 75 })
+      .athlete('Rowan Vale', { side: 'starboard', birthYear: 2009 })
+      .athlete('Emery Stone', { canScull: false })
       .athlete('Sky Hollis', { team: 'Girls' })
       .athlete('Quinn Marsh')
       .availabilityFor('Quinn Marsh', 'unavailable')
@@ -156,7 +156,6 @@ describe('findConflicts', () => {
         team: i % 2 ? 'Girls' : 'Boys',
         side: i % 3 === 0 ? 'port' : 'starboard',
         birthYear: 2008 + (i % 4),
-        weightKg: 60 + (i % 30),
       });
     }
     for (let i = 0; i < 60; i++) {
@@ -357,7 +356,7 @@ describe('roster helpers', () => {
 
   it('entryStats without a season year, and with missing athletes and duplicate seats', () => {
     const input = world()
-      .athlete('Rowan Vale', { side: 'port', weightKg: 70 })
+      .athlete('Rowan Vale', { side: 'port' })
       .athlete('Emery Stone', { side: 'both' })
       .entry({ id: 'a', cls: '2x', at: '09:00', crew: { '1': 'Rowan Vale', '2': 'Emery Stone' } })
       .seat('a', '1', 'Emery Stone')
@@ -365,7 +364,6 @@ describe('roster helpers', () => {
       .seat('other', '1', 'Rowan Vale')
       .build();
     expect(entryStats(input.entries[0]!, input.seats, input.athletes)).toEqual({
-      avgWeightKg: 70,
       portCount: 1,
       starboardCount: 0,
     });

@@ -15,7 +15,7 @@ import {
   RefreshCcw,
   Trash2,
 } from 'lucide-react';
-import { entryStats, formatWeight, type Entry, type EntryStatus, type Finding } from '@srt/domain';
+import { entryStats, type Entry, type EntryStatus, type Finding } from '@srt/domain';
 import { cn } from '@/lib/cn';
 import { worstSeverity } from '@/data';
 import { ClassBadge } from '@/components/chips';
@@ -127,14 +127,13 @@ function EntryMenu({ entry }: { entry: Entry }) {
 }
 
 function Facts({ entry, findings }: { entry: Entry; findings: Finding[] }) {
-  const { index, ws, weightUnit, seasonYear, team } = useLineup();
+  const { index, ws, seasonYear, team } = useLineup();
   const seats = [...(index.seatsByEntry.get(entry.id)?.values() ?? [])];
   const stats = entryStats(entry, seats, ws.athletes, seasonYear);
   const shell = entry.shellId ? index.shellById.get(entry.shellId) : null;
   const rerig = rerigNote(shell, entry.boatClass);
   const plans = hotSeatPlans(findings, index.entryById);
   const parts: string[] = [];
-  if (stats.avgWeightKg != null) parts.push(`avg ${formatWeight(stats.avgWeightKg, weightUnit)}`);
   if (team.program === 'masters' && stats.avgAge != null) {
     parts.push(
       `avg age ${Math.floor(stats.avgAge)}${stats.mastersCategory ? ` (${stats.mastersCategory})` : ''}`,

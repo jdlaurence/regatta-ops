@@ -379,31 +379,6 @@ describe('static checks', () => {
     );
   });
 
-  it('CREW_WEIGHT above the maximum, below the minimum, and silent without weights or range', () => {
-    const base = (weights: (number | null)[], range: { min?: number; max?: number }) => {
-      const w = world().shell('Alma', '4+', {
-        crewWeightMinKg: range.min ?? null,
-        crewWeightMaxKg: range.max ?? null,
-        weightClassLabel: '165-200',
-      });
-      weights.forEach((kg, i) => w.athlete(`Rower ${i + 1}`, { weightKg: kg }));
-      w.athlete('Cox Light', { weightKg: 40, canCox: true });
-      const crew: Record<string, string> = { cox: 'Cox Light' };
-      weights.forEach((_, i) => (crew[String(i + 1)] = `Rower ${i + 1}`));
-      return w.entry({ cls: '4+', label: 'V4', at: '09:00', shell: 'Alma', crew }).build();
-    };
-    expect(one(run(base([95, 95, 95, 95], { min: 75, max: 91 })), 'CREW_WEIGHT').message).toBe(
-      'Boys V4 averages 95 kg a rower, above the 91 kg limit for Alma (165-200).',
-    );
-    // The 40 kg cox does not pull the average down.
-    expect(one(run(base([70, 72, null, 74], { min: 75, max: 91 })), 'CREW_WEIGHT').message).toBe(
-      'Boys V4 averages 72 kg a rower, below the 75 kg minimum for Alma (165-200).',
-    );
-    expect(ofCode(run(base([80, 80, 80, 80], { min: 75, max: 91 })), 'CREW_WEIGHT')).toEqual([]);
-    expect(ofCode(run(base([null, null, null, null], { max: 60 })), 'CREW_WEIGHT')).toEqual([]);
-    expect(ofCode(run(base([95, 95, 95, 95], {})), 'CREW_WEIGHT')).toEqual([]);
-  });
-
   it('UNSCHEDULED when the event id points nowhere', () => {
     const input = world().entry({ label: 'V8' }).build();
     input.entries[0]!.eventId = 'ev_missing';

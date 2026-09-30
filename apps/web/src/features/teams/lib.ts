@@ -1,11 +1,9 @@
-// Pure roster helpers (PLAN.md §4.2, §9.1): age-group badges, weights in the user's unit,
-// roster filters, and the CSV import and export. No React; tested in lib.test.ts.
+// Pure roster helpers (PLAN.md §4.2, §9.1): age-group badges, roster filters, and the CSV import
+// and export. No React; tested in lib.test.ts.
 
 import {
   athleteInputSchema,
   juniorAgeGroup,
-  kgToLb,
-  lbToKg,
   mastersCategory,
   toCsv,
   type Athlete,
@@ -15,7 +13,6 @@ import {
 } from '@srt/domain';
 import { guessMapping, type CsvField, type CsvMapping } from '@/components/CsvImport';
 
-export type WeightUnit = 'kg' | 'lb';
 export type AthleteInput = Omit<Athlete, 'id' | 'created' | 'updated'>;
 
 // ---------------------------------------------------------------------------
@@ -89,44 +86,6 @@ export function ageBadge(
   if (age < 21) return null;
   const cat = mastersCategory(age);
   return { kind, label: cat, title: `Masters ${cat} in ${seasonYear} (age ${age})` };
-}
-
-// ---------------------------------------------------------------------------
-// Weights: stored in kg, shown and typed in the user's unit.
-
-/** The weight as a whole number in `unit`, or null. */
-export function displayWeight(kg: number | null | undefined, unit: WeightUnit): number | null {
-  if (kg == null) return null;
-  return Math.round(unit === 'kg' ? kg : kgToLb(kg));
-}
-
-/** kg rounded to 0.01, so a weight typed in pounds shows back as the same whole number. */
-export function toKg(value: number, unit: WeightUnit): number {
-  const kg = unit === 'kg' ? value : lbToKg(value);
-  return Math.round(kg * 100) / 100;
-}
-
-const WEIGHT_LIMITS_KG = { min: 20, max: 200 };
-
-/**
- * Parse a typed weight ("165", "165 lb", "75kg"). A unit in the text wins over `unit`.
- * Blank is null. Returns an error sentence for anything else.
- */
-export function parseWeight(
-  text: string,
-  unit: WeightUnit,
-): { kg: number | null; error?: undefined } | { kg?: undefined; error: string } {
-  const t = text.trim().toLowerCase();
-  if (!t) return { kg: null };
-  const m = t.match(/^(\d+(?:\.\d+)?)\s*(kg|kgs|kilos?|lb|lbs|pounds?|#)?$/);
-  if (!m) return { error: `Enter the weight as a number, like ${unit === 'lb' ? '165' : '75'}` };
-  const suffix = m[2];
-  const u: WeightUnit = suffix ? (suffix.startsWith('k') ? 'kg' : 'lb') : unit;
-  const kg = toKg(Number(m[1]), u);
-  if (kg < WEIGHT_LIMITS_KG.min || kg > WEIGHT_LIMITS_KG.max) {
-    return { error: `A weight of ${m[1]} ${u} looks wrong. Check the number and the unit` };
-  }
-  return { kg };
 }
 
 /** Parse a four-digit year between `min` and `max`. Blank is null. */
@@ -208,7 +167,6 @@ export type RosterField =
   | 'side'
   | 'canScull'
   | 'canCox'
-  | 'weight'
   | 'birthYear'
   | 'birthdate'
   | 'gradYear'
@@ -238,11 +196,6 @@ export const ROSTER_FIELDS: readonly (CsvField & { key: RosterField })[] = [
   { key: 'canScull', label: 'Can scull', aliases: ['scull', 'sculls', 'sculler', 'sculling'] },
   { key: 'canCox', label: 'Can cox', aliases: ['cox', 'coxswain', 'coxes'] },
   {
-    key: 'weight',
-    label: 'Weight',
-    aliases: ['weight lb', 'weight lbs', 'weight kg', 'wt', 'lbs', 'lb', 'kg', 'body weight'],
-  },
-  {
     key: 'birthYear',
     label: 'Birth year',
     aliases: ['year of birth', 'yob', 'born', 'birth yr'],
@@ -266,19 +219,6 @@ export const ROSTER_FIELDS: readonly (CsvField & { key: RosterField })[] = [
 /** Guess which column holds each roster field, from the headers. */
 export function guessRosterMapping(headers: readonly string[]): CsvMapping {
   return guessMapping(headers, ROSTER_FIELDS);
-}
-
-/** "Weight (kg)" → kg; "Weight (lbs)" → lb; otherwise null (ask the coach). */
-export function guessWeightUnit(
-  headers: readonly string[],
-  mapping: CsvMapping,
-): WeightUnit | null {
-  const i = mapping.weight;
-  if (i == null) return null;
-  const h = (headers[i] ?? '').toLowerCase();
-  if (/\bkg|kilo/.test(h)) return 'kg';
-  if (/\blb|pound|#/.test(h)) return 'lb';
-  return null;
 }
 
 /** Why the mapping cannot import names yet, or null. */
@@ -383,8 +323,6 @@ export function personKey(first: string, last: string): string {
 
 export interface RosterImportOptions {
   teamId: string;
-  /** The unit of the weight column when its header does not say. */
-  weightUnit: WeightUnit;
   /** The team's current roster, for duplicate checks. */
   existing: readonly Athlete[];
   /** Skip rows whose name is already on the roster (default: add them anyway, with a note). */
@@ -447,8 +385,6 @@ export function buildRosterImport(
       ? take(parseYesNo(values.canScull, 'Can scull'), false)
       : !!side.scull;
     const canCox = values.canCox ? take(parseYesNo(values.canCox, 'Can cox'), false) : !!side.cox;
-    const weight = parseWeight(values.weight ?? '', opts.weightUnit);
-    if (weight.error !== undefined) errors.push(weight.error);
 
     const birthdate = take(parseDate(values.birthdate ?? ''), null);
     let birthYear = take(
@@ -483,7 +419,6 @@ export function buildRosterImport(
       level,
       status,
       ...(values.preferredName ? { preferredName: values.preferredName } : {}),
-      ...(weight.kg != null ? { weightKg: weight.kg } : {}),
       ...(birthYear !== null ? { birthYear } : {}),
       ...(birthdate ? { birthdate } : {}),
       ...(gradYear !== null ? { gradYear } : {}),
@@ -535,8 +470,8 @@ export function buildRosterImport(
 
 const yesNo = (b: boolean) => (b ? 'Yes' : 'No');
 
-/** The roster as CSV, in columns the import reads back. Weight in `unit`. */
-export function rosterToCsv(athletes: readonly Athlete[], unit: WeightUnit): string {
+/** The roster as CSV, in columns the import reads back. */
+export function rosterToCsv(athletes: readonly Athlete[]): string {
   const header = [
     'First name',
     'Last name',
@@ -544,7 +479,6 @@ export function rosterToCsv(athletes: readonly Athlete[], unit: WeightUnit): str
     'Side',
     'Can scull',
     'Can cox',
-    `Weight (${unit})`,
     'Birth year',
     'Graduation year',
     'Gender',
@@ -560,7 +494,6 @@ export function rosterToCsv(athletes: readonly Athlete[], unit: WeightUnit): str
     a.side === 'none' ? '' : SIDE_LABELS[a.side],
     yesNo(a.canScull),
     yesNo(a.canCox),
-    displayWeight(a.weightKg, unit) ?? '',
     a.birthYear ?? '',
     a.gradYear ?? '',
     a.gender ?? '',

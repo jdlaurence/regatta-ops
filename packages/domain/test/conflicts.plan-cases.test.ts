@@ -272,8 +272,8 @@ describe('PLAN.md §9.2 test cases', () => {
     expect(mastersCategory(43)).toBe('C');
 
     const input = world({ seasonYear: 2026 })
-      .athlete('Rowan Vale', { birthYear: 1980, side: 'port', weightKg: 80 })
-      .athlete('Emery Stone', { birthYear: 1990, side: 'starboard', weightKg: 70 })
+      .athlete('Rowan Vale', { birthYear: 1980, side: 'port' })
+      .athlete('Emery Stone', { birthYear: 1990, side: 'starboard' })
       .athlete('Quinn Marsh', { birthYear: 2012, canCox: true })
       .entry({
         id: 'a',
@@ -284,7 +284,6 @@ describe('PLAN.md §9.2 test cases', () => {
       .build();
     const stats = entryStats(input.entries[0]!, input.seats, input.athletes, 2026);
     expect(stats).toEqual({
-      avgWeightKg: 75,
       avgAge: 41,
       mastersCategory: 'B',
       ageGroup: 'open',

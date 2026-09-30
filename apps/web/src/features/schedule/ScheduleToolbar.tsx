@@ -9,10 +9,11 @@ import { formatWeekday } from '@/lib/dates';
 import type { TimelineGroupBy } from '@/components/timeline-lib';
 import { Button } from '@/components/ui/button';
 import { Combobox } from '@/components/ui/combobox';
-import { SegmentedControl } from '@/components/ui/controls';
+import { SegmentedControl, Switch } from '@/components/ui/controls';
+import { Label } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { hasFilters, type ScheduleFilters } from './lib';
-import { groupParam, type ScheduleView } from './hooks';
+import { groupParam, rememberShowCrews, type ScheduleView } from './hooks';
 
 const CLASS_ORDER: BoatClass[] = ['8+', '4+', '4-', '4x+', '4x', '2+', '2-', '2x', '1x'];
 
@@ -23,6 +24,8 @@ export interface ScheduleToolbarProps {
   view: ScheduleView;
   groupBy: TimelineGroupBy;
   filters: ScheduleFilters;
+  /** List view: crews shown as boat strips. */
+  showCrews: boolean;
   onChange: (patch: Record<string, string | null>) => void;
 }
 
@@ -33,6 +36,7 @@ export function ScheduleToolbar({
   view,
   groupBy,
   filters,
+  showCrews,
   onChange,
 }: ScheduleToolbarProps) {
   const classes = useMemo(() => {
@@ -89,6 +93,21 @@ export function ScheduleToolbar({
             { value: 'timeline', label: 'Timeline', icon: <ChartNoAxesGantt aria-hidden /> },
           ]}
         />
+        {view === 'list' && (
+          <div className="flex items-center gap-2">
+            <Switch
+              id="schedule-show-crews"
+              checked={showCrews}
+              onCheckedChange={(on) => {
+                rememberShowCrews(on);
+                onChange({ crews: on ? 'show' : 'hide' });
+              }}
+            />
+            <Label htmlFor="schedule-show-crews" className="text-base">
+              Show crews
+            </Label>
+          </div>
+        )}
         {view === 'timeline' && (
           <div className="flex items-center gap-2">
             <span aria-hidden className="text-sm text-ink-2">

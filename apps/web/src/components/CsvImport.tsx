@@ -225,14 +225,14 @@ export interface CsvImportDialogProps<T> {
   previewFields: readonly string[] | ((mapping: CsvMapping) => readonly string[]);
   /**
    * Check every mapped row at once (so duplicates inside the file can be caught). `ctx` has the
-   * parsed file and the mapping, for checks that read a header (a unit in "Weight (kg)").
+   * parsed file and the mapping, for checks that read a header (a unit in "Length (ft)").
    */
   check: (rows: Record<string, string>[], ctx: CsvContext) => CsvRowCheck<T>[];
   /** Create the records. Throw to keep the dialog open; the caller shows its own error. */
   onImport: (records: T[]) => Promise<void>;
   /** A line under the paste box saying which columns work. */
   hint?: ReactNode;
-  /** Extra controls under the mapping (a unit choice), given the file and the mapping. */
+  /** Extra controls under the mapping ("skip duplicates"), given the file and the mapping. */
   options?: (ctx: CsvContext) => ReactNode;
   /** A mapping rule beyond `required` ("first name or full name"): the problem, or null. */
   checkMapping?: (mapping: CsvMapping) => string | null;

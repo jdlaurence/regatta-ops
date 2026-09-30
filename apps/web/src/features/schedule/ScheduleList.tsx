@@ -46,6 +46,8 @@ export interface ScheduleListProps {
   loose: Entry[];
   findings: readonly Finding[];
   canEdit: boolean;
+  /** Draw each entry's crew as a boat strip (the "Show crews" toggle). Default true. */
+  showCrews?: boolean;
   onSaveTime: (event: RegattaEvent, hhmm: string) => void;
   onSaveName: (event: RegattaEvent, name: string) => void;
   onEditEvent: (event: RegattaEvent) => void;
@@ -59,6 +61,7 @@ export function ScheduleList({
   loose,
   findings,
   canEdit,
+  showCrews = true,
   onSaveTime,
   onSaveName,
   onEditEvent,
@@ -126,6 +129,7 @@ export function ScheduleList({
                       ws={ws}
                       regattaId={regattaId}
                       findings={byEntry.get(entry.id) ?? []}
+                      showCrew={showCrews}
                     />
                   ))}
                 </ul>
@@ -160,6 +164,7 @@ export function ScheduleList({
                 ws={ws}
                 regattaId={regattaId}
                 findings={byEntry.get(entry.id) ?? []}
+                showCrew={showCrews}
               />
             ))}
           </ul>
@@ -375,11 +380,13 @@ function EntryRow({
   ws,
   regattaId,
   findings,
+  showCrew,
 }: {
   entry: Entry;
   ws: RegattaWorkingSet;
   regattaId: string;
   findings: Finding[];
+  showCrew: boolean;
 }) {
   const navigate = useNavigate();
   const team = ws.byId.teams.get(entry.teamId);
@@ -429,18 +436,20 @@ function EntryRow({
         </Link>
         {scratched && <span className="shrink-0 text-xs text-ink-2">Scratched</span>}
       </div>
-      <BoatStrip
-        boatClass={entry.boatClass}
-        seats={seats}
-        coxPosition={shell?.coxPosition}
-        seatSides={entrySeatSides(entry, shell)}
-        size="xs"
-        teamColor={team?.colorKey}
-        conflict={worst === 'info' ? null : worst}
-        showConflictIcon={false}
-        label={`${teamName} ${entry.label}${shell ? `, ${shell.nickname || shell.name}` : ''}`}
-        className="min-w-0 flex-1 basis-56 md:max-w-[440px]"
-      />
+      {showCrew && (
+        <BoatStrip
+          boatClass={entry.boatClass}
+          seats={seats}
+          coxPosition={shell?.coxPosition}
+          seatSides={entrySeatSides(entry, shell)}
+          size="xs"
+          teamColor={team?.colorKey}
+          conflict={worst === 'info' ? null : worst}
+          showConflictIcon={false}
+          label={`${teamName} ${entry.label}${shell ? `, ${shell.nickname || shell.name}` : ''}`}
+          className="min-w-0 flex-1 basis-56 md:max-w-[440px]"
+        />
+      )}
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
         {shell ? (
           <ShellChip

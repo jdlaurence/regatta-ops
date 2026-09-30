@@ -94,28 +94,15 @@ describe('the teams list', () => {
 });
 
 describe('the roster', () => {
-  it('groups by level and shows weights in the club unit with age badges', async () => {
+  it('groups by level and shows age badges, with no weight column', async () => {
     wideScreen();
     renderApp(`/teams/${IDS.boys}`);
     const table = await screen.findByRole('table', { name: 'Roster' });
     expect(within(table).getByText('Experienced')).toBeInTheDocument();
-    expect(within(table).getByRole('columnheader', { name: /Weight \(lb\)/ })).toBeInTheDocument();
-    // 70 kg is 154 lb; born 2009 is U19 in 2026.
-    expect(within(table).getByRole('textbox', { name: 'Weight in lb for Rowan Test' })).toHaveValue(
-      '154',
-    );
+    expect(within(table).queryByRole('columnheader', { name: /Weight/ })).not.toBeInTheDocument();
+    // Born 2009 is U19 in 2026.
     expect(within(table).getAllByText('U19')).toHaveLength(2);
     expect(screen.getByText(/Age groups for 2026/)).toBeInTheDocument();
-  });
-
-  it('saves an inline weight edit in kg', async () => {
-    const user = userEvent.setup();
-    wideScreen();
-    const { store } = renderApp(`/teams/${IDS.boys}`);
-    const weight = await screen.findByRole('textbox', { name: 'Weight in lb for Rowan Test' });
-    await user.clear(weight);
-    await user.type(weight, '165{Enter}');
-    await waitFor(() => expect(athlete(store, 'athboys00000001')?.weightKg).toBeCloseTo(74.84, 2));
   });
 
   it('refuses a bad inline value and keeps the stored one', async () => {
@@ -170,7 +157,7 @@ describe('the roster', () => {
     const table = await screen.findByRole('table', { name: 'Roster' });
     expect(within(table).queryByRole('textbox')).not.toBeInTheDocument();
     expect(within(table).queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(within(table).getAllByText('154')).toHaveLength(2);
+    expect(within(table).getAllByText('2009')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Add athlete' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Import CSV' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Export CSV' })).toBeEnabled();
@@ -189,8 +176,7 @@ describe('the roster', () => {
     await user.type(within(drawer).getByLabelText('Preferred name'), 'Ro');
     await user.click(within(drawer).getByRole('button', { name: 'Save athlete' }));
     await waitFor(() => expect(athlete(store, 'athboys00000001')?.preferredName).toBe('Ro'));
-    // Weight untouched keeps its stored kg exactly.
-    expect(athlete(store, 'athboys00000001')?.weightKg).toBe(70);
+    expect(within(drawer).queryByLabelText(/Weight/)).not.toBeInTheDocument();
   });
 
   it('adds an athlete by hand', async () => {
@@ -201,7 +187,6 @@ describe('the roster', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Add athlete' });
     await user.type(within(dialog).getByLabelText('First name'), 'Tamsin');
     await user.type(within(dialog).getByLabelText('Last name'), 'Quill');
-    await user.type(within(dialog).getByLabelText('Weight (lb)'), '150');
     await user.type(within(dialog).getByLabelText('Birth year'), '2011');
     expect(within(dialog).getByText('U16')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Add athlete' }));
@@ -233,11 +218,11 @@ describe('the roster', () => {
     await user.click(box);
     await user.paste(csv);
     await user.click(within(dialog).getByRole('button', { name: 'Match columns' }));
-    // Columns guessed from the headers; the unit from "Weight (kg)".
+    // Columns guessed from the headers; the weight column is left out.
     expect(within(dialog).getByRole('combobox', { name: 'First name' })).toHaveTextContent('First');
     expect(within(dialog).getByRole('combobox', { name: 'Birth year' })).toHaveTextContent('YOB');
-    expect(within(dialog).getByText('From the column name.')).toBeInTheDocument();
-    expect(within(dialog).getByRole('radio', { name: 'Kilograms' })).toBeChecked();
+    expect(within(dialog).queryByRole('combobox', { name: 'Weight' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('radio', { name: 'Kilograms' })).not.toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Preview rows' }));
     expect(within(dialog).getByText(/2 of 4 rows are ready/)).toBeInTheDocument();
     expect(within(dialog).getByText('The name is blank')).toBeInTheDocument();
@@ -248,12 +233,9 @@ describe('the roster', () => {
       .snapshot()
       .athletes.filter((a) => ['Wren', 'Juniper'].includes(a.firstName));
     expect(added).toHaveLength(2);
-    expect(added.find((a) => a.firstName === 'Wren')).toMatchObject({
-      teamId: IDS.boys,
-      side: 'port',
-      weightKg: 68,
-      level: 'novice',
-    });
+    const wren = added.find((a) => a.firstName === 'Wren');
+    expect(wren).toMatchObject({ teamId: IDS.boys, side: 'port', level: 'novice' });
+    expect(wren).not.toHaveProperty('weightKg');
     expect(added.find((a) => a.firstName === 'Juniper')).toMatchObject({ canCox: true });
   });
 });

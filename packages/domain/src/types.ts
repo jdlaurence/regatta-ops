@@ -40,6 +40,7 @@ export type Role = 'admin' | 'coach' | 'viewer';
 
 export interface UserPreferences {
   theme?: 'light' | 'dark' | 'system';
+  /** Unit for shells' crew weight ranges; unset follows the club. */
   weightUnit?: 'kg' | 'lb';
   /** Daily digest email during regatta week (default true). */
   emailDigest?: boolean;
@@ -90,7 +91,6 @@ export interface Athlete extends BaseRecord {
   side: AthleteSide;
   canScull: boolean;
   canCox: boolean;
-  weightKg?: number | null;
   birthYear?: number | null;
   /** 'YYYY-MM-DD', optional; birth year is what the club tracks. */
   birthdate?: string | null;
@@ -453,6 +453,7 @@ export interface ShareLink extends BaseRecord {
 export interface ClubSettings extends BaseRecord {
   clubName: string;
   timezone: string;
+  /** Unit for shells' crew weight ranges (athletes have no weight). */
   weightUnit: 'kg' | 'lb';
   weekStartsOn: 0 | 1;
   /** Sprint defaults; raceDurationMin for head races comes from headRaceDurationMin. */

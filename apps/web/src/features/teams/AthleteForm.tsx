@@ -1,5 +1,5 @@
-// The athlete form (PLAN.md §4.2): every roster field, weight in the user's unit (stored in kg),
-// and the derived age badge as the coach types. Used by "Add athlete" and the athlete drawer.
+// The athlete form (PLAN.md §4.2): every roster field and the derived age badge as the coach
+// types. Used by "Add athlete" and the athlete drawer.
 
 import { useId, type ReactNode } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -19,20 +19,17 @@ import { cn } from '@/lib/cn';
 import { AgeBadgeView } from './RosterBadges';
 import {
   ageBadge,
-  displayWeight,
   LEVEL_LABELS,
   parseDate,
-  parseWeight,
   parseYear,
   SIDE_LABELS,
   STATUS_LABELS,
   type AthleteInput,
-  type WeightUnit,
 } from './lib';
 
 const NONE = '__none';
 
-function makeSchema(unit: WeightUnit, seasonYear: number) {
+function makeSchema(seasonYear: number) {
   return z
     .object({
       teamId: z.string().min(1, 'Choose a team'),
@@ -42,7 +39,6 @@ function makeSchema(unit: WeightUnit, seasonYear: number) {
       side: athleteSideSchema,
       canScull: z.boolean(),
       canCox: z.boolean(),
-      weight: z.string(),
       birthYear: z.string(),
       birthdate: z.string(),
       gradYear: z.string(),
@@ -52,8 +48,6 @@ function makeSchema(unit: WeightUnit, seasonYear: number) {
       notes: z.string(),
     })
     .superRefine((v, ctx) => {
-      const w = parseWeight(v.weight, unit);
-      if (w.error) ctx.addIssue({ code: 'custom', path: ['weight'], message: w.error });
       const by = parseYear(v.birthYear, { min: 1900, max: seasonYear, label: 'birth year' });
       if (by.error) ctx.addIssue({ code: 'custom', path: ['birthYear'], message: by.error });
       const gy = parseYear(v.gradYear, {
@@ -69,11 +63,7 @@ function makeSchema(unit: WeightUnit, seasonYear: number) {
 
 export type AthleteFormValues = z.infer<ReturnType<typeof makeSchema>>;
 
-export function formValuesFrom(
-  a: Partial<Athlete> & { teamId: string },
-  unit: WeightUnit,
-): AthleteFormValues {
-  const w = displayWeight(a.weightKg, unit);
+export function formValuesFrom(a: Partial<Athlete> & { teamId: string }): AthleteFormValues {
   return {
     teamId: a.teamId,
     firstName: a.firstName ?? '',
@@ -82,7 +72,6 @@ export function formValuesFrom(
     side: a.side ?? 'none',
     canScull: a.canScull ?? false,
     canCox: a.canCox ?? false,
-    weight: w == null ? '' : String(w),
     birthYear: a.birthYear ? String(a.birthYear) : '',
     birthdate: a.birthdate ?? '',
     gradYear: a.gradYear ? String(a.gradYear) : '',
@@ -93,20 +82,8 @@ export function formValuesFrom(
   };
 }
 
-/**
- * The record to save. A weight left as it was shown keeps its stored kg (no rounding drift);
- * blank optional fields are cleared with null.
- */
-export function inputFromForm(
-  v: AthleteFormValues,
-  unit: WeightUnit,
-  original?: Athlete | null,
-): AthleteInput {
-  const shown = original ? formValuesFrom(original, unit).weight : '';
-  const weightKg =
-    original && v.weight.trim() === shown
-      ? (original.weightKg ?? null)
-      : (parseWeight(v.weight, unit).kg ?? null);
+/** The record to save. Blank optional fields are cleared with null. */
+export function inputFromForm(v: AthleteFormValues): AthleteInput {
   const year = (s: string) => (s.trim() ? Number(s.trim()) : null);
   const bd = parseDate(v.birthdate).value ?? null;
   const input: AthleteInput = {
@@ -117,7 +94,6 @@ export function inputFromForm(
     side: v.side,
     canScull: v.canScull,
     canCox: v.canCox,
-    weightKg,
     birthYear: year(v.birthYear),
     birthdate: bd,
     gradYear: year(v.gradYear),
@@ -134,7 +110,6 @@ export interface AthleteFormProps {
   /** A form id, so buttons outside the form can submit it. */
   id: string;
   defaultValues: AthleteFormValues;
-  unit: WeightUnit;
   seasonYear: number;
   program: Program;
   /** Show the team picker (moving an athlete); omit when adding to a known team. */
@@ -157,7 +132,6 @@ export interface AthleteFormProps {
 export function AthleteForm({
   id,
   defaultValues,
-  unit,
   seasonYear,
   program,
   teams,
@@ -175,7 +149,7 @@ export function AthleteForm({
     handleSubmit,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<AthleteFormValues>({
-    resolver: zodResolver(makeSchema(unit, seasonYear)),
+    resolver: zodResolver(makeSchema(seasonYear)),
     defaultValues,
   });
   const birthYearText = useWatch({ control, name: 'birthYear' });
@@ -319,18 +293,8 @@ export function AthleteForm({
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field id={f('weight')} label={`Weight (${unit})`} error={errors.weight?.message}>
-            <Input
-              id={f('weight')}
-              inputMode="decimal"
-              autoComplete="off"
-              className="tabular-nums"
-              aria-invalid={invalid('weight')}
-              aria-describedby={describe('weight')}
-              {...register('weight')}
-            />
-          </Field>
+        {/* One grid, so the fields close up when a masters team has no graduation year. */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor={f('birthYear')}>Birth year</Label>
             <div className="flex items-center gap-2">
@@ -354,9 +318,20 @@ export function AthleteForm({
               </p>
             )}
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
+          <Field
+            id={f('birthdate')}
+            label="Birthdate"
+            hint="Optional."
+            error={errors.birthdate?.message}
+          >
+            <Input
+              id={f('birthdate')}
+              type="date"
+              aria-invalid={invalid('birthdate')}
+              aria-describedby={describe('birthdate')}
+              {...register('birthdate')}
+            />
+          </Field>
           {showGrad && (
             <Field id={f('gradYear')} label="Graduation year" error={errors.gradYear?.message}>
               <Input
@@ -385,23 +360,6 @@ export function AthleteForm({
                   className="w-full"
                 />
               )}
-            />
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Field
-            id={f('birthdate')}
-            label="Birthdate"
-            hint="Optional."
-            error={errors.birthdate?.message}
-          >
-            <Input
-              id={f('birthdate')}
-              type="date"
-              aria-invalid={invalid('birthdate')}
-              aria-describedby={describe('birthdate')}
-              {...register('birthdate')}
             />
           </Field>
           <Field id={f('status')} label="Status">
