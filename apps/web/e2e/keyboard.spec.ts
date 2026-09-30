@@ -251,3 +251,37 @@ test.describe('trailer', () => {
     await expect(placed).toBeFocused();
   });
 });
+
+test.describe('links to what changed', () => {
+  test.beforeEach(async ({ page }) => {
+    await signInAs(page, 'coach');
+  });
+
+  test('an activity line opens its entry, selected and focused', async ({ page }) => {
+    await page.goto(regattaUrl(HOTL));
+    await settle(page);
+    const open = page.getByRole('main').getByRole('link', { name: 'Open lineup' }).first();
+    await focusOn(open);
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/lineups\/[a-z0-9]+$/);
+    await expect(page.getByRole('complementary', { name: 'Entry details' })).toBeVisible();
+    await expect(focused(page)).toHaveAccessibleName(/, show entry details$/);
+  });
+
+  test('?event= shows that race on its day and puts focus on it', async ({ page }) => {
+    await page.goto(regattaUrl(NW_YOUTH, 'schedule'));
+    await settle(page);
+    // A race on the second day.
+    await page.getByRole('radio', { name: 'Sat, May 17' }).click();
+    await expect(page).toHaveURL(/day=2025-05-17/);
+    await expect(page.getByText(/^Sat, May 17 · /)).toBeVisible();
+    const id = await page.locator('li[data-event-id]').nth(3).getAttribute('data-event-id');
+    await page.goto(regattaUrl(NW_YOUTH, `schedule?event=${id}`));
+    await settle(page);
+    await expect(page.getByRole('radio', { name: 'Sat, May 17' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.locator(`li[data-event-id="${id}"]`)).toBeFocused();
+  });
+});

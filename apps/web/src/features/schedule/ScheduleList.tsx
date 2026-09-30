@@ -99,7 +99,7 @@ export function ScheduleList({
               data-event-id={item.event.id}
               tabIndex={-1}
               className={cn(
-                'flex flex-col gap-2 border-b border-line px-3 py-3 outline-none last:border-b-0 md:px-4',
+                'flex flex-col gap-2 border-b border-line px-3 py-3 last:border-b-0 focus-visible:-outline-offset-2 md:px-4',
                 HIGHLIGHT,
               )}
             >
@@ -334,7 +334,7 @@ function LogisticsRow({
       data-event-id={event.id}
       tabIndex={-1}
       className={cn(
-        'flex items-center gap-3 border-b border-line bg-bg/60 px-3 py-1.5 outline-none last:border-b-0 md:px-4',
+        'flex items-center gap-3 border-b border-line bg-bg/60 px-3 py-1.5 last:border-b-0 focus-visible:-outline-offset-2 md:px-4',
         HIGHLIGHT,
       )}
     >

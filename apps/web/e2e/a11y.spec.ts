@@ -90,6 +90,30 @@ for (const colorScheme of ['light', 'dark'] as const) {
       await page.getByRole('button', { name: /Shift times/ }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
       await expectNoViolations(page);
+      await page.keyboard.press('Escape');
+
+      // A race's comments, from its row's menu.
+      await page
+        .locator('li[data-event-id]:has(ul[aria-label^="Entries in"])')
+        .first()
+        .getByRole('button', { name: /^More for / })
+        .click();
+      await page.getByRole('menuitem', { name: 'Comments' }).click();
+      await expect(page.getByRole('dialog', { name: /^Comments on / })).toBeVisible();
+      await settle(page);
+      await expectNoViolations(page);
+    });
+
+    test('trailer: a selected boat and its "Why here?"', async ({ page }) => {
+      await signInAs(page, 'coach');
+      await page.goto(regattaUrl(NW_YOUTH, 'trailer'));
+      await settle(page);
+      await page
+        .getByRole('button', { name: /^Level 5, narrow side: / })
+        .first()
+        .click();
+      await expect(page.getByRole('complementary', { name: 'Why here?' })).toBeVisible();
+      await expectNoViolations(page);
     });
 
     test('lineups: entry details in the inspector and an open picker', async ({ page }) => {
@@ -164,5 +188,61 @@ test.describe('phone', () => {
       .click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expectNoViolations(page);
+  });
+});
+
+/**
+ * Seat an athlete from the keyboard on the Head of the Lake boys page and return every
+ * animation that ran (PLAN.md §5.2: the cross-off strike, the seat settle), with durations in
+ * milliseconds. CSS animations are caught as they start; script ones (the strike) as they are
+ * made.
+ */
+async function animationsWhileSeating(page: Page): Promise<{ name: string; ms: number }[]> {
+  await page.addInitScript(() => {
+    const seen: { name: string; ms: number }[] = [];
+    (window as unknown as { __animations: typeof seen }).__animations = seen;
+    document.addEventListener('animationstart', (e) => {
+      const duration = getComputedStyle(e.target as Element).animationDuration;
+      seen.push({ name: e.animationName, ms: parseFloat(duration) * 1000 });
+    });
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (keyframes, options) {
+      const ms = typeof options === 'number' ? options : Number(options?.duration ?? 0);
+      seen.push({ name: 'script', ms });
+      return animate.call(this, keyframes, options);
+    };
+  });
+  await signInAs(page, 'coach');
+  await page.goto(regattaUrl(HOTL, `lineups/${SEED_TEAM_IDS.boys}`));
+  await settle(page);
+  // A new double, so there are empty seats; focus lands on its first seat.
+  await page.getByRole('button', { name: 'Add entry' }).first().click();
+  await page.getByRole('button', { name: /^Event:/ }).click();
+  await page.keyboard.type("Men's Youth 2x");
+  await page.keyboard.press('Enter');
+  await page.getByRole('dialog').getByRole('button', { name: 'Add entry' }).click();
+  await expect(page.locator(':focus')).toHaveAccessibleName('Seat 1, empty');
+  // Type to open the picker, then take someone who is not in a boat yet (0 entries).
+  await page.keyboard.type('a');
+  await page.getByRole('option').filter({ hasText: /0$/ }).first().click();
+  await expect(page.getByRole('listbox')).toBeHidden();
+  await page.waitForTimeout(400);
+  return page.evaluate(
+    () => (window as unknown as { __animations: { name: string; ms: number }[] }).__animations,
+  );
+}
+
+test.describe('motion', () => {
+  test.use({ ...DESKTOP });
+
+  test('seating an athlete settles the seat and strikes the name', async ({ page }) => {
+    const ran = await animationsWhileSeating(page);
+    expect(ran.filter((a) => a.ms >= 100).length).toBeGreaterThanOrEqual(2);
+  });
+
+  test('prefers-reduced-motion turns every animation off', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const ran = await animationsWhileSeating(page);
+    expect(ran.filter((a) => a.ms > 1)).toEqual([]);
   });
 });
