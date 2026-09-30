@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { performance } from 'node:perf_hooks';
-import { findConflicts, unboatedAthletes, type RegattaEvent } from '@srt/domain';
+import { findConflicts, unboatedAthletes, type RegattaEvent, type Seat } from '@srt/domain';
 import { buildConflictInput } from '@/data';
+import type { MemoryStore } from '@/data/memory-store';
 import { IDS } from '@/test/fixtures';
 import {
   athleteMatrix,
@@ -35,6 +36,7 @@ import {
   entry,
   lineupData,
   lineupIndex,
+  lineupStore,
   lineupWorld,
   seat,
 } from './test-world';
@@ -371,6 +373,52 @@ describe('placementOps', () => {
       },
     ]);
     expect(clearOps(idx, { entryId: L.boysEight, seat: '8' })).toEqual([]);
+  });
+});
+
+describe('placement batches against the MemoryStore unique index', () => {
+  type Ref = { entryId: string; seat: Seat };
+  async function run(store: MemoryStore, target: Ref, athleteId: string, from?: Ref) {
+    const idx = buildIndex(lineupData(store.snapshot()));
+    await store.batch(placementOps(idx, target, athleteId, from).ops);
+  }
+  const at = (store: MemoryStore, entryId: string, seat: Seat) =>
+    store.snapshot().entry_seats.find((s) => s.entryId === entryId && s.seat === seat)?.athleteId ??
+    null;
+  const eight = (seat: Seat) => ({ entryId: L.boysEight, seat });
+  const four = (seat: Seat) => ({ entryId: IDS.entry1, seat });
+
+  it('swaps within an entry, from a drag or from the picker', async () => {
+    const store = lineupStore();
+    await run(store, eight('1'), BOYS[1]!, eight('2'));
+    expect([at(store, L.boysEight, '1'), at(store, L.boysEight, '2')]).toEqual([BOYS[1], BOYS[0]]);
+    await run(store, eight('1'), BOYS[0]!);
+    expect([at(store, L.boysEight, '1'), at(store, L.boysEight, '2')]).toEqual([BOYS[0], BOYS[1]]);
+  });
+
+  it('swaps across entries', async () => {
+    const store = lineupStore();
+    await run(store, eight('1'), 'athboys00000001', four('1'));
+    expect(at(store, L.boysEight, '1')).toBe('athboys00000001');
+    expect(at(store, IDS.entry1, '1')).toBe(BOYS[0]);
+  });
+
+  it('leaves the source empty when the occupant already sits in the source entry', async () => {
+    const store = lineupStore();
+    await run(store, four('3'), BOYS[0]!);
+    await run(store, eight('1'), 'athboys00000001', four('1'));
+    expect(at(store, L.boysEight, '1')).toBe('athboys00000001');
+    expect(at(store, IDS.entry1, '1')).toBeNull();
+    expect(at(store, IDS.entry1, '3')).toBe(BOYS[0]);
+  });
+
+  it('moves an athlete out of their old seat in the target entry', async () => {
+    const store = lineupStore();
+    await run(store, four('3'), BOYS[0]!);
+    await run(store, eight('5'), BOYS[0]!, four('3'));
+    expect(at(store, L.boysEight, '5')).toBe(BOYS[0]);
+    expect(at(store, L.boysEight, '1')).toBeNull();
+    expect(at(store, IDS.entry1, '3')).toBeNull();
   });
 });
 

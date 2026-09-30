@@ -14,12 +14,14 @@ import {
   useSensors,
   type Announcements,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
+import { ArrowLeftRight } from 'lucide-react';
 import { athleteName, type Id } from '@srt/domain';
 import { teamStyle } from '@/lib/team-colors';
 import { useLineup } from './context';
-import { entryName, type SeatRef } from './lib';
+import { entryName, occupantOf, type SeatRef } from './lib';
 import type { RosterDragData } from './RosterPanel';
 import { AthleteBadges, type SeatDragData, type SeatDropData } from './Seats';
 import { useLineupUi } from './store';
@@ -66,10 +68,24 @@ export function LineupDnd({ children }: { children: ReactNode }) {
     });
   };
 
+  // What a drop here would do, shown on the overlay (PLAN.md §6.4: a swap cursor over a seat
+  // that is taken).
+  const [intent, setIntent] = useState<'swap' | 'replace' | 'clear' | null>(null);
+  const onDragOver = (e: DragOverEvent) => {
+    const d = e.active.data.current as DragData | undefined;
+    const over = e.over?.data.current as DropData | undefined;
+    if (!d || !over) return setIntent(null);
+    if (over.kind === 'roster') return setIntent(d.kind === 'seat' ? 'clear' : null);
+    const taken = occupantOf(index, { entryId: over.entryId, seat: over.seat });
+    if (!taken || taken === d.athleteId) return setIntent(null);
+    setIntent(d.kind === 'seat' ? 'swap' : 'replace');
+  };
+
   const onDragEnd = (e: DragEndEvent) => {
     const d = e.active.data.current as DragData | undefined;
     const over = e.over?.data.current as DropData | undefined;
     setActive(null);
+    setIntent(null);
     if (!d || !over) return;
     const from = d.kind === 'seat' ? { entryId: d.entryId, seat: d.seat } : null;
     if (over.kind === 'seat') {
@@ -85,8 +101,12 @@ export function LineupDnd({ children }: { children: ReactNode }) {
       sensors={sensors}
       collisionDetection={pointerWithin}
       onDragStart={onDragStart}
+      onDragOver={onDragOver}
       onDragEnd={onDragEnd}
-      onDragCancel={() => setActive(null)}
+      onDragCancel={() => {
+        setActive(null);
+        setIntent(null);
+      }}
       accessibility={{ announcements }}
     >
       {children}
@@ -98,6 +118,12 @@ export function LineupDnd({ children }: { children: ReactNode }) {
           >
             {athleteName(a)}
             <AthleteBadges athlete={a} />
+            {intent && (
+              <span className="inline-flex items-center gap-1 border-l border-line pl-2 text-sm font-normal text-ink-2">
+                {intent === 'swap' && <ArrowLeftRight aria-hidden className="size-3.5" />}
+                {intent === 'swap' ? 'Swap' : intent === 'replace' ? 'Replace' : 'Clear seat'}
+              </span>
+            )}
           </div>
         ) : null}
       </DragOverlay>

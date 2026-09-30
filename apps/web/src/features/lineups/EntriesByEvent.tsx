@@ -20,8 +20,18 @@ function EventHeader({ event, onAdd }: { event: RegattaEvent | null; onAdd?: () 
       <h3 className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-base">
         {t ? (
           <>
-            {t.number && <span className="font-medium text-ink">{t.number}</span>}
+            {t.number && (
+              <>
+                <span className="font-medium text-ink">{t.number}</span>
+                <span aria-hidden className="text-ink-2">
+                  ·
+                </span>
+              </>
+            )}
             <span className="text-ink">{t.name}</span>
+            <span aria-hidden className="text-ink-2">
+              ·
+            </span>
             <span className="font-medium text-ink tabular-nums">
               {t.time ?? <span className="font-normal text-ink-2">Time to be set</span>}
             </span>
