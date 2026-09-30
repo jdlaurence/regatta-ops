@@ -97,27 +97,30 @@ describe('SchedulePage list', () => {
     expect(within(entryRow(ENTRY2)).getByText('Hot seat')).toBeInTheDocument();
   });
 
-  it('hides and shows the lineups, and remembers the choice', async () => {
+  it('hides and shows the entries, and remembers the choice', async () => {
     const user = userEvent.setup();
     const { router } = renderSchedule();
     await screen.findByRole('list', { name: 'Races and logistics' });
-    const strips = () => entryRow(IDS.entry1).querySelectorAll('[data-boat-class]');
-    const toggle = () => screen.getByRole('switch', { name: 'Show lineups' });
-    expect(strips()).toHaveLength(1);
+    const entryRows = () => document.querySelectorAll('li[data-entry-id]');
+    const toggle = () => screen.getByRole('switch', { name: 'Show entries' });
+    expect(entryRows().length).toBeGreaterThan(0);
+    expect(within(entryRow(IDS.entry1)).getAllByRole('group').length).toBe(1);
     expect(toggle()).toBeChecked();
     const before = toggle();
     await user.click(before);
-    await waitFor(() => expect(strips()).toHaveLength(0));
+    // Off: the bare schedule. Races and logistics stay; no entries, boats, shells, or oars.
+    await waitFor(() => expect(entryRows()).toHaveLength(0));
+    expect(eventRow(IDS.event1)).toBeInTheDocument();
+    expect(within(eventRow(IDS.event1)).getByText('Event 12')).toBeInTheDocument();
+    expect(within(races()).queryByText('Spencer')).toBeNull();
     // The switch keeps its place and keyboard focus.
     expect(toggle()).toBe(before);
     expect(toggle()).toHaveFocus();
-    // The rest of the row stays: team, label, shell, oars.
-    expect(within(entryRow(IDS.entry1)).getByText('Spencer')).toBeInTheDocument();
-    expect(router.state.location.search).toContain('lineups=hide');
-    expect(localStorage.getItem('srt-schedule-lineups')).toBe('hide');
+    expect(router.state.location.search).toContain('entries=hide');
+    expect(localStorage.getItem('srt-schedule-entries')).toBe('hide');
     await user.click(toggle());
-    await waitFor(() => expect(strips()).toHaveLength(1));
-    expect(localStorage.getItem('srt-schedule-lineups')).toBeNull();
+    await waitFor(() => expect(entryRows().length).toBeGreaterThan(0));
+    expect(localStorage.getItem('srt-schedule-entries')).toBeNull();
   });
 
   it('edits an event time inline, and conflicts follow at once', async () => {

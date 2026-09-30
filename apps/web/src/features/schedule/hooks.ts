@@ -27,21 +27,21 @@ export function groupParam(g: TimelineGroupBy): string {
  * `?event=<id>` to open the list on one event.
  * Changes replace the history entry, so filters do not pile up behind the back button.
  */
-const LINEUPS_KEY = 'srt-schedule-lineups';
+const ENTRIES_KEY = 'srt-schedule-entries';
 
-/** The viewer's last "Show lineups" choice (a per-device convenience; storage may be blocked). */
-function storedShowLineups(): boolean {
+/** The viewer's last "Show entries" choice (a per-device convenience; storage may be blocked). */
+function storedShowEntries(): boolean {
   try {
-    return localStorage.getItem(LINEUPS_KEY) !== 'hide';
+    return localStorage.getItem(ENTRIES_KEY) !== 'hide';
   } catch {
     return true;
   }
 }
 
-export function rememberShowLineups(show: boolean) {
+export function rememberShowEntries(show: boolean) {
   try {
-    if (show) localStorage.removeItem(LINEUPS_KEY);
-    else localStorage.setItem(LINEUPS_KEY, 'hide');
+    if (show) localStorage.removeItem(ENTRIES_KEY);
+    else localStorage.setItem(ENTRIES_KEY, 'hide');
   } catch {
     // Private windows and blocked storage: the URL still carries the choice.
   }
@@ -73,15 +73,16 @@ export function useScheduleParams() {
       ),
     [setParams],
   );
-  const lineups = params.get('lineups');
+  const entriesParam = params.get('entries');
   // The URL wins (links and the back button); otherwise the viewer's last choice.
-  const showLineups = lineups === 'show' ? true : lineups === 'hide' ? false : storedShowLineups();
+  const showEntries =
+    entriesParam === 'show' ? true : entriesParam === 'hide' ? false : storedShowEntries();
   return {
     view,
     groupBy,
     filters,
-    /** List view: draw each entry's lineup as a boat strip, or keep the schedule clean. */
-    showLineups,
+    /** List view: list each race's entries, or show the bare schedule. */
+    showEntries,
     day: params.get('day'),
     /** A link to one event (activity feed, mention emails): show and highlight it once. */
     event: params.get('event'),

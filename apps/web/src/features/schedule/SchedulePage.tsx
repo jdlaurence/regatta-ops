@@ -250,7 +250,7 @@ export default function SchedulePage() {
           loose={loose}
           findings={findings}
           canEdit={canEdit}
-          showLineups={params.showLineups}
+          showEntries={params.showEntries}
           onSaveTime={(e, v) => void edits.saveTime(e, v)}
           onSaveName={(e, v) => void edits.saveName(e, v)}
           onEditEvent={(event) => setEventDialog({ event, kind: event.kind })}
@@ -267,7 +267,7 @@ export default function SchedulePage() {
           view={view}
           groupBy={groupBy}
           filters={filters}
-          showLineups={params.showLineups}
+          showEntries={params.showEntries}
           onChange={set}
         />
         {content}

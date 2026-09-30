@@ -46,8 +46,8 @@ export interface ScheduleListProps {
   loose: Entry[];
   findings: readonly Finding[];
   canEdit: boolean;
-  /** Draw each entry's lineup as a boat strip (the "Show lineups" toggle). Default true. */
-  showLineups?: boolean;
+  /** List each race's entries under it (the "Show entries" switch); off is the bare schedule. */
+  showEntries?: boolean;
   onSaveTime: (event: RegattaEvent, hhmm: string) => void;
   onSaveName: (event: RegattaEvent, name: string) => void;
   onEditEvent: (event: RegattaEvent) => void;
@@ -61,7 +61,7 @@ export function ScheduleList({
   loose,
   findings,
   canEdit,
-  showLineups = true,
+  showEntries = true,
   onSaveTime,
   onSaveName,
   onEditEvent,
@@ -117,7 +117,7 @@ export function ScheduleList({
                 onSaveName={onSaveName}
                 onEditEvent={onEditEvent}
               />
-              {item.entries.length > 0 && (
+              {showEntries && item.entries.length > 0 && (
                 <ul
                   aria-label={`Entries in ${eventTitle(item.event)}`}
                   className="flex flex-col md:pl-20"
@@ -129,7 +129,6 @@ export function ScheduleList({
                       ws={ws}
                       regattaId={regattaId}
                       findings={byEntry.get(entry.id) ?? []}
-                      showLineup={showLineups}
                     />
                   ))}
                 </ul>
@@ -144,7 +143,7 @@ export function ScheduleList({
           Add logistics line
         </Button>
       )}
-      {loose.length > 0 && (
+      {showEntries && loose.length > 0 && (
         <section aria-labelledby="schedule-loose" className="flex flex-col gap-2">
           <div className="flex flex-col gap-0.5">
             <h2 id="schedule-loose" className="text-md font-medium">
@@ -164,7 +163,6 @@ export function ScheduleList({
                 ws={ws}
                 regattaId={regattaId}
                 findings={byEntry.get(entry.id) ?? []}
-                showLineup={showLineups}
               />
             ))}
           </ul>
@@ -380,13 +378,11 @@ function EntryRow({
   ws,
   regattaId,
   findings,
-  showLineup,
 }: {
   entry: Entry;
   ws: RegattaWorkingSet;
   regattaId: string;
   findings: Finding[];
-  showLineup: boolean;
 }) {
   const navigate = useNavigate();
   const team = ws.byId.teams.get(entry.teamId);
@@ -436,20 +432,18 @@ function EntryRow({
         </Link>
         {scratched && <span className="shrink-0 text-xs text-ink-2">Scratched</span>}
       </div>
-      {showLineup && (
-        <BoatStrip
-          boatClass={entry.boatClass}
-          seats={seats}
-          coxPosition={shell?.coxPosition}
-          seatSides={entrySeatSides(entry, shell)}
-          size="xs"
-          teamColor={team?.colorKey}
-          conflict={worst === 'info' ? null : worst}
-          showConflictIcon={false}
-          label={`${teamName} ${entry.label}${shell ? `, ${shell.nickname || shell.name}` : ''}`}
-          className="min-w-0 flex-1 basis-56 md:max-w-[440px]"
-        />
-      )}
+      <BoatStrip
+        boatClass={entry.boatClass}
+        seats={seats}
+        coxPosition={shell?.coxPosition}
+        seatSides={entrySeatSides(entry, shell)}
+        size="xs"
+        teamColor={team?.colorKey}
+        conflict={worst === 'info' ? null : worst}
+        showConflictIcon={false}
+        label={`${teamName} ${entry.label}${shell ? `, ${shell.nickname || shell.name}` : ''}`}
+        className="min-w-0 flex-1 basis-56 md:max-w-[440px]"
+      />
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
         {shell ? (
           <ShellChip
