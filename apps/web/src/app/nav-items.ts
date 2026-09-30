@@ -36,6 +36,14 @@ export function regattaPath(regattaId: string, segment = ''): string {
   return segment ? `/regattas/${regattaId}/${segment}` : `/regattas/${regattaId}`;
 }
 
+/**
+ * One entry on its team's lineups page: `/regattas/:id/lineups/:teamId?entry=<entryId>`. The
+ * schedule, timeline, and conflicts panel link here; the lineups page selects `entry`.
+ */
+export function lineupEntryPath(regattaId: string, teamId: string, entryId: string): string {
+  return `${regattaPath(regattaId, `lineups/${teamId}`)}?entry=${encodeURIComponent(entryId)}`;
+}
+
 export interface ClubSection {
   to: string;
   label: string;

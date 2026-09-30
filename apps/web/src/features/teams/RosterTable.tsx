@@ -337,10 +337,24 @@ export function RosterTable({
     return cols;
   }, [canEdit, compact, grouped, onOpen, onUpdate, program, seasonYear, unit]);
 
+  // Groups follow the data's order, so experienced athletes come first (the boys' sheet).
+  const ordered = useMemo(
+    () =>
+      grouped
+        ? [...athletes].sort((a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level))
+        : athletes,
+    [athletes, grouped],
+  );
+  const levelCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const a of athletes) counts[a.level] = (counts[a.level] ?? 0) + 1;
+    return counts;
+  }, [athletes]);
+
   return (
     <DataTable
       label="Roster"
-      data={athletes}
+      data={ordered}
       columns={columns}
       getRowId={(a) => a.id}
       initialSorting={[{ id: 'name', desc: false }]}
@@ -349,14 +363,21 @@ export function RosterTable({
       onSelectionChange={onSelectionChange}
       activeRowId={activeId}
       isMuted={(a) => a.status === 'inactive'}
-      groupBy={grouped ? (a) => a.level : undefined}
-      groupOrder={LEVEL_ORDER}
-      groupLabel={(key, count) => (
-        <span>
-          {LEVEL_LABELS[key as keyof typeof LEVEL_LABELS] ?? key}{' '}
-          <span className="font-normal tabular-nums">· {count}</span>
-        </span>
-      )}
+      groupBy={
+        grouped
+          ? (a) => ({
+              key: a.level,
+              label: (
+                <span>
+                  {LEVEL_LABELS[a.level]}{' '}
+                  <span className="font-normal text-ink-2 tabular-nums">
+                    · {levelCounts[a.level] ?? 0}
+                  </span>
+                </span>
+              ),
+            })
+          : undefined
+      }
       empty={empty}
     />
   );

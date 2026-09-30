@@ -9,12 +9,30 @@ import {
   type RowSelectionState,
   type SortingState,
   type Row,
+  type RowData,
 } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Checkbox } from '@/components/ui/controls';
 
 export type { ColumnDef } from '@tanstack/react-table';
+
+declare module '@tanstack/react-table' {
+  // Type parameters must match TanStack's declaration to merge.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Extra classes on this column's cells (alignment, width, sticky). */
+    className?: string;
+    /** Extra classes on this column's header cell. */
+    headerClassName?: string;
+  }
+}
+
+/** A group heading row: rows with the same key render together under the label. */
+export interface RowGroup {
+  key: string;
+  label: ReactNode;
+}
 
 export interface DataTableProps<T> {
   data: T[];
@@ -39,13 +57,10 @@ export interface DataTableProps<T> {
   /** Extra classes per row. */
   rowClassName?: (row: Row<T>) => string | undefined;
   /**
-   * Split the rows into labelled groups (the roster by level). Sorting applies inside each
-   * group; groups follow `groupOrder`, then first appearance.
+   * Group rows under heading rows. Groups keep the order in which they first appear in `data`;
+   * rows inside a group follow the table's sorting.
    */
-  groupBy?: (row: T) => string;
-  groupOrder?: readonly string[];
-  /** The heading row of a group: "Experienced · 18". */
-  groupLabel?: (key: string, count: number) => ReactNode;
+  groupBy?: (row: T) => RowGroup;
   /** Controlled selection (the ids of the selected rows); pair with onSelectionChange. */
   selectedIds?: readonly string[];
 }
@@ -71,8 +86,6 @@ export function DataTable<T>({
   className,
   rowClassName,
   groupBy,
-  groupOrder,
-  groupLabel,
   selectedIds,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
@@ -136,6 +149,8 @@ export function DataTable<T>({
   });
 
   const rows = table.getRowModel().rows;
+  const columnCount = table.getAllLeafColumns().length;
+  const groups = groupBy ? groupRows(rows, data, groupBy) : null;
 
   const renderRow = (row: Row<T>) => (
     <tr
@@ -151,7 +166,13 @@ export function DataTable<T>({
       )}
     >
       {row.getVisibleCells().map((cell) => (
-        <td key={cell.id} className="h-10 px-3 align-middle pointer-coarse:h-12">
+        <td
+          key={cell.id}
+          className={cn(
+            'h-10 px-3 align-middle pointer-coarse:h-12',
+            cell.column.columnDef.meta?.className,
+          )}
+        >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </td>
       ))}
@@ -174,7 +195,10 @@ export function DataTable<T>({
                     aria-sort={
                       dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined
                     }
-                    className="h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2"
+                    className={cn(
+                      'h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2',
+                      header.column.columnDef.meta?.headerClassName,
+                    )}
                     style={header.column.columnDef.size ? { width: header.getSize() } : undefined}
                   >
                     {header.isPlaceholder ? null : canSort ? (
@@ -204,21 +228,21 @@ export function DataTable<T>({
         {rows.length === 0 ? (
           <tbody>
             <tr>
-              <td colSpan={table.getAllLeafColumns().length} className="px-3 py-8">
+              <td colSpan={columnCount} className="px-3 py-8">
                 {empty ?? <p className="text-center text-ink-2">Nothing to show.</p>}
               </td>
             </tr>
           </tbody>
-        ) : groupBy ? (
-          groupRows(rows, groupBy, groupOrder).map((g) => (
+        ) : groups ? (
+          groups.map((g) => (
             <tbody key={g.key}>
-              <tr className="border-y border-line bg-bg">
+              <tr className="border-y border-line bg-surface-2">
                 <th
-                  scope="rowgroup"
-                  colSpan={table.getAllLeafColumns().length}
-                  className="h-8 px-3 text-left text-sm font-medium text-ink-2"
+                  scope="colgroup"
+                  colSpan={columnCount}
+                  className="h-8 px-3 text-left text-sm font-medium text-ink"
                 >
-                  {groupLabel ? groupLabel(g.key, g.rows.length) : g.key}
+                  {g.label}
                 </th>
               </tr>
               {g.rows.map(renderRow)}
@@ -232,19 +256,25 @@ export function DataTable<T>({
   );
 }
 
-/** Rows split by group key: listed groups first in order, then the rest as they appear. */
+/** Sorted rows split into groups, groups in order of first appearance in `data`. */
 function groupRows<T>(
   rows: Row<T>[],
-  groupBy: (row: T) => string,
-  order: readonly string[] = [],
-): { key: string; rows: Row<T>[] }[] {
-  const map = new Map<string, Row<T>[]>();
-  for (const key of order) map.set(key, []);
-  for (const row of rows) {
-    const key = groupBy(row.original);
-    const list = map.get(key);
-    if (list) list.push(row);
-    else map.set(key, [row]);
+  data: T[],
+  groupBy: (row: T) => RowGroup,
+): (RowGroup & { rows: Row<T>[] })[] {
+  const order = new Map<string, number>();
+  for (const d of data) {
+    const key = groupBy(d).key;
+    if (!order.has(key)) order.set(key, order.size);
   }
-  return [...map].filter(([, list]) => list.length > 0).map(([key, list]) => ({ key, rows: list }));
+  const byKey = new Map<string, RowGroup & { rows: Row<T>[] }>();
+  for (const row of rows) {
+    const g = groupBy(row.original);
+    const bucket = byKey.get(g.key) ?? { ...g, rows: [] };
+    bucket.rows.push(row);
+    byKey.set(g.key, bucket);
+  }
+  return [...byKey.values()].sort(
+    (a, b) => (order.get(a.key) ?? Infinity) - (order.get(b.key) ?? Infinity),
+  );
 }

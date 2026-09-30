@@ -24,7 +24,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/cn';
-import { downloadText, fileSlug } from '@/lib/download';
+import { downloadText } from '@/components/CsvImport';
 import { useSeasonYear, useWeightUnit } from '@/features/settings/hooks';
 import { AddAthleteDialog } from './AddAthleteDialog';
 import { AthleteSheet } from './AthleteSheet';
@@ -32,6 +32,7 @@ import { useMediaQuery } from './hooks';
 import { ImportRosterDialog } from './ImportRosterDialog';
 import {
   DEFAULT_FILTERS,
+  fileSlug,
   filterRoster,
   LEVEL_LABELS,
   PROGRAM_LABELS,

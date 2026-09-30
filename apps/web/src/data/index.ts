@@ -50,5 +50,41 @@ export {
   type SeverityCounts,
 } from './findings';
 export { useRealtimeEvents, RealtimeProvider } from './realtime';
+export {
+  useGuardedUpdate,
+  type GuardedUpdateOptions,
+  type GuardedUpdateVars,
+} from './guarded-update';
+export {
+  CONFLICT_TOAST,
+  GUARDED_COLLECTIONS,
+  isGuarded,
+  type GuardedCollection,
+} from './concurrency';
+export { useChangeToasts } from './change-toasts';
+export {
+  ANNOUNCED_COLLECTIONS,
+  ChangeCoalescer,
+  describeChanges,
+  remoteChange,
+  type ChangeNotice,
+  type RemoteChange,
+} from './change-coalescer';
+export {
+  usePresence,
+  useRegattaPresence,
+  type RegattaPresence,
+  type UsePresenceOptions,
+} from './presence';
+export {
+  PRESENCE_HEARTBEAT_MS,
+  PRESENCE_TTL_MS,
+  presenceActivity,
+  presencePageFromPath,
+  type PresencePage,
+  type PresenceViewer,
+} from './presence-beacon';
+export { capitalize, initialsOf, shortUserName, targetCollection } from './collab-format';
+export { useNow } from './use-now';
 export { StoreProvider } from './context';
 export { can, ROLE_LABELS, type Action } from './permissions';

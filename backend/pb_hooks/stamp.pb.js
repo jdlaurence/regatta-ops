@@ -7,7 +7,9 @@
 //   availability    updated_by on every write
 //   comments        author on create; unchanged afterwards
 //   presence        user on create; unchanged afterwards
-//   load_items      loaded_by / returned_by follow loaded_at / returned_at
+//   load_items      loaded_by / returned_by follow loaded_at / returned_at; the share-link
+//                   names (loaded_by_name / returned_by_name) clear when a signed-in user
+//                   changes the matching time
 //
 // Handlers run in isolated scopes, so each one computes the user id itself.
 
@@ -36,6 +38,8 @@ onRecordCreateRequest(
       case 'load_items':
         r.set('loaded_by', r.getString('loaded_at') ? me : '');
         r.set('returned_by', r.getString('returned_at') ? me : '');
+        r.set('loaded_by_name', '');
+        r.set('returned_by_name', '');
         break;
     }
     e.next();
@@ -74,13 +78,17 @@ onRecordUpdateRequest(
       case 'load_items':
         if (r.getString('loaded_at') !== o.getString('loaded_at')) {
           r.set('loaded_by', r.getString('loaded_at') ? me : '');
+          r.set('loaded_by_name', '');
         } else {
           r.set('loaded_by', o.getString('loaded_by'));
+          r.set('loaded_by_name', o.getString('loaded_by_name'));
         }
         if (r.getString('returned_at') !== o.getString('returned_at')) {
           r.set('returned_by', r.getString('returned_at') ? me : '');
+          r.set('returned_by_name', '');
         } else {
           r.set('returned_by', o.getString('returned_by'));
+          r.set('returned_by_name', o.getString('returned_by_name'));
         }
         break;
     }

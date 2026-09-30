@@ -98,7 +98,7 @@ describe('the roster', () => {
     wideScreen();
     renderApp(`/teams/${IDS.boys}`);
     const table = await screen.findByRole('table', { name: 'Roster' });
-    expect(within(table).getByRole('rowheader', { name: /Experienced/ })).toBeInTheDocument();
+    expect(within(table).getByText('Experienced')).toBeInTheDocument();
     expect(within(table).getByRole('columnheader', { name: /Weight \(lb\)/ })).toBeInTheDocument();
     // 70 kg is 154 lb; born 2009 is U19 in 2026.
     expect(within(table).getByRole('textbox', { name: 'Weight in lb for Rowan Test' })).toHaveValue(
@@ -232,19 +232,18 @@ describe('the roster', () => {
     const box = within(dialog).getByLabelText('Rows to import');
     await user.click(box);
     await user.paste(csv);
-    await user.click(within(dialog).getByRole('button', { name: 'Continue' }));
-    expect(within(dialog).getByText('4 rows found.')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Match columns' }));
+    // Columns guessed from the headers; the unit from "Weight (kg)".
+    expect(within(dialog).getByRole('combobox', { name: 'First name' })).toHaveTextContent('First');
+    expect(within(dialog).getByRole('combobox', { name: 'Birth year' })).toHaveTextContent('YOB');
     expect(within(dialog).getByText('From the column name.')).toBeInTheDocument();
+    expect(within(dialog).getByRole('radio', { name: 'Kilograms' })).toBeChecked();
     await user.click(within(dialog).getByRole('button', { name: 'Preview rows' }));
-    expect(within(dialog).getByText('2 rows ready to add.')).toBeInTheDocument();
+    expect(within(dialog).getByText(/2 of 4 rows are ready/)).toBeInTheDocument();
     expect(within(dialog).getByText('The name is blank')).toBeInTheDocument();
-    expect(within(dialog).getByText('Already on this roster; skipped')).toBeInTheDocument();
-    await user.click(within(dialog).getByRole('button', { name: 'Add 2 athletes' }));
-    expect(
-      await within(dialog).findByText(
-        'Added 2 athletes to Junior boys. Skipped 1 athlete already on the roster. Left out 1 row with problems.',
-      ),
-    ).toBeInTheDocument();
+    expect(within(dialog).getByText('Already on this roster')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Import 2 athletes' }));
+    expect(await screen.findByText('2 athletes imported')).toBeInTheDocument();
     const added = store
       .snapshot()
       .athletes.filter((a) => ['Wren', 'Juniper'].includes(a.firstName));

@@ -69,6 +69,8 @@ const optionalYear = z.number().int().min(1900).max(2100).nullable().optional();
 export const userPreferencesSchema = z.object({
   theme: z.enum(['light', 'dark', 'system']).optional(),
   weightUnit: z.enum(['kg', 'lb']).optional(),
+  emailDigest: z.boolean().optional(),
+  emailOnChange: z.boolean().optional(),
 });
 
 export const userSchema = z.object({
@@ -371,6 +373,8 @@ export const loadItemSchema = z.object({
   loadedBy: optionalRef,
   returnedAt: optionalInstant,
   returnedBy: optionalRef,
+  loadedByName: optionalText,
+  returnedByName: optionalText,
   notes: optionalText,
 });
 
@@ -383,12 +387,14 @@ export const commentSchema = z.object({
   targetId: idSchema,
   authorId: idSchema,
   body: requiredText('Write a comment'),
+  mentions: z.array(idSchema).optional(),
 });
 
 export const activityEntrySchema = z.object({
   ...baseRecordShape,
   regattaId: optionalRef,
   actorId: optionalRef,
+  teamId: optionalRef,
   action: z.enum(['create', 'update', 'delete']),
   targetType: z.string(),
   targetId: idSchema,
@@ -415,6 +421,7 @@ export const shareLinkSchema = z.object({
   token: z.string().min(16, 'Tokens are at least 16 characters'),
   canCheckLoad: z.boolean(),
   revokedAt: optionalInstant,
+  createdBy: optionalRef,
 });
 
 export const clubSettingsSchema = z.object({

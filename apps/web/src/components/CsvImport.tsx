@@ -1,590 +1,484 @@
-// Generic CSV import (PLAN.md §4.2, §4.11): paste or upload, match columns to fields, preview
-// with the problems in each row, then write. Feature code supplies the fields, the per-row
-// parsing and validation, and the write; the roster import (features/teams) is the first user
-// and the fleet tables can use the same steps.
+// CSV import with a column-mapping step (PLAN.md §4.2, §4.7): paste or upload, match the
+// file's columns to fields (guessed from the headers), preview every row with its problems,
+// then create the good rows. The feature supplies the fields, the row check, and the write.
 //
 //   <CsvImportDialog
-//     open={open} onOpenChange={setOpen} title="Import roster"
-//     fields={ROSTER_FIELDS}
-//     buildPreview={(table, mapping) => ...}      // rows with errors, warnings, and parsed data
-//     importLabel={(n) => `Add ${n} athletes`}
-//     onImport={async (rows) => 'Added 24 athletes.'}
+//     open={open} onOpenChange={setOpen}
+//     title="Import shells" noun={['shell', 'shells']}
+//     fields={SHELL_CSV_FIELDS} previewFields={['name', 'boatClass']}
+//     check={(rows) => rows.map(checkShellRow)}
+//     onImport={(records) => createAll(records)}
 //   />
 
-import { useId, useRef, useState, type ReactNode } from 'react';
-import { AlertTriangle, CircleCheck, CircleX, FileUp } from 'lucide-react';
+import { useId, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { CircleAlert, CircleCheck, TriangleAlert, Upload } from 'lucide-react';
 import { detectDelimiter, parseDelimited } from '@srt/domain';
-import { cn } from '@/lib/cn';
-import { Button } from './ui/button';
-import { Checkbox, Switch } from './ui/controls';
-import { Dialog, DialogContent, DialogFooter } from './ui/dialog';
-import { Label, Textarea } from './ui/input';
-import { Select } from './ui/select';
+import { toast } from '@/components/toast';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
+import { Label, Textarea } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 
 // ---------------------------------------------------------------------------
 // Pure helpers
 
-export interface CsvField<K extends string = string> {
-  key: K;
-  /** What the mapping step calls the field: "First name". */
+export interface CsvField {
+  /** The record field this column fills ('boatClass'). */
+  key: string;
+  /** Sentence-case name shown in the mapping step ('Boat class'). */
   label: string;
-  /** Header names that mean this field, compared after normalizeHeader(). */
-  aliases: readonly string[];
+  required?: boolean;
+  /**
+   * Header spellings that mean this field, most specific first. Compared without case, spaces,
+   * or punctuation, so 'weight_class_lb', 'Weight class (lb)' and 'weightClassLb' are one.
+   * The key and label always count. Two fields may read the same column.
+   */
+  aliases?: string[];
 }
 
-/** A parsed file: header names and data rows, every row as wide as the header. */
+/** Column index for each field key; null when the file has no such column. */
+export type CsvMapping = Record<string, number | null>;
+
 export interface CsvTable {
   headers: string[];
   rows: string[][];
 }
 
-/** The field each column holds, by column index; null skips the column. */
-export type CsvMapping<K extends string = string> = (K | null)[];
+/** One row's outcome: a record to create, or what is wrong with it. */
+export interface CsvRowCheck<T> {
+  record: T | null;
+  /** Sentences; any error skips the row. */
+  errors: string[];
+  /** Sentences shown in the preview; the row is still imported. */
+  warnings?: string[];
+}
 
-/** Lowercase, no accents, punctuation to spaces (except / & +): "Weight (lbs)" → "weight lbs". */
+/** Lowercase letters and digits only: 'Weight class (lb)' → 'weightclasslb'. */
 export function normalizeHeader(header: string): string {
-  return header
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^\p{L}\p{N}/&+ ]/gu, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return header.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-/** Parse pasted or uploaded text (comma or tab separated) into a table. */
-export function readCsvTable(text: string, hasHeader = true): CsvTable {
-  const rows = parseDelimited(text, detectDelimiter(text)).map((r) => r.map((c) => c.trim()));
-  if (rows.length === 0) return { headers: [], rows: [] };
-  const width = Math.max(...rows.map((r) => r.length));
-  const pad = (r: string[]) => [...r, ...Array<string>(width - r.length).fill('')];
-  const numbered = (i: number) => `Column ${i + 1}`;
-  if (!hasHeader) {
-    return { headers: Array.from({ length: width }, (_, i) => numbered(i)), rows: rows.map(pad) };
-  }
-  const [head = [], ...body] = rows;
-  return { headers: pad(head).map((h, i) => h || numbered(i)), rows: body.map(pad) };
-}
-
-function containsWords(haystack: string, needle: string): boolean {
-  return ` ${haystack} `.includes(` ${needle} `);
+/** Parse pasted or uploaded text: comma- or tab-separated, first row is the header. */
+export function readCsvTable(text: string): CsvTable {
+  const clean = text.replace(/^\uFEFF/, ''); // byte-order mark from spreadsheet exports
+  const [header = [], ...body] = parseDelimited(clean, detectDelimiter(clean));
+  const headers = header.map((h) => h.trim());
+  const rows = body.map((r) => headers.map((_, i) => (r[i] ?? '').trim()));
+  return { headers, rows };
 }
 
 /**
- * Guess which field each column holds from its header. Exact matches (label or alias) win;
- * then the longest alias found inside the header as whole words. Each field is used once.
+ * Guess which column fills each field. Exact matches on the key, label, and aliases first (in
+ * that order of preference); then a header that starts with a candidate of four or more
+ * letters ('weight_class_lb' for 'weight class'), using each column once.
  */
-export function guessColumns<K extends string>(
-  headers: readonly string[],
-  fields: readonly CsvField<K>[],
-): CsvMapping<K> {
-  const norm = headers.map(normalizeHeader);
-  const out: CsvMapping<K> = headers.map(() => null);
-  const used = new Set<K>();
-  const names = (f: CsvField<K>) => [f.label, ...f.aliases].map(normalizeHeader);
-  norm.forEach((h, i) => {
-    const f = fields.find((f) => !used.has(f.key) && names(f).includes(h));
-    if (f) {
-      out[i] = f.key;
-      used.add(f.key);
-    }
-  });
-  norm.forEach((h, i) => {
-    if (out[i] || !h) return;
-    let best: { key: K; len: number } | null = null;
-    for (const f of fields) {
-      if (used.has(f.key)) continue;
-      for (const a of names(f)) {
-        if (a.length < 2 || !containsWords(h, a)) continue;
-        if (!best || a.length > best.len) best = { key: f.key, len: a.length };
+export function guessMapping(headers: readonly string[], fields: readonly CsvField[]): CsvMapping {
+  const normalized = headers.map(normalizeHeader);
+  const candidates = (f: CsvField) =>
+    [f.key, f.label, ...(f.aliases ?? [])].map(normalizeHeader).filter(Boolean);
+  const mapping: CsvMapping = {};
+  const used = new Set<number>();
+  for (const f of fields) {
+    mapping[f.key] = null;
+    for (const c of candidates(f)) {
+      const i = normalized.indexOf(c);
+      if (i >= 0) {
+        mapping[f.key] = i;
+        used.add(i);
+        break;
       }
     }
-    if (best) {
-      out[i] = best.key;
-      used.add(best.key);
+  }
+  for (const f of fields) {
+    if (mapping[f.key] != null) continue;
+    for (const c of candidates(f)) {
+      if (c.length < 4) continue;
+      const i = normalized.findIndex((h, idx) => !used.has(idx) && h.startsWith(c));
+      if (i >= 0) {
+        mapping[f.key] = i;
+        used.add(i);
+        break;
+      }
     }
-  });
+  }
+  return mapping;
+}
+
+/** One row as field key → cell text ('' for unmapped fields). */
+export function mapRow(
+  cells: readonly string[],
+  mapping: CsvMapping,
+  fields: readonly CsvField[],
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const f of fields) {
+    const i = mapping[f.key];
+    out[f.key] = i == null ? '' : (cells[i] ?? '').trim();
+  }
   return out;
 }
 
-/** Assign `key` to column `index`; any other column holding it is skipped instead. */
-export function assignColumn<K extends string>(
-  mapping: CsvMapping<K>,
-  index: number,
-  key: K | null,
-): CsvMapping<K> {
-  return mapping.map((m, i) => (i === index ? key : key !== null && m === key ? null : m));
+/** Fields marked required that no column fills. */
+export function missingRequired(mapping: CsvMapping, fields: readonly CsvField[]): CsvField[] {
+  return fields.filter((f) => f.required && mapping[f.key] == null);
+}
+
+/** Start a download of text as a file (CSV export). */
+export function downloadText(fileName: string, text: string, type = 'text/csv;charset=utf-8') {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 // ---------------------------------------------------------------------------
-// The dialog
+// Dialog
 
-export interface CsvPreviewRow<T> {
-  id: string;
-  /** "Row 3", counting data rows from 1. */
-  label: string;
-  /** Display text for each preview column. */
-  cells: ReactNode[];
-  errors: string[];
-  warnings: string[];
-  /** Left out on purpose (a duplicate, say); not an error. */
-  skipped?: boolean;
-  /** The parsed record; null when the row has errors. */
-  data: T | null;
+export interface CsvImportDialogProps<T> {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** "Import shells" */
+  title: string;
+  /** Singular and plural: ['shell', 'shells']. */
+  noun: readonly [string, string];
+  fields: readonly CsvField[];
+  /** Field keys shown as preview columns; a function picks them from the mapping. */
+  previewFields: readonly string[] | ((mapping: CsvMapping) => readonly string[]);
+  /**
+   * Check every mapped row at once (so duplicates inside the file can be caught). `ctx` has the
+   * parsed file and the mapping, for checks that read a header (a unit in "Weight (kg)").
+   */
+  check: (rows: Record<string, string>[], ctx: CsvContext) => CsvRowCheck<T>[];
+  /** Create the records. Throw to keep the dialog open; the caller shows its own error. */
+  onImport: (records: T[]) => Promise<void>;
+  /** A line under the paste box saying which columns work. */
+  hint?: ReactNode;
+  /** Extra controls under the mapping (a unit choice), given the file and the mapping. */
+  options?: (ctx: CsvContext) => ReactNode;
+  /** A mapping rule beyond `required` ("first name or full name"): the problem, or null. */
+  checkMapping?: (mapping: CsvMapping) => string | null;
 }
 
-export interface CsvPreview<T> {
-  columns: string[];
-  rows: CsvPreviewRow<T>[];
+/** The parsed file and the current mapping, for feature callbacks. */
+export interface CsvContext {
+  table: CsvTable;
+  mapping: CsvMapping;
 }
 
-/** The rows that will be written: no errors, not skipped. */
-export function readyRows<T>(preview: CsvPreview<T>): T[] {
-  return preview.rows.flatMap((r) =>
-    r.errors.length === 0 && !r.skipped && r.data ? [r.data] : [],
+type Step = 'source' | 'map' | 'preview';
+
+const NOT_IN_FILE = '__none';
+
+/** Paste or upload → map columns → preview → import. */
+export function CsvImportDialog<T>(props: CsvImportDialogProps<T>) {
+  const { open, onOpenChange } = props;
+  // Remount on every open so a new import starts clean.
+  const [session, setSession] = useState(0);
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (next) setSession((s) => s + 1);
+        onOpenChange(next);
+      }}
+    >
+      {open && <CsvImportBody key={session} {...props} />}
+    </Dialog>
   );
 }
 
-export interface CsvImportDialogProps<K extends string, T> {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  /** "Import roster". */
-  title: string;
-  /** Under the paste box: which columns work. */
-  sourceHint?: ReactNode;
-  placeholder?: string;
-  fields: readonly CsvField<K>[];
-  /** Defaults to guessColumns(headers, fields). */
-  guess?: (headers: string[]) => CsvMapping<K>;
-  /** Extra controls on the mapping step (weight unit, duplicates), given the current mapping. */
-  options?: (ctx: { table: CsvTable; mapping: CsvMapping<K> }) => ReactNode;
-  /** Why the mapping cannot work yet ("Choose a column for first names."), or null. */
-  checkMapping?: (mapping: CsvMapping<K>) => string | null;
-  buildPreview: (table: CsvTable, mapping: CsvMapping<K>) => CsvPreview<T>;
-  /** The import button: "Add 24 athletes". */
-  importLabel: (count: number) => string;
-  /** Write the ready rows; resolve to the summary sentence for the last step. */
-  onImport: (rows: T[], preview: CsvPreview<T>) => Promise<ReactNode>;
-}
-
-type Step = 'source' | 'mapping' | 'preview' | 'done';
-
-const SKIP = '__skip';
-
-export function CsvImportDialog<K extends string, T>({
-  open,
+function CsvImportBody<T>({
   onOpenChange,
   title,
-  sourceHint,
-  placeholder = 'Paste rows copied from a spreadsheet, with the column names in the first row.',
+  noun,
   fields,
-  guess,
+  previewFields,
+  check,
+  onImport,
+  hint,
   options,
   checkMapping,
-  buildPreview,
-  importLabel,
-  onImport,
-}: CsvImportDialogProps<K, T>) {
+}: CsvImportDialogProps<T>) {
+  const id = useId();
   const [step, setStep] = useState<Step>('source');
   const [text, setText] = useState('');
-  const [hasHeader, setHasHeader] = useState(true);
-  const [table, setTable] = useState<CsvTable | null>(null);
-  const [mapping, setMapping] = useState<CsvMapping<K>>([]);
   const [sourceError, setSourceError] = useState<string | null>(null);
-  const [problemsOnly, setProblemsOnly] = useState(false);
+  const [table, setTable] = useState<CsvTable | null>(null);
+  const [mapping, setMapping] = useState<CsvMapping>({});
   const [busy, setBusy] = useState(false);
-  const [summary, setSummary] = useState<ReactNode>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const uid = useId();
 
-  const reset = () => {
-    setStep('source');
-    setText('');
-    setTable(null);
-    setMapping([]);
-    setSourceError(null);
-    setProblemsOnly(false);
-    setSummary(null);
-    setBusy(false);
-  };
+  const missing = missingRequired(mapping, fields);
+  const mappingProblem = missing.length === 0 && checkMapping ? checkMapping(mapping) : null;
+  const previewKeys = typeof previewFields === 'function' ? previewFields(mapping) : previewFields;
+  const results = useMemo(() => {
+    if (step !== 'preview' || !table) return [];
+    const mapped = table.rows.map((r) => mapRow(r, mapping, fields));
+    return check(mapped, { table, mapping }).map((res, i) => ({
+      ...res,
+      row: mapped[i]!,
+      line: i + 2,
+    }));
+  }, [step, table, mapping, fields, check]);
+  const ready = results.filter((r) => r.record && r.errors.length === 0);
 
-  const close = (next: boolean) => {
-    if (!next && busy) return;
-    onOpenChange(next);
-    if (!next) reset();
-  };
-
-  const readText = (raw: string, header = hasHeader) => {
-    const t = readCsvTable(raw, header);
-    if (t.rows.length === 0) {
-      setSourceError(
-        header
-          ? 'No rows found under the column names. Paste the column names first, then one row per line.'
-          : 'No rows found. Paste one row per line.',
-      );
+  const readSource = (source = text) => {
+    const parsed = readCsvTable(source);
+    if (parsed.headers.length === 0 || parsed.rows.length === 0) {
+      setSourceError('Paste a header row and at least one row of data, or choose a CSV file.');
       return;
     }
     setSourceError(null);
-    setTable(t);
-    setMapping(
-      header ? (guess ?? ((h) => guessColumns(h, fields)))(t.headers) : t.headers.map(() => null),
-    );
-    setStep('mapping');
+    setTable(parsed);
+    setMapping(guessMapping(parsed.headers, fields));
+    setStep('map');
   };
 
-  const onFile = async (file: File | undefined) => {
+  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
-    const raw = await file.text();
-    setText(raw);
-    readText(raw);
-    if (fileRef.current) fileRef.current.value = '';
+    const content = await file.text();
+    e.target.value = '';
+    setText(content);
+    readSource(content);
   };
-
-  const mappingProblem =
-    step === 'mapping' && mapping.every((m) => m === null)
-      ? 'Choose what at least one column holds.'
-      : step === 'mapping'
-        ? (checkMapping?.(mapping) ?? null)
-        : null;
-
-  const preview = step === 'preview' && table ? buildPreview(table, mapping) : null;
-  const ready = preview ? readyRows(preview) : [];
-  const withErrors = preview ? preview.rows.filter((r) => r.errors.length > 0).length : 0;
-  const skipped = preview
-    ? preview.rows.filter((r) => r.skipped && r.errors.length === 0).length
-    : 0;
-  const withWarnings = preview
-    ? preview.rows.filter((r) => r.warnings.length > 0 && r.errors.length === 0 && !r.skipped)
-        .length
-    : 0;
 
   const runImport = async () => {
-    if (!preview || ready.length === 0) return;
+    const records = ready.map((r) => r.record!) as T[];
     setBusy(true);
     try {
-      const result = await onImport(ready, preview);
-      setSummary(result);
-      setStep('done');
+      await onImport(records);
+      toast.success(`${records.length} ${records.length === 1 ? noun[0] : noun[1]} imported`);
+      onOpenChange(false);
     } catch {
-      // The write reports its own error (a toast); stay on the preview to try again.
+      // The caller's mutation already said what went wrong.
     } finally {
       setBusy(false);
     }
   };
 
-  const stepText: Record<Step, string> = {
-    source: 'Step 1 of 3. Paste rows or choose a CSV file.',
-    mapping: 'Step 2 of 3. Check what each column holds.',
-    preview: 'Step 3 of 3. Check the rows before adding them.',
-    done: 'Done.',
-  };
+  const unusedColumns = table
+    ? table.headers.filter((_, i) => !Object.values(mapping).includes(i))
+    : [];
+  const fieldLabel = (key: string) => fields.find((f) => f.key === key)?.label ?? key;
 
   return (
-    <Dialog open={open} onOpenChange={close}>
-      <DialogContent title={title} description={stepText[step]} className="max-w-3xl">
-        {step === 'source' && (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor={`${uid}-text`}>Rows to import</Label>
-              <Textarea
-                id={`${uid}-text`}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder={placeholder}
-                spellCheck={false}
-                aria-invalid={!!sourceError || undefined}
-                aria-describedby={sourceError ? `${uid}-err` : `${uid}-hint`}
-                className="min-h-40 font-mono text-sm"
-              />
-              {sourceHint && !sourceError && (
-                <p id={`${uid}-hint`} className="text-sm leading-prose text-ink-2">
-                  {sourceHint}
-                </p>
-              )}
-              {sourceError && (
-                <p id={`${uid}-err`} className="text-sm text-danger">
-                  {sourceError}
-                </p>
-              )}
-            </div>
-            <label className="flex items-center gap-2 text-base">
-              <Checkbox
-                checked={hasHeader}
-                onCheckedChange={(v) => setHasHeader(v === true)}
-                aria-label="The first row has the column names"
-              />
-              The first row has the column names
-            </label>
+    <DialogContent
+      title={title}
+      description={
+        step === 'source'
+          ? 'Paste rows copied from a spreadsheet, or choose a CSV file. The first row must be the column names.'
+          : step === 'map'
+            ? 'Match each field to a column in your file. Columns were matched by name; check them before going on.'
+            : `${ready.length} of ${results.length} rows are ready. Rows with problems are skipped.`
+      }
+      className="max-w-3xl"
+    >
+      {step === 'source' && (
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`${id}-paste`}>Rows to import</Label>
+            <Textarea
+              id={`${id}-paste`}
+              value={text}
+              onChange={(e) => {
+                setText(e.target.value);
+                setSourceError(null);
+              }}
+              aria-invalid={!!sourceError || undefined}
+              aria-describedby={sourceError ? `${id}-error` : hint ? `${id}-hint` : undefined}
+              rows={8}
+              spellCheck={false}
+              className="font-mono text-sm"
+            />
+            {hint && !sourceError && (
+              <p id={`${id}-hint`} className="text-sm text-ink-2">
+                {hint}
+              </p>
+            )}
+            {sourceError && (
+              <p id={`${id}-error`} role="alert" className="text-sm text-danger">
+                {sourceError}
+              </p>
+            )}
+          </div>
+          <div>
             <input
               ref={fileRef}
               type="file"
-              accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"
-              className="sr-only"
-              tabIndex={-1}
-              aria-hidden
-              onChange={(e) => void onFile(e.target.files?.[0])}
+              accept=".csv,.tsv,.txt,text/csv,text/plain"
+              hidden
+              onChange={(e) => void onFile(e)}
             />
-            <DialogFooter className="justify-between">
-              <Button onClick={() => fileRef.current?.click()}>
-                <FileUp aria-hidden />
-                Choose a file
-              </Button>
-              <Button variant="primary" disabled={!text.trim()} onClick={() => readText(text)}>
-                Continue
-              </Button>
-            </DialogFooter>
+            <Button size="sm" onClick={() => fileRef.current?.click()}>
+              <Upload aria-hidden />
+              Choose a CSV file
+            </Button>
           </div>
-        )}
+          <DialogFooter>
+            <Button onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button variant="primary" onClick={() => readSource()} disabled={!text.trim()}>
+              Match columns
+            </Button>
+          </DialogFooter>
+        </div>
+      )}
 
-        {step === 'mapping' && table && (
-          <div className="flex flex-col gap-4">
-            <p className="text-base text-ink-2">
-              {table.rows.length === 1 ? '1 row' : `${table.rows.length} rows`} found.
+      {step === 'map' && table && (
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+            {fields.map((f) => {
+              const col = mapping[f.key];
+              const sample = col == null ? '' : (table.rows.find((r) => r[col])?.[col] ?? '');
+              const selectId = `${id}-map-${f.key}`;
+              return (
+                <div key={f.key} className="flex min-w-0 flex-col gap-1">
+                  <Label htmlFor={selectId}>
+                    {f.label}
+                    {f.required && <span className="font-normal text-ink-2"> (required)</span>}
+                  </Label>
+                  <Select
+                    id={selectId}
+                    value={col == null ? NOT_IN_FILE : String(col)}
+                    onValueChange={(v) =>
+                      setMapping((m) => ({ ...m, [f.key]: v === NOT_IN_FILE ? null : Number(v) }))
+                    }
+                    options={[
+                      { value: NOT_IN_FILE, label: 'Not in the file' },
+                      ...table.headers.map((h, i) => ({
+                        value: String(i),
+                        label: h || `Column ${i + 1}`,
+                      })),
+                    ]}
+                    className="w-full"
+                  />
+                  <p className="truncate text-sm text-ink-2">
+                    {col == null ? ' ' : sample ? `First value: ${sample}` : 'Empty column'}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+          {unusedColumns.length > 0 && (
+            <p className="text-sm leading-prose text-ink-2">
+              Not imported: {unusedColumns.map((h) => h || 'unnamed column').join(', ')}.
             </p>
-            <ul className="flex flex-col divide-y divide-line rounded-card border border-line">
-              {table.headers.map((header, i) => {
-                const samples = table.rows
-                  .map((r) => r[i] ?? '')
-                  .filter((v) => v !== '')
-                  .slice(0, 3);
-                const selectId = `${uid}-col-${i}`;
-                return (
-                  <li
-                    key={i}
-                    className="grid grid-cols-1 items-center gap-2 px-3 py-2 sm:grid-cols-[1fr_200px]"
-                  >
-                    <div className="flex min-w-0 flex-col">
-                      <label htmlFor={selectId} className="truncate font-medium text-ink">
-                        {header}
-                      </label>
-                      <span className="truncate text-sm text-ink-2">
-                        {samples.length > 0 ? samples.join(', ') : 'Empty'}
-                      </span>
-                    </div>
-                    <Select
-                      id={selectId}
-                      value={mapping[i] ?? SKIP}
-                      onValueChange={(v) =>
-                        setMapping((m) => assignColumn(m, i, v === SKIP ? null : (v as K)))
-                      }
-                      options={[
-                        { value: SKIP, label: 'Skip this column' },
-                        ...fields.map((f) => ({ value: f.key as string, label: f.label })),
-                      ]}
-                      className={cn('w-full', mapping[i] === null && 'text-ink-2')}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-            {options && <div className="flex flex-col gap-3">{options({ table, mapping })}</div>}
-            {mappingProblem && (
-              <p role="alert" className="text-sm text-danger">
-                {mappingProblem}
-              </p>
-            )}
-            <DialogFooter>
-              <Button onClick={() => setStep('source')}>Back</Button>
-              <Button
-                variant="primary"
-                disabled={!!mappingProblem}
-                onClick={() => setStep('preview')}
-              >
-                Preview rows
-              </Button>
-            </DialogFooter>
-          </div>
-        )}
-
-        {step === 'preview' && preview && (
-          <div className="flex flex-col gap-3">
-            <PreviewSummary
-              ready={ready.length}
-              withErrors={withErrors}
-              skipped={skipped}
-              withWarnings={withWarnings}
-            />
-            {withErrors + withWarnings + skipped > 0 && (
-              <label className="flex items-center gap-2 text-base">
-                <Switch
-                  checked={problemsOnly}
-                  onCheckedChange={setProblemsOnly}
-                  aria-label="Show only rows with problems"
-                />
-                Show only rows with problems
-              </label>
-            )}
-            <PreviewTable preview={preview} problemsOnly={problemsOnly} />
-            <DialogFooter>
-              <Button onClick={() => setStep('mapping')} disabled={busy}>
-                Back
-              </Button>
-              <Button
-                variant="primary"
-                disabled={ready.length === 0 || busy}
-                onClick={() => void runImport()}
-              >
-                {busy ? 'Adding…' : importLabel(ready.length)}
-              </Button>
-            </DialogFooter>
-          </div>
-        )}
-
-        {step === 'done' && (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start gap-2 text-base leading-prose">
-              <CircleCheck className="mt-0.5 size-4 shrink-0 text-ok" aria-hidden />
-              <div>{summary}</div>
-            </div>
-            <DialogFooter>
-              <Button onClick={reset}>Import another file</Button>
-              <Button variant="primary" onClick={() => close(false)}>
-                Done
-              </Button>
-            </DialogFooter>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function PreviewSummary({
-  ready,
-  withErrors,
-  skipped,
-  withWarnings,
-}: {
-  ready: number;
-  withErrors: number;
-  skipped: number;
-  withWarnings: number;
-}) {
-  const rows = (n: number) => (n === 1 ? '1 row' : `${n} rows`);
-  return (
-    <ul className="flex flex-col gap-1 text-base" aria-live="polite">
-      <li className="flex items-center gap-2">
-        <CircleCheck className="size-4 shrink-0 text-ok" aria-hidden />
-        {ready === 0 ? 'No rows are ready to add.' : `${rows(ready)} ready to add.`}
-      </li>
-      {withWarnings > 0 && (
-        <li className="flex items-center gap-2">
-          <AlertTriangle className="size-4 shrink-0 text-warn" aria-hidden />
-          {rows(withWarnings)} with a note to check; they will be added.
-        </li>
+          )}
+          {options && <div className="flex flex-col gap-3">{options({ table, mapping })}</div>}
+          {missing.length > 0 && (
+            <p role="alert" className="text-sm text-danger">
+              Choose a column for {missing.map((f) => f.label.toLowerCase()).join(' and ')}.
+            </p>
+          )}
+          {mappingProblem && (
+            <p role="alert" className="text-sm text-danger">
+              {mappingProblem}
+            </p>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setStep('source')}>Back</Button>
+            <Button
+              variant="primary"
+              onClick={() => setStep('preview')}
+              disabled={missing.length > 0 || !!mappingProblem}
+            >
+              Preview rows
+            </Button>
+          </DialogFooter>
+        </div>
       )}
-      {skipped > 0 && (
-        <li className="flex items-center gap-2">
-          <AlertTriangle className="size-4 shrink-0 text-warn" aria-hidden />
-          {rows(skipped)} skipped.
-        </li>
-      )}
-      {withErrors > 0 && (
-        <li className="flex items-center gap-2">
-          <CircleX className="size-4 shrink-0 text-danger" aria-hidden />
-          {rows(withErrors)} with problems will be left out. Fix them in the file and import again,
-          or add them by hand.
-        </li>
-      )}
-    </ul>
-  );
-}
 
-function PreviewTable<T>({
-  preview,
-  problemsOnly,
-}: {
-  preview: CsvPreview<T>;
-  problemsOnly: boolean;
-}) {
-  const rows = problemsOnly
-    ? preview.rows.filter((r) => r.errors.length > 0 || r.warnings.length > 0 || r.skipped)
-    : preview.rows;
-  const width = preview.columns.length + 2;
-  return (
-    <div className="max-h-[50dvh] overflow-auto rounded-card border border-line">
-      <table className="w-full border-collapse text-sm" aria-label="Rows to import">
-        <thead className="sticky top-0 z-10 bg-surface">
-          <tr className="border-b border-line">
-            <th scope="col" className="h-8 px-2 text-left font-medium whitespace-nowrap text-ink-2">
-              Row
-            </th>
-            <th scope="col" className="h-8 px-2 text-left font-medium text-ink-2">
-              <span className="sr-only">Status</span>
-            </th>
-            {preview.columns.map((c) => (
-              <th
-                key={c}
-                scope="col"
-                className="h-8 px-2 text-left font-medium whitespace-nowrap text-ink-2"
-              >
-                {c}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        {rows.map((r) => {
-          const bad = r.errors.length > 0;
-          const note = !bad && (r.skipped || r.warnings.length > 0);
-          const messages = [...r.errors, ...r.warnings];
-          return (
-            <tbody key={r.id} className="border-b border-line last:border-b-0">
-              <tr className={cn(bad && 'bg-danger-tint', !bad && r.skipped && 'text-ink-2')}>
-                <th
-                  scope="row"
-                  className="h-8 px-2 text-left font-normal whitespace-nowrap text-ink-2 tabular-nums"
-                >
-                  {r.label}
-                </th>
-                <td className="px-2">
-                  {bad ? (
-                    <CircleX className="size-4 text-danger" aria-label="Has problems" />
-                  ) : note ? (
-                    <AlertTriangle
-                      className="size-4 text-warn"
-                      aria-label={r.skipped ? 'Skipped' : 'Check this row'}
-                    />
-                  ) : (
-                    <CircleCheck className="size-4 text-ok" aria-label="Ready" />
-                  )}
-                </td>
-                {r.cells.map((c, i) => (
-                  <td key={i} className="max-w-48 truncate px-2 whitespace-nowrap">
-                    {c}
-                  </td>
-                ))}
-              </tr>
-              {messages.length > 0 && (
-                <tr className={cn(bad && 'bg-danger-tint')}>
-                  <td colSpan={width} className="px-2 pb-2">
-                    <ul className="flex flex-col gap-0.5 pl-6">
-                      {r.errors.map((m) => (
-                        <li key={m} className="text-danger">
-                          {m}
-                        </li>
-                      ))}
-                      {r.warnings.map((m) => (
-                        <li key={m} className="text-warn">
-                          {m}
-                        </li>
-                      ))}
-                    </ul>
-                  </td>
+      {step === 'preview' && (
+        <div className="flex flex-col gap-4">
+          <div className="max-h-[50dvh] overflow-auto rounded-card border border-line">
+            <table className="w-full border-collapse text-sm" aria-label="Rows to import">
+              <thead className="sticky top-0 bg-surface">
+                <tr className="border-b border-line text-left text-ink-2">
+                  <th scope="col" className="h-8 px-2 font-medium">
+                    Row
+                  </th>
+                  <th scope="col" className="h-8 px-2 font-medium">
+                    Result
+                  </th>
+                  {previewKeys.map((k) => (
+                    <th key={k} scope="col" className="h-8 px-2 font-medium whitespace-nowrap">
+                      {fieldLabel(k)}
+                    </th>
+                  ))}
+                  <th scope="col" className="h-8 px-2 font-medium">
+                    Notes
+                  </th>
                 </tr>
-              )}
-            </tbody>
-          );
-        })}
-        {rows.length === 0 && (
-          <tbody>
-            <tr>
-              <td colSpan={width} className="px-2 py-6 text-center text-ink-2">
-                No rows with problems.
-              </td>
-            </tr>
-          </tbody>
-        )}
-      </table>
-    </div>
+              </thead>
+              <tbody>
+                {results.map((r) => {
+                  const ok = !!r.record && r.errors.length === 0;
+                  const notes = [...r.errors, ...(r.warnings ?? [])];
+                  return (
+                    <tr key={r.line} className="border-b border-line align-top last:border-b-0">
+                      <td className="px-2 py-1.5 text-ink-2 tabular-nums">{r.line}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap">
+                        {ok ? (
+                          <span className="inline-flex items-center gap-1 text-ok">
+                            <CircleCheck className="size-3.5" aria-hidden />
+                            <span className="text-ink">Ready</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-danger">
+                            <CircleAlert className="size-3.5" aria-hidden />
+                            <span className="text-ink">Skipped</span>
+                          </span>
+                        )}
+                      </td>
+                      {previewKeys.map((k) => (
+                        <td key={k} className="max-w-48 truncate px-2 py-1.5">
+                          {r.row[k]}
+                        </td>
+                      ))}
+                      <td className="min-w-48 px-2 py-1.5">
+                        {notes.length > 0 && (
+                          <ul className="flex flex-col gap-0.5">
+                            {r.errors.map((e) => (
+                              <li key={e} className="text-danger">
+                                {e}
+                              </li>
+                            ))}
+                            {(r.warnings ?? []).map((w) => (
+                              <li key={w} className="flex items-start gap-1 text-ink-2">
+                                <TriangleAlert
+                                  className="mt-px size-3.5 shrink-0 text-warn"
+                                  aria-hidden
+                                />
+                                {w}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setStep('map')} disabled={busy}>
+              Back
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => void runImport()}
+              disabled={busy || ready.length === 0}
+            >
+              Import {ready.length} {ready.length === 1 ? noun[0] : noun[1]}
+            </Button>
+          </DialogFooter>
+        </div>
+      )}
+    </DialogContent>
   );
 }

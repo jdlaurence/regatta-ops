@@ -2,14 +2,15 @@
 // "final" banner (PLAN.md §4.1, §5.3). Pages render below it with their own PageHeader.
 
 import { Suspense } from 'react';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { Lock } from 'lucide-react';
 import type { Regatta } from '@srt/domain';
-import { useRecord } from '@/data';
+import { presencePageFromPath, useChangeToasts, usePresence, useRecord } from '@/data';
 import { cn } from '@/lib/cn';
 import { formatDayRange } from '@/lib/dates';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, PageSkeleton, Skeleton } from '@/components/states';
+import { PresenceAvatars } from '@/components/PresenceAvatars';
 import { REGATTA_TABS, regattaPath } from '../nav-items';
 import { useRegattaId } from '../params';
 import { InspectorToggle } from './InspectorPanel';
@@ -32,7 +33,10 @@ function RegattaHeader({ regatta }: { regatta: Regatta }) {
             {regatta.format === 'head' ? ' · Head race' : ''}
           </p>
         </div>
-        <InspectorToggle className="-mr-2 shrink-0" />
+        <div className="-mr-2 flex shrink-0 items-center gap-1">
+          <PresenceAvatars regattaId={regatta.id} />
+          <InspectorToggle />
+        </div>
       </div>
       <nav
         aria-label="Regatta sections"
@@ -72,9 +76,21 @@ function FinalBanner() {
   );
 }
 
+/** Presence heartbeats and "Updated by ..." toasts for the open regatta (PLAN.md §10.2, §10.3). */
+function useRegattaCollaboration(regattaId: string, exists: boolean) {
+  const where = presencePageFromPath(useLocation().pathname);
+  usePresence({
+    regattaId: exists ? regattaId : null,
+    page: where?.page ?? 'overview',
+    teamId: where?.teamId ?? null,
+  });
+  useChangeToasts(regattaId);
+}
+
 export function RegattaLayout() {
   const regattaId = useRegattaId();
   const regatta = useRecord('regattas', regattaId);
+  useRegattaCollaboration(regattaId, !!regatta.data);
 
   if (regatta.isPending) {
     return (
@@ -112,6 +128,7 @@ export function RegattaLayout() {
   return (
     <div className="flex flex-col gap-6">
       <RegattaHeader regatta={regatta.data} />
+      <PresenceAvatars regattaId={regatta.data.id} compact className="-my-3 self-end md:hidden" />
       {regatta.data.status === 'final' && <FinalBanner />}
       <Suspense fallback={<PageSkeleton />}>
         <Outlet />

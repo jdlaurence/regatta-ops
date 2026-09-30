@@ -23,6 +23,8 @@ export const Collections = {
 	LoadItems: "load_items",
 	LoadPlacements: "load_placements",
 	LoadPlans: "load_plans",
+	MailOutbox: "mail_outbox",
+	NotificationLog: "notification_log",
 	OarSets: "oar_sets",
 	Presence: "presence",
 	RegattaTeams: "regatta_teams",
@@ -131,6 +133,7 @@ export type ActivityLogRecord<Tdiff = unknown> = {
 	summary: string
 	target_id: string
 	target_type: string
+	team?: RecordIdString
 	updated: IsoAutoDateString
 }
 
@@ -220,6 +223,7 @@ export type CommentsRecord = {
 	body: string
 	created: IsoAutoDateString
 	id: string
+	mentions?: RecordIdString[]
 	target_id: string
 	target_type: CommentsTargetTypeOptions
 	updated: IsoAutoDateString
@@ -376,12 +380,14 @@ export type LoadItemsRecord = {
 	load_plan?: RecordIdString
 	loaded_at?: IsoDateString
 	loaded_by?: RecordIdString
+	loaded_by_name?: string
 	notes?: string
 	quantity?: number
 	ref_id?: string
 	regatta: RecordIdString
 	returned_at?: IsoDateString
 	returned_by?: RecordIdString
+	returned_by_name?: string
 	updated: IsoAutoDateString
 }
 
@@ -414,6 +420,38 @@ export type LoadPlansRecord<Trules = unknown> = {
 	status: LoadPlansStatusOptions
 	trailer: RecordIdString
 	updated: IsoAutoDateString
+}
+
+export type MailOutboxRecord<Tto = unknown> = {
+	created: IsoAutoDateString
+	html?: string
+	id: string
+	kind?: string
+	subject?: string
+	text?: string
+	to?: null | Tto
+	updated: IsoAutoDateString
+}
+
+export const NotificationLogKindOptions = {
+	"entry_change": "entry_change",
+	"digest": "digest",
+} as const
+export type NotificationLogKindOptions = typeof NotificationLogKindOptions[keyof typeof NotificationLogKindOptions]
+export type NotificationLogRecord<Tpending = unknown> = {
+	created: IsoAutoDateString
+	due_at?: IsoDateString
+	id: string
+	key: string
+	kind: NotificationLogKindOptions
+	last_sent_at?: IsoDateString
+	pending?: null | Tpending
+	regatta?: RecordIdString
+	target_id?: string
+	team?: RecordIdString
+	title?: string
+	updated: IsoAutoDateString
+	user?: RecordIdString
 }
 
 export const OarSetsTypeOptions = {
@@ -508,6 +546,7 @@ export type RegattasRecord<Tsettings = unknown> = {
 export type ShareLinksRecord = {
 	can_check_load?: boolean
 	created: IsoAutoDateString
+	created_by?: RecordIdString
 	id: string
 	regatta: RecordIdString
 	revoked_at?: IsoDateString
@@ -783,6 +822,8 @@ export type GearItemsResponse<Texpand = unknown> = Required<GearItemsRecord> & B
 export type LoadItemsResponse<Texpand = unknown> = Required<LoadItemsRecord> & BaseSystemFields<Texpand>
 export type LoadPlacementsResponse<Treasons = unknown, Texpand = unknown> = Required<LoadPlacementsRecord<Treasons>> & BaseSystemFields<Texpand>
 export type LoadPlansResponse<Trules = unknown, Texpand = unknown> = Required<LoadPlansRecord<Trules>> & BaseSystemFields<Texpand>
+export type MailOutboxResponse<Tto = unknown, Texpand = unknown> = Required<MailOutboxRecord<Tto>> & BaseSystemFields<Texpand>
+export type NotificationLogResponse<Tpending = unknown, Texpand = unknown> = Required<NotificationLogRecord<Tpending>> & BaseSystemFields<Texpand>
 export type OarSetsResponse<Texpand = unknown> = Required<OarSetsRecord> & BaseSystemFields<Texpand>
 export type PresenceResponse<Texpand = unknown> = Required<PresenceRecord> & BaseSystemFields<Texpand>
 export type RegattaTeamsResponse<Tpublished_snapshot = unknown, Texpand = unknown> = Required<RegattaTeamsRecord<Tpublished_snapshot>> & BaseSystemFields<Texpand>
@@ -815,6 +856,8 @@ export type CollectionRecords = {
 	load_items: LoadItemsRecord
 	load_placements: LoadPlacementsRecord
 	load_plans: LoadPlansRecord
+	mail_outbox: MailOutboxRecord
+	notification_log: NotificationLogRecord
 	oar_sets: OarSetsRecord
 	presence: PresenceRecord
 	regatta_teams: RegattaTeamsRecord
@@ -846,6 +889,8 @@ export type CollectionResponses = {
 	load_items: LoadItemsResponse
 	load_placements: LoadPlacementsResponse
 	load_plans: LoadPlansResponse
+	mail_outbox: MailOutboxResponse
+	notification_log: NotificationLogResponse
 	oar_sets: OarSetsResponse
 	presence: PresenceResponse
 	regatta_teams: RegattaTeamsResponse

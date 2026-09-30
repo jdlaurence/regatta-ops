@@ -13,12 +13,7 @@ import {
   type AthleteSide,
   type Program,
 } from '@srt/domain';
-import {
-  guessColumns,
-  type CsvField,
-  type CsvMapping,
-  type CsvTable,
-} from '@/components/CsvImport';
+import { guessMapping, type CsvField, type CsvMapping } from '@/components/CsvImport';
 
 export type WeightUnit = 'kg' | 'lb';
 export type AthleteInput = Omit<Athlete, 'id' | 'created' | 'updated'>;
@@ -222,49 +217,45 @@ export type RosterField =
   | 'status'
   | 'notes';
 
-export const ROSTER_FIELDS: readonly CsvField<RosterField>[] = [
-  { key: 'firstName', label: 'First name', aliases: ['first', 'firstname', 'given name', 'given'] },
-  { key: 'lastName', label: 'Last name', aliases: ['last', 'lastname', 'surname', 'family name'] },
+export const ROSTER_FIELDS: readonly (CsvField & { key: RosterField })[] = [
+  { key: 'firstName', label: 'First name', aliases: ['first', 'given name', 'given'] },
+  { key: 'lastName', label: 'Last name', aliases: ['last', 'surname', 'family name'] },
   {
     key: 'fullName',
     label: 'Full name',
-    aliases: ['name', 'athlete', 'athlete name', 'rower', 'rower name', 'student'],
+    aliases: ['name', 'athlete', 'athlete name', 'rower', 'rower name'],
   },
   {
     key: 'preferredName',
     label: 'Preferred name',
-    aliases: ['preferred', 'preferred first name', 'nickname', 'goes by'],
+    aliases: ['preferred first name', 'preferred', 'nickname', 'goes by'],
   },
   {
     key: 'side',
     label: 'Side',
-    aliases: ['sweep side', 'p/s', 'port/starboard', 'port or starboard', 'rowing side'],
+    aliases: ['sweep side', 'p/s', 'port/starboard', 'rowing side'],
   },
-  {
-    key: 'canScull',
-    label: 'Can scull',
-    aliases: ['scull', 'sculls', 'sculler', 'sculling'],
-  },
-  { key: 'canCox', label: 'Can cox', aliases: ['cox', 'coxswain', 'coxes', 'coxswains'] },
+  { key: 'canScull', label: 'Can scull', aliases: ['scull', 'sculls', 'sculler', 'sculling'] },
+  { key: 'canCox', label: 'Can cox', aliases: ['cox', 'coxswain', 'coxes'] },
   {
     key: 'weight',
     label: 'Weight',
-    aliases: ['wt', 'weight lb', 'weight lbs', 'weight kg', 'lbs', 'lb', 'kg', 'body weight'],
+    aliases: ['weight lb', 'weight lbs', 'weight kg', 'wt', 'lbs', 'lb', 'kg', 'body weight'],
   },
   {
     key: 'birthYear',
     label: 'Birth year',
-    aliases: ['year of birth', 'yob', 'born', 'birth yr', 'birthyear', 'birth year yyyy'],
+    aliases: ['year of birth', 'yob', 'born', 'birth yr'],
   },
   {
     key: 'birthdate',
     label: 'Birthdate',
-    aliases: ['birthday', 'date of birth', 'dob', 'birth date'],
+    aliases: ['birthday', 'date of birth', 'dob'],
   },
   {
     key: 'gradYear',
     label: 'Graduation year',
-    aliases: ['grad year', 'grad', 'class of', 'class', 'graduation', 'hs grad year', 'grad yr'],
+    aliases: ['grad year', 'grad yr', 'class of', 'class', 'hs grad year'],
   },
   { key: 'gender', label: 'Gender', aliases: ['sex', 'm/f'] },
   { key: 'level', label: 'Level', aliases: ['experience', 'novice/varsity', 'squad'] },
@@ -272,18 +263,18 @@ export const ROSTER_FIELDS: readonly CsvField<RosterField>[] = [
   { key: 'notes', label: 'Notes', aliases: ['note', 'comments', 'comment'] },
 ];
 
-/** Guess the roster field of each column from its header. */
-export function guessRosterMapping(headers: readonly string[]): CsvMapping<RosterField> {
-  return guessColumns(headers, ROSTER_FIELDS);
+/** Guess which column holds each roster field, from the headers. */
+export function guessRosterMapping(headers: readonly string[]): CsvMapping {
+  return guessMapping(headers, ROSTER_FIELDS);
 }
 
 /** "Weight (kg)" → kg; "Weight (lbs)" → lb; otherwise null (ask the coach). */
 export function guessWeightUnit(
   headers: readonly string[],
-  mapping: CsvMapping<RosterField>,
+  mapping: CsvMapping,
 ): WeightUnit | null {
-  const i = mapping.indexOf('weight');
-  if (i < 0) return null;
+  const i = mapping.weight;
+  if (i == null) return null;
   const h = (headers[i] ?? '').toLowerCase();
   if (/\bkg|kilo/.test(h)) return 'kg';
   if (/\blb|pound|#/.test(h)) return 'lb';
@@ -291,8 +282,8 @@ export function guessWeightUnit(
 }
 
 /** Why the mapping cannot import names yet, or null. */
-export function checkRosterMapping(mapping: CsvMapping<RosterField>): string | null {
-  if (mapping.includes('firstName') || mapping.includes('fullName')) return null;
+export function checkRosterMapping(mapping: CsvMapping): string | null {
+  if (mapping.firstName != null || mapping.fullName != null) return null;
   return 'Choose the column that holds first names, or one that holds full names.';
 }
 
@@ -404,32 +395,35 @@ export interface RosterImportOptions {
 }
 
 export interface RosterImportRow {
-  /** Data row number, from 1. */
-  row: number;
+  /** The row's line in the file; the header is line 1. */
+  line: number;
   values: Partial<Record<RosterField, string>>;
   athlete: AthleteInput | null;
   errors: string[];
   warnings: string[];
   /** Same name as someone on the roster, or as an earlier row of the file. */
   duplicateOf: 'roster' | 'file' | null;
-  /** Left out: already on the roster and `skipDuplicates` is on. */
+  /** Left out (an error): already on the roster and `skipDuplicates` is on. */
   skipped: boolean;
 }
 
-/** Parse and validate each data row into an athlete ready to create. */
+/**
+ * Parse and validate each mapped row (field key → cell text, as `mapRow` makes them) into an
+ * athlete ready to create.
+ */
 export function buildRosterImport(
-  table: CsvTable,
-  mapping: CsvMapping<RosterField>,
+  rows: readonly Partial<Record<string, string>>[],
   opts: RosterImportOptions,
 ): RosterImportRow[] {
   const existing = new Map(opts.existing.map((a) => [personKey(a.firstName, a.lastName), a]));
   const seen = new Map<string, number>();
-  return table.rows.map((cells, index) => {
-    const row = index + 1;
+  return rows.map((raw, index) => {
+    const line = index + 2;
     const values: Partial<Record<RosterField, string>> = {};
-    mapping.forEach((field, i) => {
-      if (field) values[field] = (cells[i] ?? '').trim();
-    });
+    for (const f of ROSTER_FIELDS) {
+      const v = raw[f.key]?.trim();
+      if (v) values[f.key] = v;
+    }
     const errors: string[] = [];
     const warnings: string[] = [];
     const take = <T>(p: Parsed<T>, fallback: T): T => {
@@ -449,14 +443,10 @@ export function buildRosterImport(
     }
 
     const side = take(parseSide(values.side ?? ''), { side: 'none' as AthleteSide });
-    const canScull =
-      values.canScull !== undefined && values.canScull !== ''
-        ? take(parseYesNo(values.canScull, 'Can scull'), false)
-        : !!side.scull;
-    const canCox =
-      values.canCox !== undefined && values.canCox !== ''
-        ? take(parseYesNo(values.canCox, 'Can cox'), false)
-        : !!side.cox;
+    const canScull = values.canScull
+      ? take(parseYesNo(values.canScull, 'Can scull'), false)
+      : !!side.scull;
+    const canCox = values.canCox ? take(parseYesNo(values.canCox, 'Can cox'), false) : !!side.cox;
     const weight = parseWeight(values.weight ?? '', opts.weightUnit);
     if (weight.error !== undefined) errors.push(weight.error);
 
@@ -501,11 +491,7 @@ export function buildRosterImport(
       ...(values.notes ? { notes: values.notes } : {}),
     };
     if (!input.firstName) {
-      errors.unshift(
-        values.fullName !== undefined || values.firstName !== undefined
-          ? 'The name is blank'
-          : 'No first name',
-      );
+      errors.unshift('The name is blank');
     } else {
       const parsed = athleteInputSchema.safeParse(input);
       if (!parsed.success) {
@@ -522,21 +508,18 @@ export function buildRosterImport(
       const earlier = seen.get(key);
       if (onRoster) {
         duplicateOf = 'roster';
-        warnings.push(
-          opts.skipDuplicates
-            ? 'Already on this roster; skipped'
-            : 'Someone with this name is already on this roster',
-        );
+        if (opts.skipDuplicates) errors.push('Already on this roster');
+        else warnings.push('Someone with this name is already on this roster');
       } else if (earlier !== undefined) {
         duplicateOf = 'file';
         warnings.push(`Same name as row ${earlier}`);
       } else {
-        seen.set(key, row);
+        seen.set(key, line);
       }
     }
 
     return {
-      row,
+      line,
       values,
       athlete: errors.length === 0 ? input : null,
       errors,
@@ -586,4 +569,13 @@ export function rosterToCsv(athletes: readonly Athlete[], unit: WeightUnit): str
     a.notes ?? '',
   ]);
   return toCsv(header, rows);
+}
+
+/** A file-name-safe slug: "Junior boys" → "junior-boys". */
+export function fileSlug(text: string): string {
+  return (
+    fold(text)
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'export'
+  );
 }

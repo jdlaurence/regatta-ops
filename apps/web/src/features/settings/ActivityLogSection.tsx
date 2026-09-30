@@ -4,9 +4,10 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { History, Search } from 'lucide-react';
-import type { ActivityEntry } from '@srt/domain';
-import { useList } from '@/data';
+import type { ActivityEntry, CollectionName } from '@srt/domain';
+import { targetCollection, useList, useNow } from '@/data';
 import { Avatar } from '@/app/shell/UserMenu';
+import { activityLink } from '@/components/ActivityFeed';
 import { EmptyState, ErrorState, SkeletonRows } from '@/components/states';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,37 +21,33 @@ export const ACTIVITY_PAGE_SIZE = 50;
 const ALL = 'all';
 const CLUB_WIDE = 'none';
 
-/**
- * Kinds of record. The server's hook writes collection names ("entries"); the demo store
- * writes singular ones ("entry"); both map to one kind.
- */
-const KINDS: Record<string, { key: string; label: string }> = {};
-function kind(key: string, label: string, ...aliases: string[]) {
-  for (const k of [key, ...aliases]) KINDS[k] = { key, label };
-}
-kind('entries', 'Entries', 'entry');
-kind('entry_seats', 'Seats', 'entry_seat');
-kind('events', 'Events and schedule', 'event');
-kind('availability', 'Availability');
-kind('regattas', 'Regattas', 'regatta');
-kind('regatta_teams', 'Published lineups', 'regatta_team');
-kind('load_plans', 'Load plans', 'load_plan');
-kind('load_placements', 'Trailer placements', 'load_placement');
-kind('load_items', 'Load list', 'load_item');
-kind('shells', 'Shells', 'shell');
-kind('oar_sets', 'Oar sets', 'oar_set');
-kind('gear_items', 'Gear', 'gear_item');
-kind('athletes', 'Athletes', 'athlete');
-kind('teams', 'Teams', 'team');
-kind('trailers', 'Trailers', 'trailer');
-kind('users', 'Users', 'user');
-kind('comments', 'Comments', 'comment');
+/** What the kind filter calls each logged collection. */
+const KIND_LABELS: Partial<Record<CollectionName, string>> = {
+  entries: 'Entries',
+  entry_seats: 'Seats',
+  events: 'Events and schedule',
+  availability: 'Availability',
+  regattas: 'Regattas',
+  regatta_teams: 'Published lineups',
+  load_plans: 'Load plans',
+  load_placements: 'Trailer placements',
+  load_items: 'Load list',
+  shells: 'Shells',
+  oar_sets: 'Oar sets',
+  gear_items: 'Gear',
+  athletes: 'Athletes',
+  teams: 'Teams',
+  trailers: 'Trailers',
+  users: 'Users',
+  comments: 'Comments',
+};
 
+/** The kind of record a log line is about ("entry" and "entries" are one kind). */
 export function kindOf(targetType: string): { key: string; label: string } {
-  const known = KINDS[targetType];
-  if (known) return known;
-  const words = targetType.replace(/_/g, ' ');
-  return { key: targetType, label: words.charAt(0).toUpperCase() + words.slice(1) };
+  const collection = targetCollection(targetType);
+  const key = collection ?? targetType;
+  const label = (collection && KIND_LABELS[collection]) || key.replace(/_/g, ' ');
+  return { key, label: label.charAt(0).toUpperCase() + label.slice(1) };
 }
 
 interface Filters {
@@ -122,7 +119,7 @@ export function ActivityLogSection() {
   const shown = filtered.slice(0, limit);
   const filtering = JSON.stringify(filters) !== JSON.stringify(EMPTY);
   const error = log.error ?? users.error ?? regattas.error;
-  const now = new Date();
+  const now = useNow(30_000);
   const dayFmt = new Intl.DateTimeFormat('en-US', {
     timeZone: settings.timezone,
     weekday: 'short',
@@ -293,6 +290,8 @@ function ActivityRow({
   when: string;
   stamp: string;
 }) {
+  // Links that need no per-regatta lookups: schedule, availability, fleet, trailer, regatta.
+  const link = activityLink(entry);
   return (
     <li className="flex flex-col">
       {heading && (
@@ -318,9 +317,20 @@ function ActivityRow({
             {regatta && <span aria-hidden>·</span>}
             <span>{kindOf(entry.targetType).label}</span>
             <span aria-hidden>·</span>
-            <time dateTime={entry.created} title={stamp}>
+            <time dateTime={entry.created} title={stamp} className="tabular-nums">
               {when}
             </time>
+            {link && (
+              <>
+                <span aria-hidden>·</span>
+                <Link
+                  to={link.href}
+                  className="rounded-control text-accent underline-offset-4 hover:underline"
+                >
+                  {link.label}
+                </Link>
+              </>
+            )}
           </p>
         </div>
       </div>
