@@ -56,7 +56,7 @@ describe('loadStatus', () => {
     const s = loadStatus(entries, plans, placements);
     expect(s).toEqual({ state: 'draft', placed: 2, needed: 3 });
     expect(loadStatusText(s)).toBe('Draft · 2 of 3 placed');
-    expect(loadStatusText(loadStatus(entries, [], []))).toBe('No load plan');
+    expect(loadStatusText(loadStatus(entries, [], []))).toBe('Nothing loaded yet');
     expect(
       loadStatusText(loadStatus(entries, [{ id: 'planb', status: 'final' }], placements)),
     ).toBe('Final · 1 of 3 placed');
@@ -75,7 +75,7 @@ describe('RegattaOverviewPage', () => {
     // Two empty seats (a warning) and notes, among them the borrowed athlete.
     expect(within(boys).getByText('1 warning')).toBeInTheDocument();
     expect(within(boys).getByText(/^\d+ notes?$/)).toBeInTheDocument();
-    expect(within(boys).getByText('No load plan')).toBeInTheDocument();
+    expect(within(boys).getByText('Nothing loaded yet')).toBeInTheDocument();
     // A team with entries cannot be removed.
     expect(within(boys).queryByRole('button', { name: /remove/i })).toBeNull();
 

@@ -43,9 +43,9 @@ export function loadStatus(
   return { state, placed, needed: shells.size };
 }
 
-/** "Draft · 18 of 22 placed", "Final · 22 of 22 placed", "No load plan". */
+/** "Draft · 18 of 22 placed", "Final · 22 of 22 placed", "Nothing loaded yet". */
 export function loadStatusText(s: LoadStatus): string {
-  if (s.state === 'none') return 'No load plan';
+  if (s.state === 'none') return 'Nothing loaded yet';
   const word = s.state === 'final' ? 'Final' : 'Draft';
   return s.needed === 0 ? word : `${word} · ${s.placed} of ${s.needed} placed`;
 }

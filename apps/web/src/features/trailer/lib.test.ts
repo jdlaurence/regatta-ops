@@ -150,8 +150,8 @@ describe('drops and locks', () => {
     const unlocked = unlockPlacement(again);
     expect(unlocked).toEqual({ locked: false, reasons: p.reasons });
     // "Why here?" ends the name's initial with one period, not two.
-    expect(lockNote(lockedBy(locked)!)).toBe('Locked by Sam W. Pack trailer keeps it here.');
-    expect(lockNote('Locked by Sam')).toBe('Locked by Sam. Pack trailer keeps it here.');
+    expect(lockNote(lockedBy(locked)!)).toBe('Locked by Sam W. Auto pack keeps it here.');
+    expect(lockNote('Locked by Sam')).toBe('Locked by Sam. Auto pack keeps it here.');
     expect(lockedBy(unlocked)).toBeNull();
   });
 

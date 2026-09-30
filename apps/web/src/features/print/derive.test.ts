@@ -8,6 +8,8 @@ import {
   lineupGrids,
   lineupSheetPages,
   lineupsFor,
+  listScheduleDays,
+  listScheduleRows,
   loadSheet,
   masterScheduleRows,
   regattaDays,
@@ -15,8 +17,10 @@ import {
   teamLineups,
   unboatedFor,
   type GridContext,
+  type ListScheduleRow,
   type ScheduleRow,
 } from './derive';
+import { NO_FILTERS } from '@/features/schedule/lib';
 import { oarText, paperSeatOrder, shortName } from './format';
 import { loadWorkingSet, seedStore } from './test-helpers';
 
@@ -251,6 +255,80 @@ describe('day and master schedules', () => {
     expect(rows.map((r) => r.source)).toContain('published');
     const times = rows.map((r) => r.entry.scheduledAt!);
     expect([...times].sort()).toEqual(times);
+  });
+});
+
+describe('schedule list', () => {
+  function listText(rows: ListScheduleRow[]): string[] {
+    return rows.map((r) =>
+      r.kind === 'logistics'
+        ? `L:${r.event.name}`
+        : `R:${r.event.eventNumber} ${r.entries.map((e) => `${e.team?.shortName} ${e.label}${e.scratched ? ' (scratched)' : ''}`).join(', ')}`.trim(),
+    );
+  }
+
+  async function listWorld() {
+    const store = fixtureStore();
+    await store.create('entries', {
+      regattaId: IDS.regatta,
+      eventId: IDS.event2,
+      teamId: IDS.girls,
+      label: 'V8',
+      boatClass: '8+',
+      shellId: IDS.shell2,
+      status: 'planned',
+    });
+    await store.create('entries', {
+      regattaId: IDS.regatta,
+      eventId: IDS.event2,
+      teamId: IDS.boys,
+      label: 'V8',
+      boatClass: '8+',
+      status: 'scratched',
+    });
+    await store.create('events', {
+      regattaId: IDS.regatta,
+      kind: 'logistics',
+      name: 'Girls bus',
+      day: '2026-11-01',
+      teamFilter: [IDS.girls],
+      sortOrder: 3,
+    });
+    return loadWorkingSet(store, IDS.regatta);
+  }
+
+  it('prints the schedule page list under its filters, with live lineups', async () => {
+    const ws = await listWorld();
+    const lineups = lineupsFor(ws, null, 'live');
+    const day = '2026-11-01';
+    const all = listScheduleRows(ws, lineups, day, NO_FILTERS);
+    expect(listText(all)).toEqual([
+      'R:12 Boys V4+',
+      'R:14 Boys V8 (scratched), Girls V8',
+      'L:Girls bus',
+    ]);
+    // Each entry carries its live lineup with names; a scratched one has none.
+    const [first, second] = all as [
+      ListScheduleRow & { kind: 'race' },
+      ListScheduleRow & { kind: 'race' },
+    ];
+    expect(first.entries[0]!.lineup?.shellName).toBe('Spencer');
+    expect(first.entries[0]!.lineup?.seats.find((s) => s.seat === '1')?.athleteName).toBeTruthy();
+    expect(second.entries[0]!.lineup).toBeNull();
+    expect(second.entries[1]!.lineup?.shellName).toBe('Monahan');
+
+    const girls = { ...NO_FILTERS, teamId: IDS.girls };
+    expect(listText(listScheduleRows(ws, lineups, day, girls))).toEqual([
+      'R:14 Girls V8',
+      'L:Girls bus',
+    ]);
+    const fours = { ...NO_FILTERS, boatClass: '4+' as const };
+    expect(listText(listScheduleRows(ws, lineups, day, fours))).toEqual(['R:12 Boys V4+']);
+    const monahan = { ...NO_FILTERS, shellId: IDS.shell2 };
+    expect(listText(listScheduleRows(ws, lineups, day, monahan))).toEqual(['R:14 Girls V8']);
+
+    expect(listScheduleDays(ws, NO_FILTERS)).toEqual([day]);
+    expect(listScheduleDays(ws, { ...NO_FILTERS, boatClass: '1x' })).toEqual([]);
   });
 });
 

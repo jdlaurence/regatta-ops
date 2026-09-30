@@ -39,6 +39,7 @@ import {
 } from '@srt/domain';
 import type { RegattaWorkingSet } from '@/data';
 import { defaultHomes, homeKey, zoneOfContainer } from '@/features/load-list/lib';
+import { scheduleItems, type ScheduleFilters } from '@/features/schedule/lib';
 import { publishState } from '@/components/PublishStatus';
 import { STAGE_ORDER, dayTimeText } from './format';
 
@@ -388,6 +389,69 @@ export function masterScheduleRows(
   day: string,
 ): RaceRow[] {
   return raceRows(ws, lineups, day);
+}
+
+// ---------------------------------------------------------------------------
+// The schedule list, as the schedule page shows it
+
+export interface ListEntryRow {
+  entryId: Id;
+  team: Team | null;
+  label: string;
+  scratched: boolean;
+  /** The entry's live lineup with names; null when scratched (nothing to print). */
+  lineup: PublishedEntry | null;
+}
+
+export interface ListRaceRow {
+  kind: 'race';
+  event: RegattaEvent;
+  entries: ListEntryRow[];
+}
+
+export type ListScheduleRow = ListRaceRow | LogisticsRow;
+
+/**
+ * One day of the schedule page's list view (PLAN.md §6.3) as it prints: the same races,
+ * logistics lines, and entries under the same filters (`scheduleItems`), each entry with its
+ * lineup from `lineups` (the live draft, as on screen).
+ */
+export function listScheduleRows(
+  ws: RegattaWorkingSet,
+  lineups: readonly TeamLineups[],
+  day: string,
+  filters: ScheduleFilters,
+): ListScheduleRow[] {
+  const byEntry = new Map<Id, PublishedEntry>();
+  for (const tl of lineups) for (const e of tl.entries) byEntry.set(e.entryId, e);
+  return scheduleItems(ws.events, ws.entries, day, filters, ws.byId.teams).map(
+    (item): ListScheduleRow => {
+      if (item.kind === 'logistics') {
+        const teams = (item.event.teamFilter ?? [])
+          .map((id) => ws.byId.teams.get(id))
+          .filter((t): t is Team => !!t);
+        return { kind: 'logistics', event: item.event, teams };
+      }
+      return {
+        kind: 'race',
+        event: item.event,
+        entries: item.entries.map((e) => ({
+          entryId: e.id,
+          team: ws.byId.teams.get(e.teamId) ?? null,
+          label: e.label,
+          scratched: e.status === 'scratched',
+          lineup: e.status === 'scratched' ? null : (byEntry.get(e.id) ?? null),
+        })),
+      };
+    },
+  );
+}
+
+/** The regatta's days that have anything on the schedule list under these filters. */
+export function listScheduleDays(ws: RegattaWorkingSet, filters: ScheduleFilters): string[] {
+  return regattaDays(ws).filter(
+    (d) => scheduleItems(ws.events, ws.entries, d, filters, ws.byId.teams).length > 0,
+  );
 }
 
 /** Days that have anything to print for these lineups (races, or logistics when asked). */

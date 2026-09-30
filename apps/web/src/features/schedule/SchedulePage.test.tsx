@@ -191,6 +191,19 @@ describe('SchedulePage list', () => {
     expect(await timeOf(store, IDS.event1)).toBe('9:40');
   });
 
+  it('prints what is on screen: the day, the filters, and the entries switch', async () => {
+    const user = userEvent.setup();
+    renderSchedule(world(), `?team=${IDS.girls}&class=4%2B`);
+    await screen.findByRole('list', { name: 'Races and logistics' });
+    const print = () => screen.getByRole('link', { name: 'Print' });
+    expect(print()).toHaveAttribute(
+      'href',
+      `/print/regattas/${IDS.regatta}/schedule?view=list&day=2026-11-01&team=${IDS.girls}&class=4%2B`,
+    );
+    await user.click(screen.getByRole('switch', { name: 'Show entries' }));
+    await waitFor(() => expect(print().getAttribute('href')).toMatch(/&entries=hide$/));
+  });
+
   it('filters by team and clears the filters', async () => {
     const user = userEvent.setup();
     renderSchedule(world(), `?team=${IDS.girls}`);

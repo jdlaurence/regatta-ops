@@ -15,7 +15,7 @@ export function PageHeader({
   title: ReactNode;
   /** A short line under the title: dates, venue, counts. */
   description?: ReactNode;
-  /** Buttons that say what they do: "Add entry", "Pack trailer". */
+  /** Buttons that say what they do: "Add entry", "Auto pack trailer". */
   actions?: ReactNode;
   /** Extra rows under the header (filters, toolbars). */
   children?: ReactNode;

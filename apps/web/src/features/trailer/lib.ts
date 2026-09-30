@@ -186,7 +186,8 @@ export function trailerCapacity(def: TrailerDef, rules: readonly Rule[]): number
 }
 
 /**
- * Where each boat still to load should go, for "Pack trailer" and "Pack both trailers". A team
+ * Where each boat still to load should go, for "Auto pack trailer" and "Auto pack both
+ * trailers". A team
  * whose name shares a word with a trailer's goes on that trailer (Junior boys → Boys trailer);
  * every other team, whole, goes on the trailer with the most room left, counting boats already
  * placed and boats sent there so far. Deterministic: teams in the order given.
@@ -233,7 +234,7 @@ export function assignTrailers(
   return out;
 }
 
-/** The boats "Pack trailer" works on: those on the trailer, plus those headed for it. */
+/** The boats "Auto pack trailer" works on: those on the trailer, plus those headed for it. */
 export function boatsForPack(model: TrailerPageModel, tm: TrailerModel): PackBoat[] {
   const headed = model.toLoad.filter((b) => model.assignment.get(b.shellId) === tm.trailer.id);
   return [...tm.boats, ...headed];
@@ -257,11 +258,11 @@ export function lockedBy(p: Pick<Placement, 'locked' | 'reasons'>): string | nul
 }
 
 /**
- * The lock line in "Why here?": "Locked by Sam W. Pack trailer keeps it here." One period
+ * The lock line in "Why here?": "Locked by Sam W. Auto pack keeps it here." One period
  * even when the name ends with an initial's.
  */
 export function lockNote(lock: string): string {
-  return `${lock.endsWith('.') ? lock : `${lock}.`} Pack trailer keeps it here.`;
+  return `${lock.endsWith('.') ? lock : `${lock}.`} Auto pack keeps it here.`;
 }
 
 function withoutLockReason(reasons: readonly Reason[]): Reason[] {
@@ -472,7 +473,7 @@ export function packOne(model: TrailerPageModel, tm: TrailerModel): PackResult {
 }
 
 /**
- * "Pack both trailers": pack each trailer with its boats and the boats headed for it, then put
+ * "Auto pack both trailers": pack each trailer with its boats and the boats headed for it, then put
  * whatever did not fit into free space on another trailer without disturbing it. Boats already
  * on a trailer stay on that trailer (drag one across to change that).
  */

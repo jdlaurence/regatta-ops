@@ -1,13 +1,16 @@
 // /regattas/:id/trailer and /regattas/:id/trailer/:trailerId (PLAN.md §4.9, §4.10, §6.6): the
 // regatta's load plan on each trailer. Left, the boats still to load; center, the end view (or
-// the plan view) with drag and drop, the metrics under it; right, the loading rules. "Pack
-// trailer" runs the packer and the chips glide to their new spots, the app's one orchestrated
-// motion (§5.2). Selecting a boat shows "Why here?" in the inspector (a bottom sheet on phones).
+// the plan view) with drag and drop, the metrics under it; right, the loading rules. "Auto
+// pack trailer" runs the packer and the chips glide to their new spots, the app's one
+// orchestrated motion (§5.2). Selecting a boat shows "Why here?" in the inspector (a bottom
+// sheet on phones). There is no step to start a load plan: the first change to a trailer (a
+// pack, a boat placed, a rule, the status) creates its plan.
 //
 // Choices (see the WP-M report): a manual move locks the boat ("Locked by Sam"); a drop that
 // breaks a hard rule is refused unless Alt (Option) is held, and then it is kept, locked, and
-// flagged. "Pack both trailers" packs each trailer with its boats plus the boats headed for it
-// (team to trailer by name, others where there is room), then fits overflow onto the other.
+// flagged. "Auto pack both trailers" packs each trailer with its boats plus the boats headed
+// for it (team to trailer by name, others where there is room), then fits overflow onto the
+// other.
 
 import {
   useCallback,
@@ -80,6 +83,7 @@ import {
 import { useConfirmFinalEdit } from '@/features/regattas/useConfirmFinalEdit';
 import {
   bestSpot,
+  boatsForPack,
   buildTrailerPageModel,
   checkDrop,
   dropWrites,
@@ -172,7 +176,7 @@ function TrailerTab({
       <Truck aria-hidden className="hidden size-4 shrink-0 sm:block" />
       <span className="min-w-0 truncate">{tm.trailer.name}</span>
       <span className="shrink-0 text-sm font-normal text-ink-2 tabular-nums">
-        {tm.plan ? `${n} ${n === 1 ? 'boat' : 'boats'}` : 'No plan'}
+        {n} {n === 1 ? 'boat' : 'boats'}
       </span>
     </Link>
   );
@@ -361,6 +365,12 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
     Math.max(1, ...(tm?.def.shelves.map((s) => s.tier) ?? [1])),
   );
   const [confirmPack, setConfirmPack] = useState<'one' | 'all' | null>(null);
+  // Auto pack with nothing to pack: no boats at the regatta, or none for this trailer. The
+  // reason outlives `open` so the dialog does not change while it closes.
+  const [nothingToPack, setNothingToPack] = useState<{
+    open: boolean;
+    reason: 'no-boats' | 'elsewhere';
+  }>({ open: false, reason: 'no-boats' });
   const [commentsOpen, setCommentsOpen] = useState(false);
 
   const pageRef = useRef<HTMLDivElement>(null);
@@ -515,7 +525,16 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
   };
 
   const askPack = (which: 'one' | 'all') => {
-    const plans = which === 'one' ? [tm?.plan] : model.trailers.map((t) => t.plan);
+    if (!tm) return;
+    if (model.boats.length === 0) {
+      setNothingToPack({ open: true, reason: 'no-boats' });
+      return;
+    }
+    if (which === 'one' && boatsForPack(model, tm).length === 0) {
+      setNothingToPack({ open: true, reason: 'elsewhere' });
+      return;
+    }
+    const plans = which === 'one' ? [tm.plan] : model.trailers.map((t) => t.plan);
     if (plans.some((p) => p?.status === 'final')) setConfirmPack(which);
     else runPack(which);
   };
@@ -677,7 +696,6 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
     );
   }
 
-  const noPlans = model.trailers.every((t) => !t.plan);
   const plan = tm.plan;
   const placed = tm.records.length;
   const packedText = plan?.packedAt
@@ -688,9 +706,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
         hour: 'numeric',
         minute: '2-digit',
       }).format(new Date(plan.packedAt))}`
-    : plan
-      ? 'Not packed yet'
-      : 'No load plan yet';
+    : 'Not packed yet';
   const otherTrailers = model.trailers.filter((t) => t !== tm);
   const dragBoat = drag ? model.boatById.get(drag.shellId) : undefined;
   const dragView = dragBoat ? viewBoats.find((b) => b.shellId === dragBoat.shellId) : undefined;
@@ -817,12 +833,12 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
                 onClick={() => askPack('one')}
               >
                 <PackageCheck aria-hidden />
-                Pack trailer
+                Auto pack trailer
               </Button>
               {model.trailers.length > 1 && (
                 <Button disabled={!canEdit || writes.packing} onClick={() => askPack('all')}>
                   <Boxes aria-hidden />
-                  Pack both trailers
+                  Auto pack both trailers
                 </Button>
               )}
               <Button asChild variant="ghost">
@@ -848,31 +864,6 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
               />
             ))}
           </nav>
-        )}
-
-        {noPlans && (
-          <EmptyState
-            icon={<Truck />}
-            title="No load plans yet"
-            description="Start a load plan for each trailer going to this regatta. It starts from the trailer's own loading rules; then pack the trailer or drag boats onto it."
-            action={
-              canEdit
-                ? model.trailers.map((t) => (
-                    <Button
-                      key={t.trailer.id}
-                      variant={t === tm ? 'primary' : 'secondary'}
-                      disabled={writes.starting}
-                      onClick={() => {
-                        writes.startPlan({ id: newId(), ...newPlanData(regattaId, t.trailer) });
-                        navigate(regattaPath(regattaId, `trailer/${t.trailer.id}`));
-                      }}
-                    >
-                      Start a load plan for the {t.trailer.name}
-                    </Button>
-                  ))
-                : undefined
-            }
-          />
         )}
 
         <div className="@container">
@@ -907,48 +898,27 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
                     { value: 'iso', label: 'Isometric' },
                   ]}
                 />
-                {plan && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-ink-2" id="plan-status-label">
-                      Load plan
-                    </span>
-                    <Select
-                      label="Load plan status"
-                      value={plan.status}
-                      disabled={!canEdit}
-                      onValueChange={(v) => writes.setStatus(plan.id, v)}
-                      options={[
-                        { value: 'draft', label: 'Draft' },
-                        { value: 'final', label: 'Final' },
-                      ]}
-                      className="h-8 min-w-24"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {!plan && !noPlans && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-dashed border-line-strong px-3 py-2.5">
-                  <p className="text-base text-ink">
-                    No load plan for the {tm.trailer.name} yet. Start one, or pack the trailer.
-                  </p>
-                  {canEdit && (
-                    <Button
-                      size="sm"
-                      disabled={writes.starting}
-                      onClick={() =>
-                        writes.startPlan({ id: newId(), ...newPlanData(regattaId, tm.trailer) })
-                      }
-                    >
-                      Start a load plan
-                    </Button>
-                  )}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-ink-2" id="plan-status-label">
+                    Load plan
+                  </span>
+                  <Select
+                    label="Load plan status"
+                    value={plan?.status ?? 'draft'}
+                    disabled={!canEdit}
+                    onValueChange={(v) => writes.setStatus(planRef(tm), v)}
+                    options={[
+                      { value: 'draft', label: 'Draft' },
+                      { value: 'final', label: 'Final' },
+                    ]}
+                    className="h-8 min-w-24"
+                  />
                 </div>
-              )}
+              </div>
 
               {dirty && view === 'end' && (
                 <p className="text-sm font-medium text-accent" role="status">
-                  Rules changed · Pack trailer to apply
+                  Rules changed · Auto pack to apply
                 </p>
               )}
 
@@ -1012,7 +982,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
               canEdit={canEdit}
               dirty={dirty}
               collapsible={isPhone}
-              onChange={(rules) => plan && writes.setRules(plan.id, rules)}
+              onChange={(rules) => writes.setRules(planRef(tm), rules)}
               className="self-start @4xl:col-start-2 @7xl:col-start-3 @7xl:row-start-1"
             />
           </div>
@@ -1076,7 +1046,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
 
       <Dialog open={confirmPack !== null} onOpenChange={(o) => !o && setConfirmPack(null)}>
         <DialogContent
-          title="Pack a final load plan?"
+          title="Auto pack a final load plan?"
           description="This load plan is marked final. Packing again moves every boat that is not locked."
         >
           <DialogFooter>
@@ -1092,10 +1062,42 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
               }}
             >
               <Check aria-hidden />
-              {confirmPack === 'all' ? 'Pack both trailers' : 'Pack trailer'}
+              {confirmPack === 'all' ? 'Auto pack both trailers' : 'Auto pack trailer'}
             </Button>
           </DialogFooter>
         </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={nothingToPack.open}
+        onOpenChange={(open) => setNothingToPack((n) => ({ ...n, open }))}
+      >
+        {nothingToPack.reason === 'no-boats' ? (
+          <DialogContent
+            title="No boats to pack yet"
+            description="Boats come from the lineups, and no entry at this regatta has a shell yet. Pick a shell for each entry on its team’s lineups page, then auto pack the trailer."
+          >
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button>Close</Button>
+              </DialogClose>
+              <Button asChild variant="primary">
+                <Link to={regattaPath(regattaId, 'lineups')}>Go to lineups</Link>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        ) : (
+          <DialogContent
+            title={`No boats for the ${tm.trailer.name}`}
+            description={`Every boat at this regatta is on, or headed for, ${otherTrailers.length === 1 ? `the ${otherTrailers[0]!.trailer.name}` : 'another trailer'}. To load one here instead, move it onto these racks from To load or from the other trailer.`}
+          >
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button>Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        )}
       </Dialog>
       {finalEdit.dialog}
     </DndContext>

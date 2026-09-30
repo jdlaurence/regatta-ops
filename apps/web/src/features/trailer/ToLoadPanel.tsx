@@ -1,5 +1,5 @@
 // "To load" (PLAN.md §6.6 left column): the boats on no trailer yet, grouped by the trailer
-// "Pack trailer" will put them on, each draggable onto the racks (or selectable, then a lane),
+// "Auto pack trailer" will put them on, each draggable onto the racks (or selectable, then a lane),
 // then the gear checklist summary with a link to the load list. Dropping a boat from the racks
 // here takes it off the trailer.
 
@@ -151,7 +151,11 @@ export function ToLoadPanel({
           To load
         </h2>
         <span className="text-sm text-ink-2 tabular-nums">
-          {total === 0 ? 'All on a trailer' : `${total} ${total === 1 ? 'boat' : 'boats'}`}
+          {model.boats.length === 0
+            ? 'None yet'
+            : total === 0
+              ? 'All on a trailer'
+              : `${total} ${total === 1 ? 'boat' : 'boats'}`}
         </span>
       </div>
       {dragFromTrailer && (
@@ -159,7 +163,12 @@ export function ToLoadPanel({
           Drop here to take the boat off the trailer.
         </p>
       )}
-      {total === 0 ? (
+      {model.boats.length === 0 ? (
+        <p className="text-base leading-prose text-ink-2">
+          No boats yet. Each entry’s shell shows up here once it is picked on the team’s lineups
+          page.
+        </p>
+      ) : total === 0 ? (
         <p className="text-base leading-prose text-ink-2">
           Every boat racing is on a trailer. New entries show up here.
         </p>
@@ -169,7 +178,7 @@ export function ToLoadPanel({
             {dragEnabled
               ? 'Drag a boat onto a rack, or select it and choose a lane.'
               : 'Tap a boat to see where it fits.'}{' '}
-            Pack trailer loads the boats listed under this trailer.
+            Auto pack loads the boats listed under this trailer.
           </p>
           {groups.map((g) => {
             const here = g.id === trailerId;

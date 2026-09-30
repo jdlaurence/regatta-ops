@@ -1,6 +1,6 @@
 // The rules panel (PLAN.md §4.10, §6.6 right column): the plan's loading rules in the shared
-// RulesEditor, regatta mode. Changes are this regatta's overrides; they never repack by
-// themselves ("Rules changed · Pack trailer to apply").
+// RulesEditor, regatta mode. Changes are this regatta's overrides (the first one starts the
+// trailer's load plan); they never repack by themselves ("Rules changed · Auto pack to apply").
 
 import { useState } from 'react';
 import { ChevronDown, Info } from 'lucide-react';
@@ -40,27 +40,21 @@ export function RulesPanel({
           className="flex items-center gap-2 rounded-control border border-accent/40 bg-accent-tint px-3 py-2 text-sm font-medium text-ink"
         >
           <Info aria-hidden className="size-4 shrink-0 text-accent" />
-          Rules changed · Pack trailer to apply
+          Rules changed · Auto pack to apply
         </p>
       )}
       <RulesEditor
-        rules={tm.plan ? tm.rules : tm.defaults}
+        rules={tm.rules}
         defaults={tm.defaults}
         onChange={onChange}
         trailer={tm.def}
         mode="regatta"
-        readOnly={!canEdit || !tm.plan}
+        readOnly={!canEdit}
         shells={boats.map((b) => ({ id: b.shellId, name: b.name, cls: b.cls }))}
         teams={teams.map((t) => ({ id: t.id, name: t.name }))}
         title={collapsible ? 'Rules for this regatta' : 'Loading rules'}
         headingLevel={collapsible ? 3 : 2}
       />
-      {!tm.plan && (
-        <p className="text-sm leading-prose text-ink-2">
-          These are the {tm.trailer.name}’s own rules. Start a load plan to change them for this
-          regatta.
-        </p>
-      )}
     </div>
   );
   if (!collapsible) {

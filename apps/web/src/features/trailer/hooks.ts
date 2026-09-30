@@ -16,7 +16,7 @@ import {
 } from '@/data';
 import { toast } from '@/components/toast';
 import type { ConfirmFinalEdit } from '@/features/regattas/useConfirmFinalEdit';
-import type { GuardedWrite, Writes } from './lib';
+import type { GuardedWrite, PlanRef, Writes } from './lib';
 
 // ---------------------------------------------------------------------------
 // Media
@@ -56,7 +56,7 @@ interface RulesDirtyState {
 }
 
 /**
- * Plans whose rules were edited here since their last pack: "Rules changed · Pack trailer to
+ * Plans whose rules were edited here since their last pack: "Rules changed · Auto pack to
  * apply". Session state; editing rules never repacks by itself (§4.10).
  */
 export const useRulesDirty = create<RulesDirtyState>((set) => ({
@@ -84,7 +84,7 @@ export function useTrailerWrites() {
   const batch = useBatch();
   const packBatch = useBatch({ errorMessage: 'The trailer was not packed. Try again.' });
   const createPlan = useCreate('load_plans', {
-    errorMessage: 'The load plan was not started. Try again.',
+    errorMessage: 'The change was not saved. Try again.',
   });
   const updatePlan = useUpdate('load_plans');
   const removePlacement = useDelete('load_placements', {
@@ -112,14 +112,16 @@ export function useTrailerWrites() {
       packBatch.mutate(ops, { onSuccess: () => toast.success(message) });
     },
     packing: packBatch.isPending,
-    startPlan: (data: Omit<LoadPlan, 'id'> & { id: Id }) => createPlan.mutate(data),
-    starting: createPlan.isPending,
-    setRules: (planId: Id, rules: Rule[]) => {
-      markDirty(planId);
-      updatePlan.mutate({ id: planId, patch: { rules } });
+    /** This regatta's rules. Like every first change, the first edit starts the load plan. */
+    setRules: (plan: PlanRef, rules: Rule[]) => {
+      markDirty(plan.id);
+      if (plan.create) createPlan.mutate({ id: plan.id, ...plan.create, rules });
+      else updatePlan.mutate({ id: plan.id, patch: { rules } });
     },
-    setStatus: (planId: Id, status: LoadPlan['status']) =>
-      updatePlan.mutate({ id: planId, patch: { status } }),
+    setStatus: (plan: PlanRef, status: LoadPlan['status']) => {
+      if (plan.create) createPlan.mutate({ id: plan.id, ...plan.create, status });
+      else updatePlan.mutate({ id: plan.id, patch: { status } });
+    },
   };
 }
 
@@ -151,7 +153,6 @@ export function useFinalGuardedWrites(
     update: guard(writes.update),
     remove: guard(writes.remove),
     pack: guard(writes.pack),
-    startPlan: guard(writes.startPlan),
     setRules: guard(writes.setRules),
     setStatus: guard(writes.setStatus),
   };

@@ -2,10 +2,11 @@
 // and logistics lines, or as a timeline of busy windows by shell, team, or oar set, with
 // conflicts marked. Event times and names edit inline; "Shift times" moves the rest of a day.
 // The conflicts panel sits in the inspector on desktop and in a tab on narrower screens.
+// "Print" opens the print view of the list as it is: same day, filters, and "Show entries".
 
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
-import { CalendarClock, ClipboardPaste, Ellipsis, Plus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router';
+import { CalendarClock, ClipboardPaste, Ellipsis, Plus, Printer } from 'lucide-react';
 import type { Entry, RegattaEvent } from '@srt/domain';
 import { useCan, useFindings } from '@/data';
 import { useRegattaId } from '@/app/params';
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/select';
 import { EventFormDialog, ImportEventsDialog } from '@/features/events';
+import { printSchedulePath } from '@/features/print/links';
 import { useConfirm } from './ConfirmDialog';
 import { useEventEdits, useEventLink, useNow, useScheduleParams } from './hooks';
 import {
@@ -100,9 +102,37 @@ export default function SchedulePage() {
     [navigate, regattaId],
   );
 
-  // On phones the two less frequent actions fold into a menu next to "Add event".
-  const actions = canEdit && ws && (
+  // The print view of what is on screen (the timeline prints as the list of the same day).
+  const printTo = printSchedulePath(regattaId, {
+    view: 'list',
+    day,
+    team: filters.teamId,
+    boatClass: filters.boatClass,
+    shell: filters.shellId,
+    entries: params.showEntries,
+  });
+  const canPrint = !!ws && ws.events.length > 0;
+
+  // On phones the less frequent actions fold into a menu next to "Add event".
+  const actions = !ws ? null : !canEdit ? (
+    canPrint && (
+      <Button asChild>
+        <Link to={printTo}>
+          <Printer aria-hidden />
+          Print
+        </Link>
+      </Button>
+    )
+  ) : (
     <>
+      {canPrint && (
+        <Button asChild variant="ghost" className="hidden sm:inline-flex">
+          <Link to={printTo}>
+            <Printer aria-hidden />
+            Print
+          </Link>
+        </Button>
+      )}
       <Button
         className="hidden sm:inline-flex"
         onClick={() => setShiftOpen(true)}
@@ -134,6 +164,12 @@ export default function SchedulePage() {
             <ClipboardPaste aria-hidden />
             Import events
           </DropdownMenuItem>
+          {canPrint && (
+            <DropdownMenuItem onSelect={() => void navigate(printTo)}>
+              <Printer aria-hidden />
+              Print
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

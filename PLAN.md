@@ -227,11 +227,11 @@ Plus **compartments**: zones of the bed along the trailer's length (v0.3), each 
 
 Admins define trailers in the Trailers admin page with a live diagram that updates as they type. The model also covers center-post trailers (arms both sides of a spine) and goalpost trailers (crossbars between two uprights, three wide), so a borrowed or future trailer fits.
 
-**Load plan.** One per regatta per trailer (multi-trailer regattas are supported). A load plan is a list of placements: shell, shelf, lane index, position along the shelf (offset from the front, cm; negative means front overhang), bow orientation, and a `locked` flag for placements a coach set by hand. The plan also holds the effective rule set (trailer defaults plus regatta overrides) and the checklist state.
+**Load plan.** One per regatta per trailer (multi-trailer regattas are supported). Coaches never create one: the trailer page *is* the load plan, and the record appears with the first change to that trailer at that regatta (a pack, a boat placed, a rule changed, the status set; v0.3). A load plan is a list of placements: shell, shelf, lane index, position along the shelf (offset from the front, cm; negative means front overhang), bow orientation, and a `locked` flag for placements a coach set by hand. The plan also holds the effective rule set (trailer defaults plus regatta overrides) and the checklist state.
 
 ### 4.10 Auto-layout and the rules editor
 
-- **Pack trailer** runs the packer (§9.3) over the load list and the effective rules. Locked placements are kept. The result replaces unlocked placements. Boats animate from old to new positions (the one orchestrated motion in the app).
+- **Auto pack trailer** runs the packer (§9.3) over the load list and the effective rules. Locked placements are kept. The result replaces unlocked placements. Boats animate from old to new positions (the one orchestrated motion in the app). With nothing to pack, it says so in a dialog instead: no entry has a shell yet (with a link to the lineups), or every boat is on or headed for the other trailer (v0.3).
 - **Interactive layout:** the primary view is the **end view**, a cross-section grid of tiers by lanes, exactly how people talk about the trailer at the boathouse ("top rack, driver side, outside"). Each cell shows the boat chips in it. Dragging a chip to another cell moves it; if the move breaks a hard rule, the cell shows why and the drop is refused (or, with a modifier key, accepted and flagged). A secondary **plan view** (top-down, one tier at a time) shows length, end-to-end pairing of small boats, and overhang at each end with the legal flag threshold drawn as a dashed line. An optional isometric view is Phase 3.
 - **Why here?** Clicking a placed boat shows the reasons: "Long boats go on the top rack (must)", "Heavier boats low (+12)", "Balances driver side (+6)", "Locked by Sarah". Unplaced boats show the rule that rejected every candidate: "No active shelf accepts an 8+ with 19.9 m free".
 - **Rules editor:** a panel listing loading rules as sentences with a toggle and an edit control. Each rule is marked **Must** (hard) or **Prefer** (soft, with a weight slider shown as Low, Medium, High). Rules come from the trailer's defaults; a coach can change a rule for this regatta only (badge: "This regatta"), add a rule from a gallery, or reset to defaults. The gallery (initial catalog, §9.3.3):
@@ -254,6 +254,7 @@ Admins define trailers in the Trailers admin page with a live diagram that updat
 - **Lineup grid**, the layout the club publishes today: events as columns with their time trial and final times in the header rows, seats as rows (cox, then stroke down to bow), names in cells. One grid for eights, one for fours and smaller.
 - **Day schedule**, also as published today: per day, one row per race with time, stage, cox, shell, oars, and the lineup as a name list, with logistics items (bus departures, lunch, awards) in order between them.
 - **Master schedule** for the regatta: all teams, time order, with shells and oars. Coaches tape this to the trailer.
+- **Schedule list**: the schedule page's list as it stands (its day, filters, and "Show entries" switch), with live lineups. The schedule's "Print" button opens it (v0.3).
 - **Load sheet:** shelf-by-shelf list with the end-view diagram, plus the checklist.
 - **Share links** (Phase 3): read-only pages for athletes and parents.
 - **CSV export** of entries, roster, fleet.
@@ -379,7 +380,7 @@ Phone (< 768 px): bottom tab bar within a regatta (Schedule, Lineups, Trailer, L
 
 ### 5.5 Copy rules
 
-Sentence case everywhere. Buttons say what happens: "Add entry", "Pack trailer", "Mark unavailable", "Acknowledge hot seat". The same verb through the flow: "Pack trailer" produces the toast "Trailer packed". Errors say what went wrong and what to do: "This shell is out of service. Pick another or change its status in Fleet." No exclamation points. No apologies.
+Sentence case everywhere. Buttons say what happens: "Add entry", "Auto pack trailer", "Mark unavailable", "Acknowledge hot seat". The same verb through the flow: "Auto pack trailer" produces the toast "Trailer packed". Errors say what went wrong and what to do: "This shell is out of service. Pick another or change its status in Fleet." No exclamation points. No apologies.
 
 ### 5.6 Accessibility and quality floor
 
@@ -422,7 +423,7 @@ Routes are shown with React Router path syntax. Every regatta-scoped page loads 
 
 ### 6.3 Schedule `/regattas/:id/schedule`
 
-- Toolbar: day selector, view toggle (List, Timeline), group-by (Shell, Team, Oars), filters, "Add event", "Import events".
+- Toolbar: day selector, view toggle (List, Timeline), group-by (Shell, Team, Oars), filters, "Add event", "Import events", "Print" (the list as on screen, §4.11).
 - List: a table of events with their entries nested; each entry row has team chip, label, xs boat strip, shell, oars, badges.
 - Timeline: described in §4.5. Time axis with 15-minute gridlines; now-line on race day.
 - Event editing inline (time, name); bulk shift ("everything after 11:00 is 20 minutes late").
@@ -455,7 +456,7 @@ Roster table across all participating teams with a per-athlete toggle (and per-d
 ### 6.6 Trailer `/regattas/:id/trailer` (and `/regattas/:id/trailer/:trailerId`)
 
 ```
-┌ Trailer · Big trailer (41 ft)                       [Pack trailer]  [Plan view]  [Print] ┐
+┌ Trailer · Big trailer (41 ft)                  [Auto pack trailer]  [Plan view]  [Print] ┐
 │┌ To load (4 unplaced) ─┐ ┌ End view · Boys trailer ────────────────────┐ ┌ Rules ───┐ │
 ││ ▭ DonQ 8+     boys    │ │  level 5  [ Peggy 8+ ]║[ LLL 8+     ][ Waltar 8+ ]│ │Must      │ │
 ││ ▭ Snoopy 4x   girls   │ │  level 4  [ Woodman  ]║[ Sonic 8+   ][ DeReck 8+ ]│ │☑ Fits 2  │ │
@@ -471,7 +472,7 @@ Roster table across all participating teams with a per-athlete toggle (and per-d
 
 - Left: unplaced shells (draggable), then the gear checklist.
 - Center: end view by default, drawn as the real cross-section (post at one third, one lane left, two lanes right, bed compartments below); plan view per level via the toggle. Selecting a cell or chip shows reasons in the inspector. A trailer switcher at the top moves between the boys' and girls' trailers; unplaced boats can be dragged onto either.
-- Right: rules panel. Editing a rule and clicking "Pack trailer" re-packs; locked chips stay.
+- Right: rules panel. Editing a rule and clicking "Auto pack trailer" re-packs; locked chips stay.
 - Bottom: weight per side, per-tier overhang, warnings.
 
 ### 6.7 Load list `/regattas/:id/load`
@@ -1340,3 +1341,4 @@ Changes made while building v1, each reflected in the code. Earlier sections car
 28. **Vertical lineups; cox-first strips** (owner request, 2026-09-30; §4.4, §5.1, §5.4, §6.4). `BoatStrip` has two orientations. Vertical (`orientation="vertical"`, the lineup builder and the printed lineup sheet): the hull stands on end with the rounded stern and the cox on top, one seat per row from stroke down to bow, and the pointed bow at the bottom; rigger ticks sit on their real side. Horizontal (the default; schedule, share page): the rounded stern with the cox on the left, bow pointing right, port ticks on top. The cox is always drawn first, including in bow-loaded fours (nothing yet marks a bow-loaded shell; open question). Lineup entries are vertical cards in a grid of equal columns (at least 224 px; three across at 1280 px): label and menu, status and badges, shell, oars, then the boat; rows above the boat have fixed heights so seats line up across cards. The roster sits beside the entries when the builder has 728 px. Keyboard: Up/Down within a boat, Home/End to its top and bottom, Left/Right to the same row of the neighboring card; filling a seat moves focus down.
 29. **Bed zones along the length** (owner request, 2026-09-30; §4.9, §8.1, §9.3.1, §16.4, §17.1). Compartments carry `startCm`/`endCm` from the front of the frame (migration `1791000100_compartment_positions.js`). SRA's default beds, front to back: boys (1220 cm) oars 0–610, slings 610–760, riggers 760–1220; girls (1070 cm) oars 0–535, slings 535–665, riggers 665–1070 — placeholders until measured. The plan view has a "Bed" level (a zone too narrow for its name turns it sideways); the end view shows the riggers across the back with "Slings and oars ahead"; the isometric view draws the bed as a box 61 cm (2 ft) deep, to scale, with the first rack 10 cm (4 in) above its walls and each zone's name on the near wall; the print load sheet lists the zones and what rides in each; the trailers admin edits "From front" and "To" per compartment and warns on overlaps; the load list offers each zone as a place to ride and defaults riggers, oars, and slings to their zone on the right trailer.
 30. **Bows forward** (owner, 2026-09-30; §9.3.2, §16.3). Boats load bows forward, over the truck: the packer's default when a trailer doesn't say, SRA's two trailers, the trailers admin presets, and the seeded load plans. "Bows face forward" on a trailer's page flips it for that trailer.
+31. **Implicit load plans, "Auto pack", schedule print** (owner request, 2026-09-30; §4.9, §4.10, §4.11, §5.5, §6.3, §6.6). There is no "Start a load plan" step: the first change to a trailer at a regatta creates its plan (packing and placing already did; rule edits and the Draft/Final status now do too, and both are available before anything is loaded). The trailer tabs show a boat count, and the overview's per-team status reads "Nothing loaded yet" instead of "No load plan". "Pack trailer" and "Pack both trailers" are now "Auto pack trailer" and "Auto pack both trailers" (the toasts stay "Trailer packed" and "Trailers packed"; sentences say "Auto pack": "Rules changed · Auto pack to apply", "Locked by Sam W. Auto pack keeps it here."). Auto pack with no boats at the regatta opens "No boats to pack yet" with "Go to lineups"; auto packing one trailer when every boat is on or headed for the other opens "No boats for the <trailer>"; neither writes anything. "To load" says "No boats yet" when no entry has a shell. The schedule has "Print" (for everyone; in the phone menu for coaches): `/print/regattas/:id/schedule?view=list&day=&team=&class=&shell=&entries=hide`, the list view's rows from the same `scheduleItems` under the same filters, with live lineups (cox, then stroke to bow), scratched crews marked, conflict badges and entries without an event left off paper. The print toolbar offers the team, day, and "Show entries"; class and shell filters show as text with "Clear"; "Back" returns to the schedule with the same day and filters. From the timeline, Print prints the list of the same day.

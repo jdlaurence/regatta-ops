@@ -176,13 +176,8 @@ test('a packed trailer is saved on the server', async ({ page }) => {
   });
   await expect(pageHeading(page, 'Trailer')).toBeVisible();
   const main = page.getByRole('main');
-  const start = main.getByRole('button', { name: 'Start a load plan for the Girls trailer' });
-  // A reused server may already have the plan from an earlier run.
-  const status = main.getByRole('combobox', { name: 'Load plan status' });
-  await expect(start.or(status)).toBeVisible();
-  if (await start.isVisible()) await start.click();
-  await expect(status).toBeVisible();
-  await main.getByRole('button', { name: 'Pack trailer', exact: true }).click();
+  // Packing starts the load plan (a reused server may already have it from an earlier run).
+  await main.getByRole('button', { name: 'Auto pack trailer', exact: true }).click();
   await expect(page.getByText('Trailer packed').first()).toBeVisible();
   const summary = main.getByText(/^Girls trailer · \d+ boats · Packed /);
   await expect(summary).toBeVisible();

@@ -1,7 +1,7 @@
 // Smoke tests for the print routes on the seed world (MemoryStore), through the real router.
 
 import { describe, expect, it } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
 import { zonedToInstant } from '@srt/domain';
@@ -44,6 +44,18 @@ describe('print routes', () => {
     expect(printSchedulePath('r')).toBe('/print/regattas/r/schedule');
     expect(printSchedulePath('r', { view: 'master', day: 'd', team: 't', source: 'live' })).toBe(
       '/print/regattas/r/schedule?view=master&day=d&team=t&source=live',
+    );
+    expect(
+      printSchedulePath('r', {
+        view: 'list',
+        day: 'd',
+        boatClass: '8+',
+        shell: 's',
+        entries: false,
+      }),
+    ).toBe('/print/regattas/r/schedule?view=list&day=d&class=8%2B&shell=s&entries=hide');
+    expect(printSchedulePath('r', { view: 'list', entries: true })).toBe(
+      '/print/regattas/r/schedule?view=list',
     );
     expect(printLoadPath('r', 'x')).toBe('/print/regattas/r/load/x');
   });
@@ -144,6 +156,54 @@ describe('print routes', () => {
     expect(rows[2]).toHaveAttribute('data-row', 'race');
     expect(rows[2]).toHaveTextContent(/^8:00 AMTime trialYouth Men's 8\+V8/);
     expect(sheet.querySelectorAll('tbody tr[data-row="race"]')).toHaveLength(22);
+  });
+
+  it('prints the schedule list as the schedule page shows it', async () => {
+    const user = userEvent.setup();
+    renderAt(
+      printSchedulePath(IDS.regatta, { view: 'list', day: '2026-11-01', entries: false }),
+      fixtureStore(),
+    );
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Head of the Lake schedule' }),
+    ).toBeInTheDocument();
+    const sheet = await screen.findByRole('region', { name: /^Every team schedule, / }, SLOW);
+    // Entries off: the bare schedule, one row per race in time order.
+    const races = sheet.querySelectorAll('tbody[data-row="race"]');
+    expect(races).toHaveLength(2);
+    expect(races[0]).toHaveTextContent(/^9:40 AMEvent 12 · Men's Junior 4\+4\+/);
+    expect(sheet.querySelectorAll('tr[data-row="entry"]')).toHaveLength(0);
+    expect(within(sheet).queryByText('Live draft lineups')).toBeNull();
+    // The published/live choice is not offered: the list prints the live draft, as on screen.
+    expect(screen.queryByRole('radio', { name: 'Published' })).toBeNull();
+
+    await user.click(screen.getByRole('switch', { name: 'Show entries' }));
+    const entry = await within(sheet).findByText('V4+');
+    const row = entry.closest('tr')!;
+    expect(row).toHaveAttribute('data-row', 'entry');
+    expect(row).toHaveTextContent(/V4\+Spencer24-C · yellow-white/);
+    expect(within(sheet).getByText('Live draft lineups')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute(
+      'href',
+      `/regattas/${IDS.regatta}/schedule?day=2026-11-01&entries=show`,
+    );
+  });
+
+  it('prints the schedule list under the class and shell filters, and clears them', async () => {
+    const user = userEvent.setup();
+    renderAt(
+      printSchedulePath(IDS.regatta, { view: 'list', day: '2026-11-01', boatClass: '8+' }),
+      fixtureStore(),
+    );
+    const sheet = await screen.findByRole('region', { name: /^Every team schedule, / }, SLOW);
+    expect(sheet.querySelectorAll('tbody[data-row="race"]')).toHaveLength(1);
+    expect(within(sheet).getByText('Boat class 8+')).toBeInTheDocument();
+    const options = screen.getByRole('group', { name: 'Print options' });
+    expect(within(options).getByText('Boat class 8+')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back' }).getAttribute('href')).toContain('class=8%2B');
+    await user.click(within(options).getByRole('button', { name: 'Clear' }));
+    await waitFor(() => expect(sheet.querySelectorAll('tbody[data-row="race"]')).toHaveLength(2));
+    expect(within(sheet).queryByText('Boat class 8+')).toBeNull();
   });
 
   it('prints the master schedule for every team', async () => {

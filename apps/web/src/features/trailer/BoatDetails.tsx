@@ -61,7 +61,7 @@ export function PlacedBoatDetails({
           ) : (
             <LockOpen aria-hidden className="size-4 shrink-0 text-ink-2" />
           )}
-          {why.lock ? lockNote(why.lock) : 'Not locked. Pack trailer may move it.'}
+          {why.lock ? lockNote(why.lock) : 'Not locked. Auto pack may move it.'}
         </p>
         {canEdit && (
           <div className="flex flex-wrap gap-2">

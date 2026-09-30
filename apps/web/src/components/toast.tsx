@@ -1,5 +1,5 @@
 // Toasts (sonner), styled with the tokens. Copy rules (PLAN.md §5.5): the toast repeats the
-// button's verb in the past tense ("Pack trailer" → "Trailer packed"); errors say what went
+// button's verb in the past tense ("Auto pack trailer" → "Trailer packed"); errors say what went
 // wrong and what to do; no exclamation points, no apologies.
 //
 //   import { toast } from '@/components/toast';

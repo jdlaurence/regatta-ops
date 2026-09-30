@@ -1,7 +1,7 @@
 // Phase 2 demo (PLAN.md §12.1): pack the trailer for the regatta, toggle a rule, drag a boat,
 // read "Why here?", print the load sheet, open the load list on a phone in airplane mode.
 //
-// The trailer flow runs on Head of the Lake 2026 (planning, 24 entries, no load plan yet), so it
+// The trailer flow runs on Head of the Lake 2026 (planning, 24 entries, nothing loaded yet), so it
 // starts from an empty trailer. The 2025 Northwest Youth Championships (final) has seeded draft
 // plans for both trailers (the 2026 Regionals layout) and a seeded load list.
 
@@ -48,7 +48,10 @@ async function whyHere(page: Page, shell: string): Promise<Locator> {
 }
 
 async function packTrailer(page: Page) {
-  await page.getByRole('main').getByRole('button', { name: 'Pack trailer', exact: true }).click();
+  await page
+    .getByRole('main')
+    .getByRole('button', { name: 'Auto pack trailer', exact: true })
+    .click();
   await expect(page.getByText('Trailer packed').first()).toBeVisible();
 }
 
@@ -65,10 +68,9 @@ test.describe('desktop', () => {
     const main = page.getByRole('main');
     const toLoad = main.getByRole('region', { name: 'To load' });
 
-    await test.step('start a load plan and pack it', async () => {
-      await expect(main.getByRole('heading', { name: 'No load plans yet' })).toBeVisible();
-      await main.getByRole('button', { name: 'Start a load plan for the Boys trailer' }).click();
+    await test.step('auto pack the trailer (no step to start a load plan)', async () => {
       await expect(main.getByText('Boys trailer · 0 boats · Not packed yet')).toBeVisible();
+      await expect(main.getByRole('button', { name: /start a load plan/i })).toHaveCount(0);
       await expect(toLoad.getByRole('heading', { name: 'For this trailer 11' })).toBeVisible();
 
       await packTrailer(page);
@@ -88,7 +90,7 @@ test.describe('desktop', () => {
       await expect(reasons.getByRole('listitem').filter({ hasText: EIGHTS_ON_TOP })).toContainText(
         /^Prefer\s*Prefer eights on levels 5 and 4\s*\+30$/,
       );
-      await expect(panel).toContainText('Not locked. Pack trailer may move it.');
+      await expect(panel).toContainText('Not locked. Auto pack may move it.');
     });
 
     await test.step('turn a rule off and pack again', async () => {
@@ -101,7 +103,7 @@ test.describe('desktop', () => {
           .getByRole('region', { name: 'Boys trailer load plan' })
           .getByRole('status')
           .filter({ hasText: 'Rules changed' }),
-      ).toHaveText('Rules changed · Pack trailer to apply');
+      ).toHaveText('Rules changed · Auto pack to apply');
       await expect(rules.getByRole('button', { name: 'Reset to defaults' })).toBeEnabled();
 
       await packTrailer(page);
@@ -128,7 +130,7 @@ test.describe('desktop', () => {
       // A hand move locks the boat, with who did it ("Sam W."), in one sentence.
       const [first, ...rest] = userName(SEED_EMAILS.coachBoys).split(' ');
       await expect(panel).toContainText(
-        `Locked by ${first} ${rest.at(-1)![0]}. Pack trailer keeps it here.`,
+        `Locked by ${first} ${rest.at(-1)![0]}. Auto pack keeps it here.`,
       );
 
       // Packing again keeps a locked boat where it is.
@@ -205,7 +207,10 @@ test.describe('desktop', () => {
     await signInDemo(page);
     await page.goto(regattaUrl(NW_YOUTH, 'trailer'));
     await expect(page.getByText('This regatta is final. Changes need confirmation.')).toBeVisible();
-    await page.getByRole('main').getByRole('button', { name: 'Pack trailer', exact: true }).click();
+    await page
+      .getByRole('main')
+      .getByRole('button', { name: 'Auto pack trailer', exact: true })
+      .click();
     await expect(page.getByRole('dialog', { name: 'This regatta is final' })).toBeVisible();
   });
 });

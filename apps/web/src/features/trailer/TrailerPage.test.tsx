@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router/dom';
 import type { Id, World } from '@srt/domain';
 import {
   SEED_REGATTA_IDS,
+  SEED_TEAM_IDS,
   SEED_TRAILER_IDS,
   SEED_USER_IDS,
   buildSeedWorld,
@@ -33,7 +34,7 @@ beforeAll(() => {
 function renderTrailer(
   path: string,
   userId: Id = SEED_USER_IDS.coachBoys,
-  { final = false }: { final?: boolean } = {},
+  { final = false, change }: { final?: boolean; change?: (world: World) => void } = {},
 ) {
   useRulesDirty.setState({ plans: {} });
   resetFinalEditConfirmations();
@@ -42,6 +43,7 @@ function renderTrailer(
   if (!final) {
     for (const r of world.regattas) if (r.id === NW) r.status = 'planning';
   }
+  change?.(world);
   const store = new MemoryStore({ world, userId });
   const queryClient = testQueryClient();
   const router = createTestRouter({ store, queryClient }, path);
@@ -73,7 +75,7 @@ describe('Trailer page', () => {
       final: true,
     });
     await endView();
-    await user.click(screen.getByRole('button', { name: 'Pack trailer' }));
+    await user.click(screen.getByRole('button', { name: 'Auto pack trailer' }));
     const ask = await screen.findByRole('dialog', {}, SLOW);
     expect(within(ask).getByText(/final/i)).toBeInTheDocument();
     await user.click(within(ask).getByRole('button', { name: 'Cancel' }));
@@ -155,7 +157,7 @@ describe('Trailer page', () => {
     await user.click(
       await screen.findByRole('button', { name: /^Level 5, narrow side: Peggy, 8\+, locked/ }),
     );
-    await user.click(screen.getByRole('button', { name: 'Pack trailer' }));
+    await user.click(screen.getByRole('button', { name: 'Auto pack trailer' }));
     expect(await screen.findByText('Trailer packed', {}, SLOW)).toBeInTheDocument();
     const plan = await boysPlan(store);
     expect(plan.packedAt).toBeTruthy();
@@ -182,7 +184,7 @@ describe('Trailer page', () => {
       const rule = (await boysPlan(store)).rules.find((r) => r.type === 'heavy-low');
       expect(rule).toMatchObject({ enabled: false, origin: 'regatta' });
     });
-    expect(await screen.findAllByText('Rules changed · Pack trailer to apply')).not.toHaveLength(0);
+    expect(await screen.findAllByText('Rules changed · Auto pack to apply')).not.toHaveLength(0);
     expect(screen.getByText('This regatta')).toBeInTheDocument();
     expect(await store.list('load_placements', {})).toEqual(before);
   });
@@ -194,7 +196,7 @@ describe('Trailer page', () => {
     await user.click(screen.getByRole('button', { name: /^Level 5, narrow side: Peggy, 8\+/ }));
     const panel = await screen.findByRole('complementary', { name: 'Why here?' });
     expect(within(panel).getByText('Boys trailer, level 5, narrow side')).toBeInTheDocument();
-    expect(within(panel).getByText('Not locked. Pack trailer may move it.')).toBeInTheDocument();
+    expect(within(panel).getByText('Not locked. Auto pack may move it.')).toBeInTheDocument();
     const reasons = within(panel).getByRole('heading', {
       name: 'The rules behind this spot',
     }).parentElement!;
@@ -203,7 +205,7 @@ describe('Trailer page', () => {
     expect(within(reasons).getByText(/^Fits: 19\.9 m in 12\.2 m/)).toBeInTheDocument();
     await user.click(within(panel).getByRole('button', { name: 'Lock here' }));
     expect(
-      await within(panel).findByText(/^Locked by .+\. Pack trailer keeps it here\.$/),
+      await within(panel).findByText(/^Locked by .+\. Auto pack keeps it here\.$/),
     ).toBeInTheDocument();
 
     // A boat still to load names the rule that rejected every spot.
@@ -230,27 +232,31 @@ describe('Trailer page', () => {
     expect(await within(toLoad).findByRole('button', { name: /^Peggy, 8\+/ })).toBeInTheDocument();
   });
 
-  it('offers to start a load plan per trailer when there is none', async () => {
+  it('starts the load plan with the first change, with no separate step', async () => {
     const user = userEvent.setup();
     const { store } = renderTrailer(`/regattas/${HOTL}/trailer`);
-    expect(await screen.findByText('No load plans yet', {}, SLOW)).toBeInTheDocument();
-    await user.click(
-      screen.getByRole('button', { name: 'Start a load plan for the Boys trailer' }),
-    );
+    await endView();
+    expect(screen.queryByRole('button', { name: /start a load plan/i })).toBeNull();
+    expect(await store.list('load_plans', { where: { regattaId: HOTL } })).toHaveLength(0);
+    // The rules are editable before anything is loaded; the first edit creates the plan.
+    await user.click(screen.getByRole('switch', { name: 'Use this rule: Keep heavier boats low' }));
     await waitFor(async () =>
       expect(await store.list('load_plans', { where: { regattaId: HOTL } })).toHaveLength(1),
     );
     const [plan] = await store.list('load_plans', { where: { regattaId: HOTL } });
-    const trailer = await store.get('trailers', BOYS);
-    expect(plan).toMatchObject({ trailerId: BOYS, status: 'draft' });
-    expect(plan!.rules).toEqual(trailer!.defaultRules);
+    expect(plan).toMatchObject({ trailerId: BOYS, status: 'draft', packedAt: null });
+    expect(plan!.rules.find((r) => r.type === 'heavy-low')).toMatchObject({
+      enabled: false,
+      origin: 'regatta',
+    });
+    expect(await screen.findAllByText('Rules changed · Auto pack to apply')).not.toHaveLength(0);
   });
 
-  it('packs both trailers for a regatta with no plans yet', async () => {
+  it('auto packs both trailers for a regatta with nothing loaded yet', async () => {
     const user = userEvent.setup();
     const { store } = renderTrailer(`/regattas/${HOTL}/trailer`);
-    await screen.findByText('No load plans yet', {}, SLOW);
-    await user.click(screen.getByRole('button', { name: 'Pack both trailers' }));
+    await endView();
+    await user.click(screen.getByRole('button', { name: 'Auto pack both trailers' }));
     expect(await screen.findByText('Trailers packed', {}, SLOW)).toBeInTheDocument();
     const plans = await store.list('load_plans', { where: { regattaId: HOTL } });
     expect(plans).toHaveLength(2);
@@ -264,11 +270,55 @@ describe('Trailer page', () => {
     expect(placements).toHaveLength(shells.size);
   });
 
+  it('warns instead of packing when no entry has a shell yet', async () => {
+    const user = userEvent.setup();
+    const { store } = renderTrailer(`/regattas/${HOTL}/trailer`, SEED_USER_IDS.coachBoys, {
+      change: (w) => {
+        for (const e of w.entries) if (e.regattaId === HOTL) e.shellId = null;
+      },
+    });
+    await endView();
+    expect(screen.getByRole('region', { name: 'To load' })).toHaveTextContent('No boats yet.');
+    for (const name of ['Auto pack trailer', 'Auto pack both trailers']) {
+      await user.click(screen.getByRole('button', { name }));
+      const dialog = await screen.findByRole('dialog', { name: 'No boats to pack yet' });
+      expect(within(dialog).getByRole('link', { name: 'Go to lineups' })).toHaveAttribute(
+        'href',
+        `/regattas/${HOTL}/lineups`,
+      );
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    }
+    expect(await store.list('load_plans', { where: { regattaId: HOTL } })).toHaveLength(0);
+  });
+
+  it('warns when every boat is headed for the other trailer', async () => {
+    const user = userEvent.setup();
+    const { store } = renderTrailer(
+      `/regattas/${HOTL}/trailer/${SEED_TRAILER_IDS.girls}`,
+      SEED_USER_IDS.coachBoys,
+      {
+        change: (w) => {
+          w.entries = w.entries.filter(
+            (e) => e.regattaId !== HOTL || e.teamId === SEED_TEAM_IDS.boys,
+          );
+        },
+      },
+    );
+    await screen.findByRole('group', { name: 'Girls trailer, end view, seen from the back' }, SLOW);
+    await user.click(screen.getByRole('button', { name: 'Auto pack trailer' }));
+    const dialog = await screen.findByRole('dialog', { name: 'No boats for the Girls trailer' });
+    expect(dialog).toHaveTextContent('on, or headed for, the Boys trailer');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await store.list('load_plans', { where: { regattaId: HOTL } })).toHaveLength(0);
+  });
+
   it('is read-only for a viewer', async () => {
     renderTrailer(`/regattas/${NW}/trailer`, SEED_USER_IDS.viewer);
     await endView();
-    expect(screen.getByRole('button', { name: 'Pack trailer' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Pack both trailers' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Auto pack trailer' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Auto pack both trailers' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: /^Add rule/ })).toBeNull();
   });
 });

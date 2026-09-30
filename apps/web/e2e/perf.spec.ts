@@ -107,10 +107,10 @@ test.describe('desktop', () => {
     expect(label).not.toMatch(/empty/);
     expect(edit).toBeLessThan(BUDGET.desktop.seatEdit);
 
-    // Pack both trailers (the regatta's shells, about 25 boats), to the "Trailer packed" toast.
+    // Auto pack both trailers (the regatta's shells, about 25 boats), to the "Trailer packed" toast.
     await page.goto(regattaUrl(NW_YOUTH, 'trailer'));
     await expect(pageHeading(page, 'Trailer')).toBeVisible();
-    const pack = page.getByRole('main').getByRole('button', { name: 'Pack both trailers' });
+    const pack = page.getByRole('main').getByRole('button', { name: 'Auto pack both trailers' });
     await expect(pack).toBeEnabled();
     await pack.click();
     // The regatta is final: the first load-plan change asks (PLAN.md §4.1). Time from the yes.

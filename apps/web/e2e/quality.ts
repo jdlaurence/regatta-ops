@@ -99,6 +99,10 @@ export const PAGES: PageCase[] = [
   },
   { name: 'print, schedule', path: `/print/regattas/${NW_YOUTH}/schedule` },
   {
+    name: 'print, schedule list',
+    path: `/print/regattas/${NW_YOUTH}/schedule?view=list&day=2025-05-16&team=${BOYS}`,
+  },
+  {
     name: 'print, load sheet',
     path: `/print/regattas/${NW_YOUTH}/load/${SEED_TRAILER_IDS.boys}`,
   },

@@ -485,7 +485,7 @@ export default function ComponentGallery() {
           <Button variant="danger">Delete entry</Button>
           <Button variant="link">Show all shells</Button>
           <Button variant="primary" disabled>
-            Pack trailer
+            Auto pack trailer
           </Button>
         </Row>
         <Row label="Sizes">

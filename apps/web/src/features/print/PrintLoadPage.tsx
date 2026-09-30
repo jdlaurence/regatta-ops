@@ -346,7 +346,7 @@ export default function PrintLoadPage() {
               <span className="block font-medium text-ink">
                 {sheet.plan
                   ? `Load plan: ${sheet.plan.status === 'final' ? 'final' : 'draft'}, ${placed} ${placed === 1 ? 'boat' : 'boats'}`
-                  : 'No load plan yet'}
+                  : 'Nothing loaded yet'}
               </span>
               {sheet.plan?.packedAt && (
                 <span className="block">Packed {instantText(sheet.plan.packedAt, tz)}</span>
@@ -358,8 +358,8 @@ export default function PrintLoadPage() {
         <TrailerDiagramSlot ws={data} sheet={sheet} placements={placements} />
         {!sheet.plan && (
           <p className="mb-4 text-base text-ink-2">
-            No boats are placed on this trailer for this regatta. Pack the trailer on the Trailer
-            page, then print again.
+            No boats are placed on this trailer for this regatta. Auto pack the trailer on the
+            Trailer page, then print again.
           </p>
         )}
         <ShelvesTable sheet={sheet} />

@@ -253,7 +253,7 @@ export function RulesEditor({
       <p className="text-sm leading-prose text-ink-2">
         {mode === 'trailer'
           ? 'Every load plan for this trailer starts from these rules. Coaches can change them for one regatta.'
-          : 'Changes here apply to this regatta only. Pack the trailer again to use them.'}
+          : 'Changes here apply to this regatta only. Auto pack the trailer again to use them.'}
       </p>
       {rules.length === 0 && !pending ? (
         <p className="rounded-card border border-dashed border-line-strong/60 px-4 py-4 text-base text-ink-2">
