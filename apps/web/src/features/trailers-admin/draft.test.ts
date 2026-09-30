@@ -13,11 +13,13 @@ import {
   defFromDraft,
   draftFromDef,
   draftFromRecords,
+  draftWarnings,
   duplicateShelf,
   removeShelf,
   removedShelfIds,
   saveOps,
   sameDraft,
+  updateCompartment,
   updateShelf,
   validateDraft,
   type SavedTrailer,
@@ -51,7 +53,7 @@ function recordsFor(def: TrailerDef): SavedTrailer {
     compartments: def.compartments.map((c) => ({
       ...c,
       trailerId: def.id,
-      capacityUnit: c.kind === 'oar_rack' ? 'oars' : 'loads',
+      capacityUnit: c.kind === 'oar_rack' ? 'oars' : c.kind === 'rigger_rack' ? 'riggers' : 'loads',
     })),
   };
 }
@@ -144,6 +146,108 @@ describe('trailer draft', () => {
     });
     // The diagram leaves a shelf out until it has a level.
     expect(defFromDraft(draft).shelves.some((s) => s.id === 'r1')).toBe(false);
+  });
+});
+
+describe('compartments along the frame', () => {
+  it('reads a zone stored with a blank start as starting at the front', () => {
+    // PocketBase keeps a start of 0 as blank.
+    const pb: SavedTrailer = {
+      ...saved,
+      compartments: saved.compartments.map((c) => ({ ...c, startCm: c.startCm || null })),
+    };
+    const draft = draftFromRecords(pb);
+    expect(draft.compartments.map((c) => [c.label, c.startCm, c.endCm])).toEqual([
+      ['Slings', 0, 300],
+      ['Oars', 300, 700],
+      ['Riggers', 700, 1220],
+    ]);
+    // Nothing to save: 0 and blank are the same start.
+    expect(saveOps(pb, draft)).toEqual([]);
+    expect(saveOps(saved, draftFromRecords(saved))).toEqual([]);
+    expect(defFromDraft(draft).compartments).toEqual(SRA_BOYS_TRAILER.compartments);
+  });
+
+  it('saves only the end that moved, with the front stored blank', () => {
+    const draft = draftFromRecords(saved);
+    const moved = {
+      ...draft,
+      compartments: draft.compartments.map((c) =>
+        c.id === 'riggers' ? { ...c, startCm: 650 } : c.id === 'oars' ? { ...c, endCm: 650 } : c,
+      ),
+    };
+    expect(saveOps(saved, moved)).toEqual<BatchOp[]>([
+      { op: 'update', collection: 'trailer_compartments', id: 'oars', patch: { endCm: 650 } },
+      { op: 'update', collection: 'trailer_compartments', id: 'riggers', patch: { startCm: 650 } },
+    ]);
+    const whole = updateCompartment(draft, 'slings', { startCm: null, endCm: null });
+    const [op] = saveOps(saved, whole);
+    expect(op).toEqual({
+      op: 'update',
+      collection: 'trailer_compartments',
+      id: 'slings',
+      patch: { endCm: null },
+    });
+  });
+
+  it('keeps zones inside the frame and starting before they end', () => {
+    const draft = draftFromRecords(saved);
+    const bad = updateCompartment(
+      updateCompartment(updateCompartment(draft, 'slings', { startCm: -5 }), 'oars', {
+        endCm: 1300,
+      }),
+      'riggers',
+      { startCm: 900, endCm: 800 },
+    );
+    expect(validateDraft(bad)).toEqual({
+      'compartment:slings:startCm': 'From front is 0 or more and inside the 1220 cm frame.',
+      'compartment:oars:endCm': 'To is more than 0 and at most 1220 cm, the back of the frame.',
+      'compartment:riggers:endCm': 'To must be further back than From front.',
+    });
+    const past = updateCompartment(draft, 'riggers', { startCm: 1220, endCm: null });
+    expect(validateDraft(past)).toEqual({
+      'compartment:riggers:startCm': 'From front is 0 or more and inside the 1220 cm frame.',
+    });
+    // Blank ends are fine: the front, the back, or both for the whole length.
+    expect(validateDraft(updateCompartment(draft, 'riggers', { endCm: null }))).toEqual({});
+  });
+
+  it('warns about overlaps without stopping a save', () => {
+    const draft = draftFromRecords(saved);
+    expect(draftWarnings(draft)).toEqual([]);
+    const overlap = updateCompartment(draft, 'slings', { endCm: 350 });
+    expect(draftWarnings(overlap)).toEqual(['Slings and Oars overlap by 50 cm.']);
+    expect(validateDraft(overlap)).toEqual({});
+    const box = {
+      ...draft,
+      compartments: [
+        ...draft.compartments,
+        {
+          id: 'box',
+          kind: 'oar_box' as const,
+          label: '',
+          capacity: 1,
+          capacityUnit: 'oars',
+          startCm: null,
+          endCm: null,
+        },
+      ],
+    };
+    expect(draftWarnings(box)).toEqual([
+      'Compartment 4 runs the whole length, so it overlaps Slings. Give it a place along the frame.',
+      'Compartment 4 runs the whole length, so it overlaps Oars. Give it a place along the frame.',
+      'Compartment 4 runs the whole length, so it overlaps Riggers. Give it a place along the frame.',
+    ]);
+  });
+
+  it('starts presets with the bed along the frame', () => {
+    for (const preset of TRAILER_PRESETS) {
+      const def = preset.build({ id: 't', name: 'T', newId });
+      const draft = draftFromDef(def, []);
+      expect(draftWarnings(draft)).toEqual([]);
+      expect(def.compartments.every((c) => c.startCm !== undefined)).toBe(true);
+      expect(def.compartments.some((c) => c.endCm === def.frameLengthCm)).toBe(true);
+    }
   });
 });
 

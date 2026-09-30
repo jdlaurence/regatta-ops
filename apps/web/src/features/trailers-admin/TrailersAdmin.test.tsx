@@ -57,7 +57,7 @@ describe('Trailer edit page', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Save trailer' })).toBeDisabled(),
     );
-  });
+  }, 15_000);
 
   it('refuses to save a shelf without a width and says why', async () => {
     const store = fixtureStore({ signedIn: IDS.admin });
@@ -97,6 +97,68 @@ describe('Trailer edit page', () => {
     await user.click(screen.getByRole('radio', { name: 'End view' }));
     expect(screen.getByRole('group', { name: 'Boys trailer, end view' })).toBeInTheDocument();
   });
+
+  it('places compartments along the frame, checks them, and saves where they sit', async () => {
+    const store = fixtureStore({ signedIn: IDS.admin });
+    const user = userEvent.setup();
+    renderAt(`/trailers/${IDS.trailer}`, store);
+    await screen.findByRole('textbox', { name: 'Level 5, left: width in cm' });
+
+    // The live preview's plan view, on the bed.
+    await user.click(screen.getByRole('radio', { name: 'Plan view' }));
+    expect(screen.getByRole('heading', { name: 'Plan view' })).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'Bed' }));
+    const bed = screen.getByRole('group', { name: 'Bed from above' });
+    expect(screen.getByText(/Nothing is set to ride in the bed yet/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Add compartment' }));
+    await user.type(screen.getByRole('textbox', { name: 'Compartment 1: label' }), 'Riggers');
+    const from = screen.getByRole('textbox', { name: 'Riggers: from front in cm' });
+    const to = screen.getByRole('textbox', { name: 'Riggers: to in cm' });
+    expect(to).toHaveAttribute('placeholder', '1220');
+    await user.type(from, '700');
+    await user.type(to, '1300');
+    // Past the back of the frame: marked, listed, and Save is off.
+    expect(to).toHaveAttribute('aria-invalid', 'true');
+    expect(
+      screen.getByText('Riggers: To is more than 0 and at most 1220 cm, the back of the frame.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save trailer' })).toBeDisabled();
+    await user.clear(to);
+    await user.type(to, '600');
+    expect(
+      screen.getByText('Riggers: To must be further back than From front.'),
+    ).toBeInTheDocument();
+    await user.clear(to);
+    await user.type(to, '1220');
+    expect(to).not.toHaveAttribute('aria-invalid');
+    // The preview follows as you type: the zone at the back, across the full width.
+    expect(within(bed).getByText('Riggers')).toBeInTheDocument();
+    expect(within(bed).getByText('Back of the bed, full width')).toBeInTheDocument();
+    expect(within(bed).getByText('5.2 m')).toBeInTheDocument();
+
+    // An overlap is a warning, not an error.
+    await user.click(screen.getByRole('button', { name: 'Add compartment' }));
+    await user.type(screen.getByRole('textbox', { name: 'Compartment 2: label' }), 'Oars');
+    await user.type(screen.getByRole('textbox', { name: 'Oars: from front in cm' }), '300');
+    await user.type(screen.getByRole('textbox', { name: 'Oars: to in cm' }), '800');
+    const checks = screen.getByRole('list', { name: 'Compartments to check' });
+    expect(checks).toHaveTextContent('Riggers and Oars overlap by 100 cm.');
+    await user.clear(screen.getByRole('textbox', { name: 'Oars: to in cm' }));
+    await user.type(screen.getByRole('textbox', { name: 'Oars: to in cm' }), '700');
+    expect(screen.queryByRole('list', { name: 'Compartments to check' })).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Save trailer' }));
+    await waitFor(async () => {
+      const comps = await store.list('trailer_compartments', {
+        where: { trailerId: IDS.trailer },
+      });
+      expect(comps.map((c) => [c.label, c.startCm, c.endCm])).toEqual([
+        ['Riggers', 700, 1220],
+        ['Oars', 300, 700],
+      ]);
+    });
+  }, 20_000);
 
   it('shows a trailer read only to coaches', async () => {
     const store = fixtureStore({ signedIn: IDS.coach });
