@@ -87,9 +87,11 @@ export const Tabs = TabsPrimitive.Root;
 export const TabsContent = TabsPrimitive.Content;
 
 export function TabsList({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) {
+  // The baseline is an inset line, not a border the tabs overlap with a negative margin, so a
+  // list that scrolls sideways does not clip the active tab's underline (or its touch target).
   return (
     <TabsPrimitive.List
-      className={cn('flex items-center gap-1 border-b border-line', className)}
+      className={cn('flex items-center gap-1 shadow-[inset_0_-1px_0_var(--line)]', className)}
       {...props}
     />
   );
@@ -100,7 +102,7 @@ export function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsP
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        '-mb-px inline-flex h-9 items-center gap-1.5 border-b-2 border-transparent px-3 text-base font-medium text-ink-2 hover:text-ink data-[state=active]:border-accent data-[state=active]:text-ink pointer-coarse:h-11 [&_svg]:size-4',
+        'inline-flex h-9 items-center gap-1.5 border-b-2 border-transparent px-3 text-base font-medium text-ink-2 hover:text-ink data-[state=active]:border-accent data-[state=active]:text-ink pointer-coarse:h-11 [&_svg]:size-4',
         className,
       )}
       {...props}

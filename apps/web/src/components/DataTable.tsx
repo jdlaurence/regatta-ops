@@ -200,7 +200,7 @@ export function DataTable<T>({
                       dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined
                     }
                     className={cn(
-                      'h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2',
+                      'h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2 pointer-coarse:h-11',
                       header.column.columnDef.meta?.headerClassName,
                     )}
                     style={header.column.columnDef.size ? { width: header.getSize() } : undefined}
