@@ -132,7 +132,7 @@ export function AthleteMatrix({ onShowEntry }: { onShowEntry: (entryId: string) 
                               }}
                               className={cn(
                                 'flex h-7 items-center gap-1.5 rounded-control border-l-[3px] border-team bg-team-tint px-1.5 text-left text-sm whitespace-nowrap hover:brightness-95 pointer-coarse:h-11',
-                                cell.entry.status === 'scratched' && 'line-through opacity-60',
+                                cell.entry.status === 'scratched' && 'line-through grayscale',
                               )}
                             >
                               <span className="font-medium">{cell.entry.label}</span>

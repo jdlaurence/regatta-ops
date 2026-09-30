@@ -216,7 +216,8 @@ export function EntryCard({ entry, showClass }: { entry: Entry; showClass?: bool
           <EntryMenu entry={entry} />
         </div>
       </div>
-      <div className={cn(scratched && 'opacity-60')}>
+      {/* Scratched boats lose their color, not their contrast. */}
+      <div className={cn(scratched && 'grayscale')}>
         {asList ? (
           <EntrySeatList entry={entry} seatConflicts={conflicts} />
         ) : (

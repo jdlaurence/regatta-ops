@@ -79,7 +79,8 @@ function RosterRow({
   const body = (
     <>
       <span className="relative min-w-0 truncate">
-        <span className={cn(boated && 'opacity-55')}>{name}</span>
+        {/* Dimmed with the secondary ink, not opacity, so the name keeps 4.5:1 (PLAN.md §5.6). */}
+        <span className={cn(boated && 'text-ink-2')}>{name}</span>
         <Strike on={boated} />
       </span>
       {homeTeam}

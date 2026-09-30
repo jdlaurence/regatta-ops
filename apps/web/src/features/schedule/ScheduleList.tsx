@@ -379,7 +379,7 @@ function EntryRow({
       onClick={onRowClick}
       className={cn(
         'flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1.5 rounded-control px-2 py-1.5 hover:bg-surface-2',
-        scratched && 'opacity-60',
+        scratched && 'grayscale',
       )}
     >
       <div className="flex min-w-0 items-center gap-2 md:w-40 md:shrink-0">
