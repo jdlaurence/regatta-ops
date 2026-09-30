@@ -5,6 +5,7 @@
 import type { RegattaWorkingSet } from '@/data';
 import { teamStyle } from '@/lib/team-colors';
 import { cn } from '@/lib/cn';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { PrintSheet, SheetHeader } from './PrintFrame';
 import { chunkColumns, type GridTable, type TeamLineups } from './derive';
 import { seatText, stageText } from './format';
@@ -141,7 +142,10 @@ export function LineupGridSheet({
       {tables.length === 0 ? (
         <p className="py-4 text-base text-ink-2">No {team.name} entries to print.</p>
       ) : (
-        <div className="flex flex-col gap-5 overflow-x-auto print:overflow-visible">
+        <ScrollRegion
+          label="Lineup grid"
+          className="flex flex-col gap-5 overflow-x-auto print:overflow-visible"
+        >
           {tables.flatMap((t) => {
             const chunks = chunkColumns(t.columns, GRID_COLUMNS_PER_TABLE);
             return chunks.map((columns, i) => (
@@ -152,7 +156,7 @@ export function LineupGridSheet({
               />
             ));
           })}
-        </div>
+        </ScrollRegion>
       )}
     </PrintSheet>
   );

@@ -65,12 +65,8 @@ export function RulesPanel({
   );
   if (!collapsible) {
     return (
-      <section
-        aria-label="Loading rules"
-        className={cn('rounded-card border border-line bg-surface p-3', className)}
-      >
-        {body}
-      </section>
+      // The rules editor inside is the "Loading rules" region; a second one here would repeat it.
+      <div className={cn('rounded-card border border-line bg-surface p-3', className)}>{body}</div>
     );
   }
   return (

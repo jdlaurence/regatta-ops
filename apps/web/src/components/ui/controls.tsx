@@ -30,7 +30,7 @@ export function Checkbox({ className, ...props }: ComponentProps<typeof Checkbox
   return (
     <CheckboxPrimitive.Root
       className={cn(
-        'group inline-flex size-5 shrink-0 items-center justify-center rounded-control border border-line-strong bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-ink data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent data-[state=indeterminate]:text-accent-ink disabled:opacity-50',
+        'group touch-hit relative inline-flex size-5 shrink-0 items-center justify-center rounded-control border border-line-strong bg-surface data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-ink data-[state=indeterminate]:border-accent data-[state=indeterminate]:bg-accent data-[state=indeterminate]:text-accent-ink disabled:opacity-50',
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ export function Switch({ className, ...props }: ComponentProps<typeof SwitchPrim
   return (
     <SwitchPrimitive.Root
       className={cn(
-        'relative inline-flex h-5 w-9 shrink-0 items-center rounded-control border border-line-strong bg-surface-2 transition-colors data-[state=checked]:border-accent data-[state=checked]:bg-accent disabled:opacity-50',
+        'touch-hit relative inline-flex h-5 w-9 shrink-0 items-center rounded-control border border-line-strong bg-surface-2 transition-colors data-[state=checked]:border-accent data-[state=checked]:bg-accent disabled:opacity-50',
         className,
       )}
       {...props}
@@ -102,7 +102,7 @@ export function SegmentedControl<T extends string>({
           value={o.value}
           className={cn(
             'inline-flex items-center justify-center gap-1.5 rounded-[4px] px-2.5 font-medium text-ink-2 hover:text-ink data-[state=on]:bg-surface data-[state=on]:text-ink [&_svg]:size-4',
-            size === 'sm' ? 'h-7 text-sm pointer-coarse:h-10' : 'h-8 text-base pointer-coarse:h-10',
+            size === 'sm' ? 'h-7 text-sm pointer-coarse:h-11' : 'h-8 text-base pointer-coarse:h-11',
           )}
         >
           {o.icon}

@@ -508,7 +508,7 @@ export default function AvailabilityPage() {
           description="Add the teams that are racing on the overview. Their rosters show here."
           action={
             <Button asChild>
-              <Link to={regattaPath(regattaId)}>Go to the overview</Link>
+              <Link to={regattaPath(regattaId)}>Go to overview</Link>
             </Button>
           }
         />

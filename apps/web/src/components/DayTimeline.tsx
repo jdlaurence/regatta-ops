@@ -784,8 +784,58 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
   // Every other hour label when the day is long, so labels never collide at narrow widths.
   const step = hours.length > 8 ? 2 : 1;
 
+  // One tab stop for the whole miniature; the arrow keys walk the bars in time order.
+  const order = readingOrder(model);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const tabStop =
+    activeId && barById.has(activeId)
+      ? activeId
+      : selectedEntryId && barById.has(selectedEntryId)
+        ? selectedEntryId
+        : (order[0]?.entryId ?? null);
+  const barRefs = useRef(new Map<string, SVGGElement>());
+  const focusBar = (id: string | undefined) => {
+    if (!id) return;
+    setActiveId(id);
+    barRefs.current.get(id)?.focus();
+  };
+  const onKeyDown = (bar: TimelineBar, e: KeyboardEvent<SVGGElement>) => {
+    const i = order.findIndex((b) => b.entryId === bar.entryId);
+    let handled = true;
+    switch (e.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        focusBar(order[i + 1]?.entryId);
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        focusBar(order[i - 1]?.entryId);
+        break;
+      case 'Home':
+        focusBar(order[0]?.entryId);
+        break;
+      case 'End':
+        focusBar(order[order.length - 1]?.entryId);
+        break;
+      case 'Enter':
+      case ' ':
+        onBarClick?.(bar.entryId, bar);
+        break;
+      default:
+        handled = false;
+    }
+    if (handled) e.preventDefault();
+  };
+
   return (
-    <div role="group" aria-label={label} className={cn('flex flex-col gap-1', className)}>
+    // The miniature is a glance: on a phone its bars are too thin to tap, and the schedule
+    // (linked under it) is the way in, so the touch-target check skips it.
+    <div
+      role="group"
+      aria-label={label}
+      data-touch-exempt
+      className={cn('flex flex-col gap-1', className)}
+    >
       <div aria-hidden className="relative h-4 text-xs text-ink-2 tabular-nums">
         {hours.map((t, i) =>
           i % step === 0 ? (
@@ -834,16 +884,19 @@ function MiniTimeline({ model, nowMs, onBarClick, selectedEntryId, label, classN
               className={cn('group outline-none', open && 'cursor-pointer')}
               {...(open
                 ? {
-                    role: 'button',
-                    tabIndex: 0,
-                    'aria-label': bar.description,
-                    onClick: () => open(bar.entryId, bar),
-                    onKeyDown: (e: KeyboardEvent<SVGGElement>) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        open(bar.entryId, bar);
-                      }
+                    ref: (el: SVGGElement | null) => {
+                      if (el) barRefs.current.set(bar.entryId, el);
+                      else barRefs.current.delete(bar.entryId);
                     },
+                    role: 'button',
+                    tabIndex: bar.entryId === tabStop ? 0 : -1,
+                    'aria-label': bar.description,
+                    onClick: () => {
+                      setActiveId(bar.entryId);
+                      open(bar.entryId, bar);
+                    },
+                    onFocus: () => setActiveId(bar.entryId),
+                    onKeyDown: (e: KeyboardEvent<SVGGElement>) => onKeyDown(bar, e),
                   }
                 : { 'aria-hidden': true })}
             >

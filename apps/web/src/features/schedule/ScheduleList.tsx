@@ -2,9 +2,9 @@
 // logistics lines between them, each race's entries nested under it. Times and names edit
 // inline; each entry links to its team's lineups page.
 
-import { useMemo, type MouseEvent } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Ellipsis, Pencil, Plus } from 'lucide-react';
+import { Ellipsis, MessageSquare, Pencil, Plus } from 'lucide-react';
 import {
   athleteName,
   athleteShortName,
@@ -16,11 +16,12 @@ import {
   type RegattaEvent,
   type Seat,
 } from '@srt/domain';
-import { worstSeverity, type RegattaWorkingSet } from '@/data';
+import { useCan, worstSeverity, type RegattaWorkingSet } from '@/data';
 import { lineupEntryPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';
 import { BoatStrip, type SeatOccupant } from '@/components/BoatStrip';
 import { ClassBadge, OarChip, ShellChip, TeamChip } from '@/components/chips';
+import { useCommentCounts } from '@/components/CommentsThread';
 import { ConflictBadge, ConflictBadges } from '@/components/ConflictBadge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/menu';
+import { EventCommentsButton, EventCommentsDialog } from './EventComments';
 import { InlineEdit } from './InlineEdit';
 import { STAGE_LABELS, eventTitle, wallTime, type ScheduleItem } from './lib';
 
@@ -70,6 +72,12 @@ export function ScheduleList({
     return m;
   }, [findings]);
   const tz = ws.regatta.timezone;
+  const raceIds = useMemo(
+    () => items.filter((i) => i.kind !== 'logistics').map((i) => i.event.id),
+    [items],
+  );
+  const commentCounts = useCommentCounts('event', raceIds);
+  const [commentsFor, setCommentsFor] = useState<RegattaEvent | null>(null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -91,7 +99,7 @@ export function ScheduleList({
               data-event-id={item.event.id}
               tabIndex={-1}
               className={cn(
-                'flex flex-col gap-2 border-b border-line px-3 py-3 outline-none last:border-b-0 md:px-4',
+                'flex flex-col gap-2 border-b border-line px-3 py-3 last:border-b-0 focus-visible:-outline-offset-2 md:px-4',
                 HIGHLIGHT,
               )}
             >
@@ -100,6 +108,8 @@ export function ScheduleList({
                 timeZone={tz}
                 canEdit={canEdit}
                 hasEntries={item.entries.length > 0}
+                comments={commentCounts.get(item.event.id) ?? 0}
+                onComments={() => setCommentsFor(item.event)}
                 onSaveTime={onSaveTime}
                 onSaveName={onSaveName}
                 onEditEvent={onEditEvent}
@@ -155,6 +165,7 @@ export function ScheduleList({
           </ul>
         </section>
       )}
+      <EventCommentsDialog event={commentsFor} onOpenChange={(o) => !o && setCommentsFor(null)} />
     </div>
   );
 }
@@ -200,11 +211,17 @@ function TimeCell({
 
 function EventMenu({
   event,
+  canEdit,
   onEditEvent,
+  onComments,
 }: {
   event: RegattaEvent;
+  canEdit: boolean;
   onEditEvent: (e: RegattaEvent) => void;
+  /** Races only: open the event's comments. */
+  onComments?: () => void;
 }) {
+  if (!canEdit && !onComments) return null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -213,10 +230,18 @@ function EventMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => onEditEvent(event)}>
-          <Pencil aria-hidden />
-          Edit event
-        </DropdownMenuItem>
+        {canEdit && (
+          <DropdownMenuItem onSelect={() => onEditEvent(event)}>
+            <Pencil aria-hidden />
+            Edit event
+          </DropdownMenuItem>
+        )}
+        {onComments && (
+          <DropdownMenuItem onSelect={onComments}>
+            <MessageSquare aria-hidden />
+            Comments
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -227,6 +252,8 @@ function EventHeader({
   timeZone,
   canEdit,
   hasEntries,
+  comments,
+  onComments,
   onSaveTime,
   onSaveName,
   onEditEvent,
@@ -235,11 +262,14 @@ function EventHeader({
   timeZone: string;
   canEdit: boolean;
   hasEntries: boolean;
+  comments: number;
+  onComments: () => void;
   onSaveTime: (event: RegattaEvent, hhmm: string) => void;
   onSaveName: (event: RegattaEvent, name: string) => void;
   onEditEvent: (event: RegattaEvent) => void;
 }) {
   const stage = event.stage && event.stage !== 'race' ? STAGE_LABELS[event.stage] : null;
+  const canComment = useCan('comment');
   return (
     <div className="flex items-start gap-3">
       <TimeCell event={event} timeZone={timeZone} canEdit={canEdit} onSaveTime={onSaveTime} />
@@ -266,12 +296,18 @@ function EventHeader({
               Unscheduled
             </span>
           )}
+          <EventCommentsButton event={event} count={comments} onOpen={onComments} />
         </div>
         {event.category && event.category !== event.name && (
           <p className="text-sm text-ink-2">{event.category}</p>
         )}
       </div>
-      {canEdit && <EventMenu event={event} onEditEvent={onEditEvent} />}
+      <EventMenu
+        event={event}
+        canEdit={canEdit}
+        onEditEvent={onEditEvent}
+        onComments={canComment ? onComments : undefined}
+      />
     </div>
   );
 }
@@ -298,7 +334,7 @@ function LogisticsRow({
       data-event-id={event.id}
       tabIndex={-1}
       className={cn(
-        'flex items-center gap-3 border-b border-line bg-bg/60 px-3 py-1.5 outline-none last:border-b-0 md:px-4',
+        'flex items-center gap-3 border-b border-line bg-bg/60 px-3 py-1.5 last:border-b-0 focus-visible:-outline-offset-2 md:px-4',
         HIGHLIGHT,
       )}
     >
@@ -327,7 +363,7 @@ function LogisticsRow({
         </InlineEdit>
         {showTeams && only.map((t) => <TeamChip key={t.id} team={t} short size="sm" />)}
       </div>
-      {canEdit && <EventMenu event={event} onEditEvent={onEditEvent} />}
+      <EventMenu event={event} canEdit={canEdit} onEditEvent={onEditEvent} />
     </li>
   );
 }
@@ -379,14 +415,14 @@ function EntryRow({
       onClick={onRowClick}
       className={cn(
         'flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1.5 rounded-control px-2 py-1.5 hover:bg-surface-2',
-        scratched && 'opacity-60',
+        scratched && 'grayscale',
       )}
     >
       <div className="flex min-w-0 items-center gap-2 md:w-40 md:shrink-0">
         {team && <TeamChip team={team} short size="sm" />}
         <Link
           to={href}
-          className="truncate text-base font-medium text-ink underline-offset-4 hover:underline pointer-coarse:py-2.5"
+          className="truncate text-base font-medium text-ink underline-offset-4 hover:underline pointer-coarse:min-w-11 pointer-coarse:py-[13px]"
         >
           <span className="sr-only">{teamName} </span>
           {entry.label}

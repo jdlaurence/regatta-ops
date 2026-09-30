@@ -2,6 +2,7 @@
 
 import { useId, type ReactNode } from 'react';
 import { meters, type TrailerStyle } from '@srt/domain';
+import { cn } from '@/lib/cn';
 import { STYLE_LABELS } from '@/components/trailer/labels';
 import { Switch } from '@/components/ui/controls';
 import { Field, Input, Textarea } from '@/components/ui/input';
@@ -9,9 +10,17 @@ import { Select } from '@/components/ui/select';
 import type { DraftErrors, TrailerDraft } from './draft';
 import { NumberInput, ReadValue } from './fields';
 
-function ReadField({ label, children }: { label: string; children: ReactNode }) {
+function ReadField({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className={cn('flex flex-col gap-1', className)}>
       <dt className="text-sm text-ink-2">{label}</dt>
       <dd className="text-base text-ink">{children}</dd>
     </div>
@@ -63,11 +72,9 @@ export function FrameForm({
             {draft.bowForwardDefault ? 'Bows forward' : 'Sterns forward, bows trailing'}
           </ReadField>
           {draft.notes && (
-            <div className="sm:col-span-2">
-              <ReadField label="Notes">
-                <span className="whitespace-pre-line">{draft.notes}</span>
-              </ReadField>
-            </div>
+            <ReadField label="Notes" className="sm:col-span-2">
+              <span className="whitespace-pre-line">{draft.notes}</span>
+            </ReadField>
           )}
         </dl>
       </section>

@@ -3,7 +3,7 @@
 // to the entries, and "Acknowledge hot seat" for hot seats. Shown in the default inspector and
 // on the schedule page (as a tab on narrow screens).
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { clockAt, isHotSeat, type Finding, type Severity } from '@srt/domain';
 import {
@@ -31,6 +31,8 @@ export interface ConflictsPanelProps {
   limit?: number;
   /** Called after a link to an entry is followed. */
   onNavigate?: (entryId: string) => void;
+  /** 3 under the inspector's title (default); 2 where it is a page's own section. */
+  headingLevel?: 2 | 3;
   className?: string;
 }
 
@@ -77,8 +79,12 @@ export function ConflictsPanel({
   teamId = null,
   limit = 8,
   onNavigate,
+  headingLevel = 3,
   className,
 }: ConflictsPanelProps) {
+  const headingId = useId();
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
+  const Subheading = headingLevel === 2 ? 'h3' : 'h4';
   const { findings, isLoading, isError, error, refetch, workingSet } = useFindings(regattaId);
   const [team, setTeam] = useState<string | null>(teamId);
   const [expanded, setExpanded] = useState<Partial<Record<Severity, boolean>>>({});
@@ -101,17 +107,14 @@ export function ConflictsPanel({
   };
 
   return (
-    <section
-      aria-labelledby={`conflicts-${regattaId}`}
-      className={cn('flex flex-col gap-3', className)}
-    >
+    <section aria-labelledby={headingId} className={cn('flex flex-col gap-3', className)}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id={`conflicts-${regattaId}`} className="text-md font-medium">
+        <Heading id={headingId} className="text-md font-medium">
           Conflicts{' '}
           {!isLoading && !isError && (
             <span className="ml-0.5 text-ink-2 tabular-nums">{shown.length}</span>
           )}
-        </h3>
+        </Heading>
         <div className="flex gap-1">
           {SEVERITY_GROUPS.map(({ severity }) =>
             counts[severity] > 0 ? (
@@ -159,10 +162,10 @@ export function ConflictsPanel({
           const hidden = list.length - visible.length;
           return (
             <div key={severity} className="flex flex-col gap-1.5">
-              <h4 className="flex items-center gap-1.5 text-sm font-medium text-ink-2">
+              <Subheading className="flex items-center gap-1.5 text-sm font-medium text-ink-2">
                 <ConflictIcon severity={severity} />
                 {heading} <span className="tabular-nums">{list.length}</span>
-              </h4>
+              </Subheading>
               <ul className="flex flex-col gap-1.5">
                 {visible.map((f) => (
                   <FindingItem

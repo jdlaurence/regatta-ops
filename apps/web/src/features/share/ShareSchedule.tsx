@@ -99,7 +99,7 @@ function Crew({ team, entry }: CrewOnRow) {
         )}
         {entry.oarSetName && <span className="text-sm text-ink-2">Oars {entry.oarSetName}</span>}
       </div>
-      <div className={cn('flex flex-col gap-2', scratched && 'opacity-60')}>
+      <div className={cn('flex flex-col gap-2', scratched && 'grayscale')}>
         <BoatStrip
           boatClass={entry.boatClass}
           seats={occupants(entry)}

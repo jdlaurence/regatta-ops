@@ -61,7 +61,7 @@ export function InlineEdit({
           setDraft(value);
         }}
         className={cn(
-          '-mx-1 rounded-control px-1 text-left hover:bg-surface-2 pointer-coarse:min-h-11',
+          '-mx-1 rounded-control px-1 text-left hover:bg-surface-2 pointer-coarse:min-h-11 pointer-coarse:min-w-11',
           className,
         )}
       >

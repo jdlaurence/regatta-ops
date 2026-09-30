@@ -127,7 +127,7 @@ function ChangesSince({ changes }: { changes: SnapshotChange[] }) {
       }}
     >
       <PopoverTrigger
-        className="rounded-control font-medium text-accent underline-offset-4 hover:underline pointer-coarse:py-3"
+        className="rounded-control font-medium text-accent underline-offset-4 hover:underline pointer-coarse:min-h-11"
         onPointerEnter={hoverIn}
         onPointerLeave={hoverOut}
         onClick={(e) => {

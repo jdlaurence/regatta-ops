@@ -11,6 +11,7 @@ import { athleteName, type Athlete } from '@srt/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { TeamChip } from '@/components/chips';
+import { prefersReducedMotion } from '@/lib/motion';
 import { useLineup } from './context';
 import {
   EMPTY_FILTERS,
@@ -26,12 +27,6 @@ import { useLineupUi } from './store';
 export interface RosterDragData {
   kind: 'athlete';
   athleteId: string;
-}
-
-function prefersReducedMotion(): boolean {
-  return typeof window.matchMedia === 'function'
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    : false;
 }
 
 /** The strike through a boated name: drawn left to right in 180 ms when it appears. */
@@ -84,7 +79,8 @@ function RosterRow({
   const body = (
     <>
       <span className="relative min-w-0 truncate">
-        <span className={cn(boated && 'opacity-55')}>{name}</span>
+        {/* Dimmed with the secondary ink, not opacity, so the name keeps 4.5:1 (PLAN.md §5.6). */}
+        <span className={cn(boated && 'text-ink-2')}>{name}</span>
         <Strike on={boated} />
       </span>
       {homeTeam}

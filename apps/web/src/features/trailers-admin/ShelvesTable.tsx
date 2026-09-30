@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/menu';
 import { Select } from '@/components/ui/select';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { fieldKey, type DraftErrors, type NumberValue, type ShelfDraft } from './draft';
 import { NumberInput, ReadValue } from './fields';
 
@@ -218,7 +219,10 @@ export function ShelvesTable({
             : 'Add a level to start: it adds the usual shelves for this style of trailer.'}
         </p>
       ) : (
-        <div className="relative overflow-x-auto rounded-card border border-line bg-surface">
+        <ScrollRegion
+          label="Shelves"
+          className="relative overflow-x-auto rounded-card border border-line bg-surface"
+        >
           <table className="w-full border-collapse text-base" aria-labelledby={headingId}>
             <thead>
               <tr className="border-b border-line">
@@ -416,7 +420,7 @@ export function ShelvesTable({
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
       {problems.length > 0 && (
         <ul className="flex flex-col gap-1 text-sm text-danger" aria-label="Shelf fields to fix">

@@ -34,29 +34,45 @@ function isTyping(target: EventTarget | null): boolean {
   );
 }
 
-/** `]` toggles the inspector (PLAN.md §5.3); Escape closes the slide-over. */
+function focusInPanel(): boolean {
+  const panel = useInspectorStore.getState().panel;
+  return !!panel && panel.contains(document.activeElement);
+}
+
+/**
+ * `]` toggles the inspector (PLAN.md §5.3). Escape closes the slide-over; on desktop, Escape
+ * inside the column sends focus back to where it came from. Closing the panel from inside it
+ * never drops focus to the top of the page.
+ */
 export function useInspectorShortcut(available: boolean) {
   const { open, toggle, setOpen } = useInspector();
   const isDesktop = useInspectorStore((s) => s.isDesktop);
+  const returnFocus = useInspectorStore((s) => s.returnFocus);
   useEffect(() => {
     if (!available) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === ']' && !isTyping(e.target)) {
         e.preventDefault();
+        const inside = focusInPanel();
         toggle();
-      } else if (e.key === 'Escape' && open && !isDesktop) {
-        setOpen(false);
+        if (inside) returnFocus();
+      } else if (e.key === 'Escape' && open) {
+        // A popover, menu, or dialog takes its own Escape.
+        if (document.querySelector('[role="dialog"], [role="menu"], [role="listbox"]')) return;
+        const inside = focusInPanel();
+        if (!isDesktop) setOpen(false);
+        if (inside) returnFocus();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [available, open, isDesktop, toggle, setOpen]);
+  }, [available, open, isDesktop, toggle, setOpen, returnFocus]);
 }
 
 /** The button that shows and hides the inspector. */
 export function InspectorToggle({ className }: { className?: string }) {
-  const { open, toggle } = useInspector();
+  const { open, setOpen, openAndFocus } = useInspector();
   const isDesktop = useInspectorStore((s) => s.isDesktop);
   const title = useInspectorTitle() ?? DEFAULT_TITLE;
   const label = `${open ? 'Hide' : 'Show'} ${title.toLowerCase()}`;
@@ -66,7 +82,10 @@ export function InspectorToggle({ className }: { className?: string }) {
     <Button
       variant="ghost"
       size="icon"
-      onClick={toggle}
+      // Opening moves focus into the panel (on desktop this button then gives way to the
+      // panel's own hide button).
+      onClick={(e) => (open ? setOpen(false) : openAndFocus(e.currentTarget))}
+      data-inspector-toggle
       aria-pressed={open}
       aria-keyshortcuts="]"
       aria-label={label}
@@ -92,6 +111,8 @@ export function InspectorPanel({
   const { open, setOpen } = useInspector();
   const isDesktop = useInspectorStore((s) => s.isDesktop);
   const setSlot = useInspectorStore((s) => s.setSlot);
+  const setPanel = useInspectorStore((s) => s.setPanel);
+  const returnFocus = useInspectorStore((s) => s.returnFocus);
   const claimed = useInspectorClaimed();
   const title = useInspectorTitle() ?? DEFAULT_TITLE;
   const visible = available && open;
@@ -108,11 +129,13 @@ export function InspectorPanel({
         />
       )}
       <aside
+        ref={setPanel}
+        tabIndex={-1}
         aria-label={title}
         data-state={visible ? 'open' : 'closed'}
         className={cn(
           visible ? 'flex' : 'hidden',
-          'fixed inset-y-0 right-0 z-40 w-[min(100vw,360px)] flex-col border-l border-line bg-surface shadow-popover',
+          'fixed inset-y-0 right-0 z-40 w-[min(100vw,360px)] flex-col border-l border-line bg-surface shadow-popover focus-visible:-outline-offset-2',
           'lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:w-[336px] lg:shrink-0 lg:shadow-none',
         )}
       >
@@ -121,7 +144,10 @@ export function InspectorPanel({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              returnFocus();
+            }}
             aria-label={`Hide ${title.toLowerCase()}`}
             title="Hide (])"
           >

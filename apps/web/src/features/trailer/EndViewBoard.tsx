@@ -95,6 +95,7 @@ function LaneTarget({
     <button
       ref={setNodeRef}
       type="button"
+      data-lane-target
       aria-label={`Move ${moving.name} to ${lane.label}${refused}`}
       onClick={(e) => onActivate(cell, e)}
       onMouseEnter={() => onPreview(cell)}

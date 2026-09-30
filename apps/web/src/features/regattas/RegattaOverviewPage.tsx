@@ -13,9 +13,9 @@ import { ErrorState, Skeleton, SkeletonRows } from '@/components/states';
 import { Button } from '@/components/ui/button';
 import { EventFormDialog } from '@/features/events/EventFormDialog';
 import { ImportEventsDialog } from '@/features/events/ImportEventsDialog';
+import { ActivityFeed } from '@/components/ActivityFeed';
 import { DayAtAGlance } from './DayAtAGlance';
 import { DuplicateRegattaDialog } from './DuplicateRegattaDialog';
-import { RecentActivity } from './RecentActivity';
 import { RegattaSettingsDialog } from './RegattaSettingsDialog';
 import { RegattaTeams } from './RegattaTeams';
 import { teamSummaries } from './summary';
@@ -139,7 +139,7 @@ export default function RegattaOverviewPage() {
       </Section>
 
       <Section id="overview-activity" title="Recent activity">
-        <RecentActivity regattaId={regatta.id} users={ws.users} />
+        <ActivityFeed regattaId={regatta.id} title={false} framed pageSize={8} />
       </Section>
 
       {canEdit && (

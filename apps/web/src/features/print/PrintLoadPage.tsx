@@ -68,7 +68,7 @@ export function TrailerDiagramSlot({
   if (!plan) return null;
   return (
     <div data-slot="trailer-end-view" className="mb-4 break-inside-avoid">
-      <TableScroll>
+      <TableScroll label="End view">
         <TrailerEndView
           trailer={def}
           rules={rules}
@@ -87,7 +87,7 @@ const td = 'border-b border-line px-1.5 py-1.5 align-top';
 
 function ShelvesTable({ sheet }: { sheet: LoadSheet }) {
   return (
-    <TableScroll>
+    <TableScroll label="Shelves">
       <table className="w-full min-w-[560px] border-collapse text-base">
         <caption className="pb-1 text-left font-display text-md font-semibold">Shelves</caption>
         <thead>
@@ -177,7 +177,7 @@ function Checklist({ sheet }: { sheet: LoadSheet }) {
   return (
     <div className="flex flex-col gap-4">
       {sheet.groups.map((g) => (
-        <TableScroll key={g.kind}>
+        <TableScroll key={g.kind} label={g.title}>
           <table className="w-full min-w-[560px] table-fixed border-collapse text-base">
             <caption className="pb-1 text-left font-display text-md font-semibold">
               {g.title}

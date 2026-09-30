@@ -289,11 +289,9 @@ export default function SchedulePage() {
               )}
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="schedule" className="outline-none">
-            {body}
-          </TabsContent>
-          <TabsContent value="conflicts" className="outline-none">
-            <ConflictsPanel regattaId={regattaId} teamId={filters.teamId} />
+          <TabsContent value="schedule">{body}</TabsContent>
+          <TabsContent value="conflicts">
+            <ConflictsPanel regattaId={regattaId} teamId={filters.teamId} headingLevel={2} />
           </TabsContent>
         </Tabs>
       );

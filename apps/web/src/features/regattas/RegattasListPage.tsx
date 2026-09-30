@@ -47,7 +47,7 @@ function RegattaStats({ regattaId }: { regattaId: string }) {
       <button
         type="button"
         onClick={refetch}
-        className="self-start text-sm text-danger hover:underline"
+        className="relative z-10 self-start text-sm text-danger hover:underline pointer-coarse:min-h-11"
       >
         Counts did not load. Try again.
       </button>
@@ -107,11 +107,15 @@ function RegattaCard({ regatta, today }: { regatta: Regatta; today: string }) {
   const place = [regatta.venue, regatta.city].filter(Boolean).join(', ');
   const upcoming = (regatta.endDate || regatta.startDate) >= today;
   return (
-    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4">
+    // The title link covers the card (its ::after), so the whole card is one tap target.
+    <li className="relative flex flex-col gap-3 rounded-card border border-line bg-surface p-4 hover:border-line-strong">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
         <div className="flex min-w-0 flex-col gap-0.5">
           <h3 className="font-display text-lg font-semibold">
-            <Link to={regattaPath(regatta.id)} className="rounded-control hover:underline">
+            <Link
+              to={regattaPath(regatta.id)}
+              className="rounded-control after:absolute after:inset-0 after:rounded-card hover:underline"
+            >
               {regatta.name}
             </Link>
           </h3>

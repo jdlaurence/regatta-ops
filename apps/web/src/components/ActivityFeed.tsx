@@ -3,10 +3,11 @@
 // relative time and, where the target can still be found, a link to it. Live: realtime refetches
 // the log on every change, and the times move on by themselves.
 //
-//   <ActivityFeed regattaId={regattaId} />          // a regatta's activity
+//   <ActivityFeed regattaId={regattaId} />          // a regatta's activity (the inspector)
 //   <ActivityFeed regattaId={null} pageSize={50} /> // everything, with the regatta named
+//   <ActivityFeed regattaId={id} title={false} framed pageSize={8} />  // under a page's heading
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import type { ActivityEntry, Entry, EntrySeat, Id, LoadPlacement, LoadPlan } from '@srt/domain';
 import { targetCollection, useList, useNow } from '@/data';
@@ -125,8 +126,13 @@ export interface ActivityFeedProps {
   regattaId: string | null;
   /** Lines shown at first and added by each "Show more" (default 20). */
   pageSize?: number;
-  /** The section heading (default "Activity"); false leaves it out. */
+  /**
+   * The section heading (default "Activity"). False leaves it out, and the feed is then a
+   * plain block for a host that has its own heading.
+   */
   title?: string | false;
+  /** Lines in a bordered card (a page), instead of a loose list (the inspector). */
+  framed?: boolean;
   className?: string;
 }
 
@@ -134,6 +140,7 @@ export function ActivityFeed({
   regattaId,
   pageSize = 20,
   title = 'Activity',
+  framed = false,
   className,
 }: ActivityFeedProps) {
   const [shown, setShown] = useState(pageSize);
@@ -158,12 +165,13 @@ export function ActivityFeed({
   );
   const all = activity.data ?? [];
   const rows = all.slice(0, shown);
-  const headingId = `activity-${regattaId ?? 'club'}`;
+  // The inspector and the overview can both show a regatta's feed at once.
+  const headingId = useId();
+  const Wrapper = title ? 'section' : 'div';
 
   return (
-    <section
+    <Wrapper
       aria-labelledby={title ? headingId : undefined}
-      aria-label={title ? undefined : 'Activity'}
       className={cn('flex flex-col gap-3', className)}
     >
       {title && (
@@ -191,13 +199,25 @@ export function ActivityFeed({
         </p>
       )}
       {rows.length > 0 && (
-        <ol className="flex flex-col gap-2.5">
+        <ol
+          aria-label={title ? undefined : 'Activity'}
+          className={cn(
+            'flex flex-col',
+            framed ? 'divide-y divide-line rounded-card border border-line bg-surface' : 'gap-2.5',
+          )}
+        >
           {rows.map((row) => {
             const link = activityLink(row, lookups);
             const regattaName =
               !regattaId && row.regattaId ? regattaNames.get(row.regattaId) : undefined;
             return (
-              <li key={row.id} className="flex flex-col gap-0.5 text-base leading-prose">
+              <li
+                key={row.id}
+                className={cn(
+                  'flex flex-col gap-0.5 text-base leading-prose',
+                  framed && 'px-3 py-2.5',
+                )}
+              >
                 <span className="min-w-0 break-words">
                   <span className="font-medium">
                     {(row.actorId && names.get(row.actorId)) || 'Someone'}
@@ -221,7 +241,7 @@ export function ActivityFeed({
                       <span aria-hidden>·</span>
                       <Link
                         to={link.href}
-                        className="rounded-control text-accent underline-offset-4 hover:underline"
+                        className="rounded-control text-accent underline-offset-4 hover:underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center"
                       >
                         {link.label}
                       </Link>
@@ -243,6 +263,6 @@ export function ActivityFeed({
           Show more
         </Button>
       )}
-    </section>
+    </Wrapper>
   );
 }

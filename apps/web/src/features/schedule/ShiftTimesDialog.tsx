@@ -10,6 +10,7 @@ import { SegmentedControl } from '@/components/ui/controls';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Field, Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { eventTitle, leavesDay, planShift, wallTime, type ShiftChange } from './lib';
 
 export interface ShiftTimesDialogProps {
@@ -146,23 +147,30 @@ function ShiftForm({
             Nothing on this day has a time at or after {from || 'that time'}.
           </p>
         ) : (
-          <ul className="flex max-h-60 flex-col overflow-y-auto rounded-control border border-line">
-            {changes.map((c) => (
-              <li
-                key={c.event.id}
-                className="flex items-center gap-3 border-b border-line px-3 py-1.5 text-base last:border-b-0"
-              >
-                <span className="flex shrink-0 items-center gap-1.5 tabular-nums">
-                  <span className="text-ink-2">{clockAt(c.before, timeZone)}</span>
-                  <ArrowRight aria-label="to" className="size-3.5 text-ink-2" />
-                  <span className="font-medium">{clockAt(c.after, timeZone)}</span>
-                </span>
-                <span className={c.event.kind === 'logistics' ? 'truncate text-ink-2' : 'truncate'}>
-                  {eventTitle(c.event)}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <ScrollRegion
+            label="Events that move"
+            className="max-h-60 overflow-y-auto rounded-control border border-line"
+          >
+            <ul className="flex flex-col">
+              {changes.map((c) => (
+                <li
+                  key={c.event.id}
+                  className="flex items-center gap-3 border-b border-line px-3 py-1.5 text-base last:border-b-0"
+                >
+                  <span className="flex shrink-0 items-center gap-1.5 tabular-nums">
+                    <span className="text-ink-2">{clockAt(c.before, timeZone)}</span>
+                    <ArrowRight aria-label="to" className="size-3.5 text-ink-2" />
+                    <span className="font-medium">{clockAt(c.after, timeZone)}</span>
+                  </span>
+                  <span
+                    className={c.event.kind === 'logistics' ? 'truncate text-ink-2' : 'truncate'}
+                  >
+                    {eventTitle(c.event)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </ScrollRegion>
         )}
         {crossing && (
           <p className="text-sm text-warn">Some events move past midnight onto another day.</p>

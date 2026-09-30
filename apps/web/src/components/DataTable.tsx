@@ -14,6 +14,7 @@ import {
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Checkbox } from '@/components/ui/controls';
+import { ScrollRegion } from './ScrollRegion';
 
 export type { ColumnDef } from '@tanstack/react-table';
 
@@ -180,7 +181,10 @@ export function DataTable<T>({
   );
 
   return (
-    <div className={cn('overflow-x-auto rounded-card border border-line bg-surface', className)}>
+    <ScrollRegion
+      label={label}
+      className={cn('overflow-x-auto rounded-card border border-line bg-surface', className)}
+    >
       <table className="w-full border-collapse text-base" aria-label={label}>
         <thead className="sticky top-0 z-10 bg-surface">
           {table.getHeaderGroups().map((hg) => (
@@ -196,7 +200,7 @@ export function DataTable<T>({
                       dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined
                     }
                     className={cn(
-                      'h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2',
+                      'h-9 px-3 text-left text-sm font-medium whitespace-nowrap text-ink-2 pointer-coarse:h-11',
                       header.column.columnDef.meta?.headerClassName,
                     )}
                     style={header.column.columnDef.size ? { width: header.getSize() } : undefined}
@@ -205,7 +209,7 @@ export function DataTable<T>({
                       <button
                         type="button"
                         onClick={header.column.getToggleSortingHandler()}
-                        className="-mx-1 inline-flex items-center gap-1 rounded-control px-1 hover:text-ink"
+                        className="-mx-1 inline-flex items-center gap-1 rounded-control px-1 hover:text-ink pointer-coarse:min-h-11"
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {dir === 'asc' ? (
@@ -252,7 +256,7 @@ export function DataTable<T>({
           <tbody>{rows.map(renderRow)}</tbody>
         )}
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

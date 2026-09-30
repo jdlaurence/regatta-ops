@@ -54,6 +54,10 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
   `DataTable`, `CsvImport`, `CommentsThread`, `ActivityFeed`, `PublishStatus`,
   `ShareLinksDialog`, `components/trailer/*` (`TrailerEndView`, `RulesEditor`,
   `TrailerIsometric`), `components/ui/*` (button, dialog/sheet, combobox, select, tabs, menus).
+- Quality helpers: `ScrollRegion` (a box that scrolls: focusable while it overflows),
+  `BackLink`, the `touch-hit` utility (44 px hit area on touch without changing the look),
+  `lib/motion.ts` (reduced motion for scripted motion). New pages go in `e2e/quality.ts`
+  `PAGES`, which the axe, no-sideways-scroll, and touch-target specs walk.
 - Edits to a final regatta go through `useConfirmFinalEdit` (features/regattas).
 - Deep links: entries `/regattas/:id/lineups/:teamId?entry=<id>`, events
   `/regattas/:id/schedule?event=<id>`, fleet `/fleet/shells?shell=<id>`.

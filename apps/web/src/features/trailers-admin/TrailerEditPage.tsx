@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useBlocker, useNavigate, useParams } from 'react-router';
-import { ChevronLeft, MoreHorizontal, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { meters, shellLabel } from '@srt/domain';
 import { newId, useCan, useList } from '@/data';
 import { PageHeader } from '@/components/PageHeader';
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/menu';
+import { BackLink } from '@/components/BackLink';
 import { CompartmentsTable } from './CompartmentsTable';
 import {
   addLevel,
@@ -50,25 +51,13 @@ import { defaultRulesFor } from './presets';
 import { ShelvesTable } from './ShelvesTable';
 import { TrailerPreview } from './TrailerPreview';
 
-function BackLink() {
-  return (
-    <Link
-      to="/trailers"
-      className="-ml-1 inline-flex w-fit items-center gap-1 rounded-control px-1 text-sm text-ink-2 hover:text-ink pointer-coarse:min-h-11"
-    >
-      <ChevronLeft aria-hidden className="size-4" />
-      Trailers
-    </Link>
-  );
-}
-
 export default function TrailerEditPage() {
   const { id } = useParams();
   const saved = useSavedTrailer(id);
   if (saved.isError) {
     return (
       <div className="flex flex-col gap-6">
-        <BackLink />
+        <BackLink to="/trailers" label="Trailers" />
         <ErrorState
           title="This trailer did not load."
           error={saved.error}
@@ -81,7 +70,7 @@ export default function TrailerEditPage() {
   if (saved.data === null) {
     return (
       <div className="flex flex-col gap-6">
-        <BackLink />
+        <BackLink to="/trailers" label="Trailers" />
         <PageHeader title="Trailer not found" />
         <EmptyState
           title="There is no trailer at this address"
@@ -181,7 +170,7 @@ function TrailerEditor({ saved }: { saved: SavedTrailer }) {
   const frame = draft.frameLengthCm;
   return (
     <div className="flex flex-col gap-4">
-      <BackLink />
+      <BackLink to="/trailers" label="Trailers" />
       <PageHeader
         title={draft.name.trim() || 'Untitled trailer'}
         description={[
