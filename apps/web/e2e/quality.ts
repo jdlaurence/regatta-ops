@@ -104,16 +104,11 @@ export const PAGES: PageCase[] = [
   },
   { name: 'component gallery', path: '/dev/components', skeletons: true },
   { name: 'sign in', path: '/sign-in', who: 'signed out' },
-  {
-    name: 'trailer',
-    path: regattaUrl(NW_YOUTH, 'trailer'),
-    fixme: 'The trailer page (WP-M) is still being built; un-fixme when it merges.',
-  },
-  {
-    name: 'load list',
-    path: regattaUrl(NW_YOUTH, 'load'),
-    fixme: 'The load list (WP-M) is still being built; un-fixme when it merges.',
-  },
+  { name: 'trailer', path: regattaUrl(HOTL, 'trailer') },
+  { name: 'trailer, girls trailer', path: regattaUrl(HOTL, `trailer/${SEED_TRAILER_IDS.girls}`) },
+  { name: 'trailer, 2025 plan', path: regattaUrl(NW_YOUTH, 'trailer') },
+  { name: 'load list', path: regattaUrl(HOTL, 'load') },
+  { name: 'load list, 2025', path: regattaUrl(NW_YOUTH, 'load') },
 ];
 
 /** Sign in as the case says, open the page, wait for it, and run its extra steps. */

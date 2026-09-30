@@ -136,6 +136,8 @@ test.describe('phone', () => {
       'print, schedule',
       'print, load sheet',
       'trailers admin, read-only',
+      'trailer, 2025 plan',
+      'load list, 2025',
     ].includes(c.name),
   );
   for (const c of phonePages) {
