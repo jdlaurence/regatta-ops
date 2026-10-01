@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BUILTIN_FIT_RULE,
+  layoutReport,
   packTrailer,
   SRA_BOYS_TRAILER,
   SRA_DEFAULT_RULES,
@@ -238,7 +239,7 @@ describe('§9.3.5 case 6: side balance on a center-post trailer', () => {
       [],
     );
     expect(result.warnings).toContain(
-      'Left side carries 100% more than the right side (tolerance 10%)',
+      'Left side is heavier than the right side: 100% apart (tolerance 10%)',
     );
   });
 
@@ -541,10 +542,11 @@ describe('§9.3.5 case 12: the boys’ 2026 Regionals load', () => {
     const result = packTrailer(SRA_BOYS_TRAILER, boats, SRA_DEFAULT_RULES, []);
     expect(result.unplaced).toEqual([]);
     const grid = classGrid(SRA_BOYS_TRAILER, boats, result);
+    // Level 3's eight rides in the inner lane, over the centerline, with a four on each side.
     expect(grid).toEqual([
       ['8+', '8+', '8+'],
       ['8+', '8+', '8+'],
-      ['8+', '4+', '4+'],
+      ['4+', '8+', '4+'],
       ['4+', '4+', '4+'],
       [],
     ]);
@@ -565,11 +567,10 @@ describe('§9.3.5 case 12: the boys’ 2026 Regionals load', () => {
         hard: false,
       });
     }
-    expect(result.metrics.leftWeightKg).toBe(339);
-    expect(result.metrics.rightWeightKg).toBe(588);
+    expect(result.metrics.leftWeightKg).toBe(294);
+    expect(result.metrics.rightWeightKg).toBe(294);
     expect(result.warnings).toEqual([
-      'Wide side carries 27% more than the narrow side (tolerance 15%)',
-      'Rear overhang reaches 2.7 m on level 3, narrow side and 4 other shelves; more than 1.2 m (4 ft) behind needs a flag',
+      'Rear overhang reaches 2.7 m on level 3, wide side and 4 other shelves; more than 1.2 m (4 ft) behind needs a flag',
     ]);
   });
 
@@ -616,6 +617,65 @@ describe('§9.3.5 case 13: outer-first lane access', () => {
       score: 5,
       hard: false,
     });
+  });
+});
+
+describe('§9.3.5 case 14: side balance on an offset-post trailer', () => {
+  const at = (b: PackBoat, shelfId: string, lane: number): Placement => ({
+    shellId: b.shellId,
+    shelfId,
+    lane,
+    offsetCm: b.cls === '8+' ? -500 : -120,
+    bowForward: true,
+    locked: true,
+    reasons: [],
+  });
+
+  it('counts the wide side’s inner lane for neither side', () => {
+    const boats = boysLoad();
+    // The coaches' own layout: level 3's eight on the narrow side.
+    const coaches = packTrailer(
+      SRA_BOYS_TRAILER,
+      boats,
+      SRA_DEFAULT_RULES.filter((r) => r.type !== 'side-balance'),
+      [],
+    );
+    expect(classGrid(SRA_BOYS_TRAILER, boats, coaches)[2]).toEqual(['8+', '4+', '4+']);
+    const report = layoutReport(SRA_BOYS_TRAILER, boats, SRA_DEFAULT_RULES, coaches.placements);
+    expect(report.metrics).toMatchObject({
+      leftWeightKg: 339,
+      rightWeightKg: 294,
+      balancePct: 7.1,
+    });
+    expect(report.warnings.filter((w) => w.includes('apart'))).toEqual([]);
+  });
+
+  it('warns past the tolerance, naming the outer lane', () => {
+    const [inner, outer, narrow] = ['Peggy', 'LLL', 'Thursday'].map((n, i) =>
+      boat(n, i < 2 ? '8+' : '4+'),
+    ) as [PackBoat, PackBoat, PackBoat];
+    const boats = [inner, outer, narrow];
+    const placements = [at(inner, 'r5', 0), at(outer, 'r5', 1), at(narrow, 'l3', 0)];
+    const report = layoutReport(SRA_BOYS_TRAILER, boats, SRA_DEFAULT_RULES, placements);
+    expect(report.metrics).toMatchObject({
+      leftWeightKg: 51,
+      rightWeightKg: 96,
+      balancePct: 30.6,
+    });
+    expect(report.warnings).toContain(
+      'Wide side, outer lane is heavier than the narrow side: 30.6% apart (tolerance 20%)',
+    );
+  });
+
+  it('packs a light load down the centerline', () => {
+    const boats = [boat('Peggy', '8+'), boat('LLL', '8+'), boat('Thursday', '4+')];
+    const result = packTrailer(SRA_BOYS_TRAILER, boats, SRA_DEFAULT_RULES, []);
+    expect(boats.map((b) => fits(result, b.shellId)).map((p) => [p.shelfId, p.lane])).toEqual([
+      ['r5', 0],
+      ['r4', 0],
+      ['r2', 0],
+    ]);
+    expect(result.metrics).toMatchObject({ leftWeightKg: 0, rightWeightKg: 0, balancePct: 0 });
   });
 });
 

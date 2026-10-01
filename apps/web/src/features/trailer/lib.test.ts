@@ -443,10 +443,10 @@ describe('"Why here?" and the metrics', () => {
     const m = model(NW);
     const metrics = metricsSummary(trailer(m, BOYS));
     expect(metrics.leftName).toBe('narrow side');
-    expect(metrics.rightName).toBe('wide side');
+    expect(metrics.rightName).toBe('wide side, outer lane');
     expect(metrics.leftKg + metrics.rightKg).toBeGreaterThan(0);
-    expect(metrics.tolerancePct).toBe(15);
-    expect(metrics.withinTolerance).toBe(metrics.balancePct <= 15);
+    expect(metrics.tolerancePct).toBe(20);
+    expect(metrics.withinTolerance).toBe(metrics.balancePct <= 20);
     expect(metrics.tiers.map((t) => t.tier)).toEqual([5, 4, 3, 2]);
     const top = metrics.tiers[0]!;
     expect(top.needsFlag).toBe(top.rearCm > REAR_FLAG_THRESHOLD_CM);

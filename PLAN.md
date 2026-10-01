@@ -476,7 +476,7 @@ A tab of the team page: the season sheet, athletes by regattas, with a checkbox 
 - Left: unplaced shells (draggable), then the gear checklist. "To load" says "No boats yet" when no entry has a shell.
 - Center: end view by default, drawn as the real cross-section (post at one third, one lane left, two lanes right, bed compartments below); plan view per level, and the isometric view, via the toggle. Selecting a cell or chip shows reasons in the inspector; after a move, focus follows the boat. A trailer switcher at the top moves between the boys' and girls' trailers; unplaced boats can be dragged onto either.
 - Right: rules panel, folded under its "Loading rules" heading and closed when the page opens (the heading shows how many rules are this regatta's and "Changed" after an edit). Editing a rule and clicking "Auto pack trailer" re-packs; locked chips stay.
-- Bottom: "Weight and balance", folded under its heading and closed when the page opens (the heading shows how many warnings the layout has): weight per side, per-tier overhang, warnings.
+- Bottom: "Weight and balance", folded under its heading and closed when the page opens (the heading shows how many warnings the layout has): weight per side (on SRA's trailers the narrow side and the wide side's outer lane, the two that balance compares), per-tier overhang, warnings.
 
 ### 6.7 Load list `/regattas/:id/load`
 
@@ -854,7 +854,7 @@ export function layoutReport(trailer, boats, rules, placements): Pick<PackResult
 export function explain(rule: Rule, trailer: TrailerDef, context?: ExplainContext): string;   // the sentence shown on the rule card
 ```
 
-`balancePct` is |L − R| / (L + R) × 100. `explain` takes optional shell and team names for pin and team sentences. Drag and drop uses `dropBoat`, which finds the offset the packer would use, instead of calling `validatePlacement` with a literal offset.
+`balancePct` is |L − R| / (L + R) × 100, where L and R are the weights that count toward each side: a boat in a lane over the trailer's centerline counts for neither (§9.3.3). `explain` takes optional shell and team names for pin and team sentences. Drag and drop uses `dropBoat`, which finds the offset the packer would use, instead of calling `validatePlacement` with a literal offset.
 
 #### 9.3.2 Geometry
 
@@ -881,12 +881,12 @@ Rules are JSON objects `{ id, type, hard, weight, enabled, origin: 'trailer'|'re
 | `class-tier` | soft | `classes[]`, `tiers[]` | "Prefer eights on the top rack" | +10 × weight when satisfied. With `hard: true` it is a Must: "Eights must go on the top rack". |
 | `heavy-low` | soft | none | "Keep heavier boats low" | −(weightKg / 10) × (tier − 1) × weight. |
 | `forward-bias` | soft | none | "Put overhang in front, over the truck, rather than behind" | −(rearOverhangCm / 50) × weight per lane. |
-| `side-balance` | soft | `tolerancePct` (default 10) | "Balance weight between the two sides" | Global: −(|L − R| / (L + R)) × 100 × weight. Ignored on `full` shelves; uses lane position (left third, right third) there instead. |
+| `side-balance` | soft | `tolerancePct` (default 20) | "Balance weight between the two sides" | Global: −(|L − R| / W) × 100 × weight, where W is the weight of every boat in the pack, so a kilogram of difference costs the same however much is loaded. A lane over the trailer's centerline counts for neither side: the inner lane of an offset-post trailer's wide side, which sits between the wheels, and the middle third of a `full` shelf (which goes by lane position: left third, right third). The warning compares `balancePct` with `tolerancePct` and says which side is heavier and how far apart they are. |
 | `unload-order` | soft | none | "Boats racing first should be easiest to reach" | +5 × weight when a boat with an earlier `firstRaceAt` is on a shelf with a better `accessRank`, and on the outer lane. |
 | `team-together` | soft | `teamIds?` | "Keep each team's boats together" | +3 × weight for each same-team neighbor (same shelf, adjacent lane, or same tier adjacent shelf). |
 | `fragile-inside` | soft | none | "Keep fragile boats in inside lanes" | +8 × weight for a `fragile` boat in a non-outer lane. |
 
-Default rule set for SRA's trailers (seeded in §14, JSON in §17.2): `fit`; `class-tier` (8+ on levels 5 and 4, High); `class-tier` (4+, 4-, 4x, 4x+ on levels 3 and 2, Medium); `heavy-low` (Low, so it breaks ties without fighting the eights-on-top convention); `forward-bias` (Medium); `side-balance` (Low, comparing the one-wide side against the two-wide side by weight; at Medium it pulls a four down to level 1 against the coaches' own layout); `unload-order` (Low); `team-together` (Low). No hard `shelf-classes` rule by default: the girls' 2026 layout put an eight on level 4 between two fours, so the convention is a preference.
+Default rule set for SRA's trailers (seeded in §14, JSON in §17.2): `fit`; `class-tier` (8+ on levels 5 and 4, High); `class-tier` (4+, 4-, 4x, 4x+ on levels 3 and 2, Medium); `heavy-low` (Low, so it breaks ties without fighting the eights-on-top convention); `forward-bias` (Medium); `side-balance` (Low, comparing the narrow side against the wide side's outer lane by weight, with the default 20% tolerance; at High it takes eights off the top levels to ride in the inner lane); `unload-order` (Low); `team-together` (Low). No hard `shelf-classes` rule by default: the girls' 2026 layout put an eight on level 4 between two fours, so the convention is a preference.
 
 The built-in fit rule's id is `fit`. A shelf's own limits (allowed classes, lane override, maximum boats and weight) report under rule ids `shelf:<id>:<key>`.
 
@@ -919,6 +919,7 @@ Small inputs (at most ~40 boats, ~15 shelves) mean clarity beats cleverness. The
 11. `explain()` yields the sentences in the catalog table for each rule type with sample params.
 12. Offset-post trailer: seven 8+ and five 4+ (the boys' 2026 Regionals load) all place on a five-level trailer with the SRA default rules, eights on the top levels, and the class grid matches `data/reference/trailer-layout-2026-regionals.md` up to the order within a level.
 13. `outer_first` lane access: with two equal 4+ where one races first, the earlier boat lands in lane 1 (outside) and the reason names the unload-order rule.
+14. `side-balance` on an offset-post trailer: the wide side's inner lane counts for neither side, so the coaches' boys' layout reports 339 kg against 294 kg with no warning; a load past the tolerance warns, naming the wide side's outer lane; a light load packs down the inner lane.
 
 ### 9.4 Load list derivation
 
@@ -1232,7 +1233,7 @@ Sources: [RCW 46.44.034](https://app.leg.wa.gov/RCW/default.aspx?cite=46.44.034)
   { "id": "r_heavy_low", "type": "heavy-low", "hard": false, "weight": 1, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_forward", "type": "forward-bias", "hard": false, "weight": 2, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_balance", "type": "side-balance", "hard": false, "weight": 1, "enabled": true, "origin": "trailer",
-    "params": { "tolerancePct": 15 } },
+    "params": { "tolerancePct": 20 } },
   { "id": "r_unload", "type": "unload-order", "hard": false, "weight": 1, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_team", "type": "team-together", "hard": false, "weight": 1, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_three_wide", "type": "shelf-lanes", "hard": true, "weight": 3, "enabled": true, "origin": "regatta",
@@ -1240,7 +1241,7 @@ Sources: [RCW 46.44.034](https://app.leg.wa.gov/RCW/default.aspx?cite=46.44.034)
 ]
 ```
 
-The last rule is what a coach adds when they say "we can squeeze three fours on the wide side of level 3": it appears with the "This regatta" tag and can be turned off or deleted after the regatta. Side balance on an offset-post trailer compares the narrow side against the wide side, so a perfectly even split is not expected; the tolerance is wider than on a symmetric trailer.
+The last rule is what a coach adds when they say "we can squeeze three fours on the wide side of level 3": it appears with the "This regatta" tag and can be turned off or deleted after the regatta. Side balance on an offset-post trailer compares the narrow side against the wide side's outer lane; the inner lane sits between the wheels and counts for neither. The tolerance is 20% on every trailer style, a 60/40 split between the two sides.
 
 ### 17.3 Pack result excerpt
 
@@ -1260,8 +1261,8 @@ The last rule is what a coach adds when they say "we can squeeze three fours on 
   "unplaced": [
     { "shellId": "sh_donq", "reasons": [ { "ruleId": "r_fit", "hard": true, "text": "No active shelf has a lane with 19.9 m free" } ] }
   ],
-  "metrics": { "leftWeightKg": 384, "rightWeightKg": 576, "balancePct": 20.0, "perShelf": [] },
-  "warnings": ["Wide side carries 20% more than the narrow side (tolerance 15%)"]
+  "metrics": { "leftWeightKg": 192, "rightWeightKg": 384, "balancePct": 33.3, "perShelf": [] },
+  "warnings": ["Wide side, outer lane is heavier than the narrow side: 33.3% apart (tolerance 20%)"]
 }
 ```
 

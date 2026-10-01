@@ -456,7 +456,7 @@ function reportWarnings(lay: Layout, unplaced: readonly number[]): string[] {
           ? [m.sideNames.left, m.sideNames.right]
           : [m.sideNames.right, m.sideNames.left];
       out.push(
-        `${capitalize(heavy)} carries ${Math.round(pct)}% more than the ${light} (tolerance ${tol}%)`,
+        `${capitalize(heavy)} is heavier than the ${light}: ${round1(pct)}% apart (tolerance ${tol}%)`,
       );
     }
   }

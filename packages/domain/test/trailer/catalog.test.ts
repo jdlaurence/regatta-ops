@@ -90,7 +90,7 @@ describe('makeRule', () => {
       weight: 2,
       enabled: true,
       origin: 'trailer',
-      params: { tolerancePct: 10 },
+      params: { tolerancePct: 20 },
     });
     expect(makeRule('fit').params).toEqual({ clearanceCm: 20, gapCm: 30 });
   });

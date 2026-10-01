@@ -73,15 +73,26 @@ export class Layout {
     return false;
   }
 
-  /** −1 left, +1 right, 0 center (middle third of a full-width shelf). */
+  /**
+   * −1 left, +1 right, 0 center: a lane over the trailer's centerline (the inner lane of an
+   * offset-post trailer's wide side), or the middle third of a full-width shelf.
+   */
   side(s: number, l: number): -1 | 0 | 1 {
     const sh = this.m.shelves[s]!;
-    if (sh.def.columnKey === 'left') return -1;
-    if (sh.def.columnKey === 'right') return 1;
     // Depends only on the lane itself so a boat's side never changes while it sits there.
     const n = Math.max(sh.laneSlots, l + 1);
-    const pos = (l + 0.5) / n;
-    return pos < 1 / 3 ? -1 : pos > 2 / 3 ? 1 : 0;
+    if (sh.def.columnKey === 'full') {
+      const pos = (l + 0.5) / n;
+      return pos < 1 / 3 ? -1 : pos > 2 / 3 ? 1 : 0;
+    }
+    // The shelf runs from the post to the trailer's edge; lanes count out from the post.
+    const post = this.m.postAt;
+    const reach = sh.def.columnKey === 'left' ? -post : 1 - post;
+    const near = post + (reach * l) / n;
+    const far = post + (reach * (l + 1)) / n;
+    if (Math.max(near, far) <= 0.5 + EPS) return -1;
+    if (Math.min(near, far) >= 0.5 - EPS) return 1;
+    return 0;
   }
 
   /** Lane cells to consider on a shelf: every used lane, one new one, and any override lanes. */
