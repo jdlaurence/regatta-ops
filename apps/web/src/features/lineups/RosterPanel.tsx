@@ -14,6 +14,7 @@ import { athleteName, type Athlete } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { TeamChip } from '@/components/chips';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { Tooltip } from '@/components/ui/menu';
 import { prefersReducedMotion } from '@/lib/motion';
 import { formatWeekday } from '@/lib/dates';
@@ -509,11 +510,13 @@ export function RosterDrawer() {
       {!open && unboated.length > 0 && (
         <div className="flex flex-col gap-1.5">
           <p className="text-sm text-ink-2">Not in a boat yet</p>
-          <ul className="flex max-h-20 flex-wrap gap-1 overflow-y-auto">
-            {unboated.map((r) => (
-              <UnboatedChip key={r.athlete.id} row={r} draggable={canEdit && !isPhone} />
-            ))}
-          </ul>
+          <ScrollRegion label="Not in a boat yet" className="max-h-20 overflow-y-auto">
+            <ul className="flex flex-wrap gap-1">
+              {unboated.map((r) => (
+                <UnboatedChip key={r.athlete.id} row={r} draggable={canEdit && !isPhone} />
+              ))}
+            </ul>
+          </ScrollRegion>
         </div>
       )}
       {open && (
