@@ -1,17 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Share links (PLAN.md §2, §4.8, §8.2). Projection and check-off logic: regatta-ops/share.js.
-//
-// Records (coaches and admins, through the normal collection API):
-// - create: the server generates the token (40 random letters and digits) and sets created_by;
-//   client values for token, revoked_at, and created_by are ignored.
-// - update: revoke by setting revoked_at (the server stamps its own time). A revoked link stays
-//   revoked. token, regatta, team, and created_by never change; can_check_load may.
-//
-// Public routes (no sign-in; the token is the credential; revoked or unknown tokens get 404):
-//   GET  /api/regatta-ops/share/{token}                     read-only projection (see backend/README.md)
-//   POST /api/regatta-ops/share/{token}/load-items/{id}     { loaded?, returned?, by? }, links with
-//                                                   can_check_load only
-// Both are rate-limited per client IP, and the POST body is capped at 4 KB.
+// Share links (backend/README.md "Share links"): the server makes the token and stamps
+// revocation, and two public, rate-limited routes read a link and tick its load list. Projection
+// and check-off logic: regatta-ops/share.js.
 
 onRecordCreateRequest((e) => {
   if (!e.hasSuperuserAuth()) {

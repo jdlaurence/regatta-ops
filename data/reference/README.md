@@ -1,6 +1,6 @@
 # Reference data
 
-Derived from the club spreadsheets in `data/` on 2026-09-29. These files exist so the build team never has to open the workbooks.
+Derived from the club spreadsheets in `data/` on 2026-09-29. These files exist so nobody working on the app has to open the workbooks.
 
 | File | Source | Use |
 |---|---|---|

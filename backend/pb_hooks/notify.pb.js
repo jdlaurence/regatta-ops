@@ -1,13 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Notification jobs (PLAN.md §4.6). The logic is in regatta-ops/notify.js.
-//
-// - regatta_ops_notify_flush, every minute: sends queued change emails that are due.
-// - regatta_ops_daily_digest, every hour on the hour (cron runs in UTC): sends the digest for regattas
-//   whose local time is REGATTA_OPS_DIGEST_HOUR:00 (default 6).
-// - Superuser-only routes run the same jobs on demand (tests, or an admin checking mail setup):
-//     POST /api/regatta-ops/jobs/notify  { now?: ISO instant }                     → { sent }
-//     POST /api/regatta-ops/jobs/digest  { now?: ISO instant, anyHour?: boolean }  → { emails }
-//   anyHour defaults to true for the route: every regatta in the 7-day window counts as due.
+// Notification jobs (backend/README.md "Email"): the change-email flush every minute, the daily
+// digest every hour on the hour (cron runs in UTC), and superuser-only routes that run both on
+// demand. The logic is in regatta-ops/notify.js.
 
 cronAdd('regatta_ops_notify_flush', '* * * * *', () => {
   try {

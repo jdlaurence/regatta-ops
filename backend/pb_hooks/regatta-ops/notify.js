@@ -1,20 +1,12 @@
-// Email notifications (PLAN.md §4.6). Scheduled by notify.pb.js.
+// Email notifications (backend/README.md "Email"), scheduled by notify.pb.js.
 //
-// Change emails. When a signed-in user changes an entry or one of its seats and that user is not a
-// coach of the entry's team, the team's coaches hear about it. "Coach of a team" means a user with
-// role coach or admin whose default_team is that team. Changes queue on a notification_log row per
-// (entry, team) and go out from a once-a-minute job, so a batch (a seat swap is three writes)
-// lands in one email. After an email, the next one for that entry waits 10 minutes; changes made
-// in between are collected into it, never dropped. Opt out: users.preferences.emailOnChange = false.
+// Change emails queue on a notification_log row per (entry, team) and go out from a
+// once-a-minute job, so a batch (a seat swap is three writes) lands in one email. After an email,
+// the next one for that entry waits 10 minutes and collects what changed meanwhile.
 //
-// Daily digest. Once an hour the digest job looks for regattas that are not archived, have not
-// ended, and start within the next 7 days (in the regatta's time zone), and whose local hour is
-// REGATTA_OPS_DIGEST_HOUR (default 6). Each coach (role coach or admin with a default_team) whose team is
-// in such a regatta gets one email: schedule changes, changes to their team's entries, and how many
-// other teams' entries changed in the last 24 hours. Conflicts are computed by the domain engine in
-// the browser (TypeScript, not available here), so the digest links to the conflicts panel instead
-// of counting them. A notification_log row per (coach, regatta, local day) stops repeats.
-// Opt out: users.preferences.emailDigest = false.
+// The daily digest keeps a notification_log row per (coach, regatta, local day) to stop repeats.
+// Conflicts are computed in the browser, so the digest links to the conflicts panel instead of
+// counting them.
 
 const WINDOW_MS = 10 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
