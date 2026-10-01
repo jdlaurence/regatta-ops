@@ -28,6 +28,7 @@ import {
   type SeatRef,
 } from './lib';
 import { useLineupUi } from './store';
+import { planWrite, toggledDraft } from '@/features/availability/availability-model';
 
 /** PocketBase takes up to 200 operations per batch. */
 const BATCH_LIMIT = 200;
@@ -47,6 +48,11 @@ export interface LineupActions {
   /** Move an entry to another event; its class follows the event. */
   moveEntry: (entry: Entry, event: RegattaEvent | null) => void;
   copyRows: (rows: CopyRow[]) => Promise<number>;
+  /**
+   * Mark an athlete out for the whole regatta, or back to plainly coming (from out, out some
+   * days, or maybe): the roster's one-click availability toggle (PLAN.md §4.4).
+   */
+  toggleAvailability: (athleteId: Id) => void;
 }
 
 interface Args {
@@ -322,6 +328,34 @@ export function useLineupActions({
         });
       });
 
+    const toggleAvailability = (athleteId: Id) =>
+      guard(() => {
+        const existing = index.availabilityByAthlete.get(athleteId);
+        const next = toggledDraft(existing, index.days);
+        const op = planWrite(existing, next, { regattaId, athleteId, regattaDays: index.days });
+        if (!op) return;
+        const name = nameOf(athleteId);
+        const out = next.status === 'unavailable';
+        const seated = new Set(
+          (index.seatsByAthlete.get(athleteId) ?? [])
+            .filter((s) => s.entry.status !== 'scratched')
+            .map((s) => s.entry.id),
+        ).size;
+        mutate([op], {
+          onSuccess: () => {
+            const text = out ? `${name} marked unavailable` : `${name} marked available`;
+            ui().announce(`${text}.`);
+            if (out && seated > 0) {
+              toast.warning(text, {
+                description: `Still seated in ${seated === 1 ? '1 entry' : `${seated} entries`}, which now ${seated === 1 ? 'shows' : 'show'} an error.`,
+              });
+            } else {
+              toast.success(text);
+            }
+          },
+        });
+      });
+
     return {
       place,
       clear,
@@ -333,6 +367,7 @@ export function useLineupActions({
       duplicateEntry,
       moveEntry,
       copyRows,
+      toggleAvailability,
     };
   }, [index, regattaId, team, isFinal, canEdit, mutate, mutateAsync]);
 }

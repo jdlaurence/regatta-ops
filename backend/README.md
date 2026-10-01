@@ -15,6 +15,16 @@ One PocketBase binary, pinned to **v0.40.4**, with SRT's collections and API rul
 | `pnpm pb:types`                   | Regenerate `apps/web/src/data/pb-types.ts` from the migrations (throwaway server). Commit the result.                        |
 | `pnpm --filter @srt/backend test` | Rule and hook tests against real PocketBase instances (skipped with a message when the binary is missing).                   |
 
+## Real junior rosters
+
+`pb:seed` and `pb:reset` read the club's roster workbooks in `data/` when they are there
+(`*Boys*Roster*.xlsx`, `*Girls*Roster*.xlsx`; git ignores them) and seed those junior boys and girls
+instead of invented ones, so real names reach `pb_data` and never the repository
+(`packages/seed/src/local-rosters.ts`). A team without a workbook stays invented, and `SRT_SEED_INVENTED=1` keeps both
+invented. Sides and sculling are not on the rosters; the seed assigns them, so set them in the app.
+Athlete ids come from the name, so after switching between invented and real athletes run
+`pnpm pb:reset`, which clears the old ones. The unit tests and both Playwright suites always use invented athletes. `pnpm demo` reads the same workbooks (PLAN.md §18).
+
 ## Local accounts
 
 - Dashboard: http://127.0.0.1:8090/_/ as superuser `admin@srt.local` / `srt-local-dev`

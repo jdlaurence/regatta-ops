@@ -72,6 +72,8 @@ export default defineConfig({
       ? [
           {
             command: `pnpm build:demo && pnpm preview:demo --port ${DEMO_PORT} --strictPort`,
+            // Invented athletes, so screenshots and traces never show the real rosters.
+            env: { SRT_SEED_INVENTED: '1' },
             url: `http://localhost:${DEMO_PORT}`,
             reuseExistingServer,
             timeout: 240_000,

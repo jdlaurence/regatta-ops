@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Builds SRT's seed World (PLAN.md §14) from data/reference. Pure and deterministic; used by the PocketBase seed script and by demo mode.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./local-rosters": "./src/local-rosters.ts"
   },
   "scripts": {
     "gen": "tsx scripts/gen-reference.ts",
@@ -13,7 +14,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@srt/domain": "workspace:*"
+    "@srt/domain": "workspace:*",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "vitest": "^5.0.2"

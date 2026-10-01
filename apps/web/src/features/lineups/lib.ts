@@ -5,7 +5,10 @@
 import {
   boatClassSpec,
   clockAt,
+  isAvailableOn,
   isComing,
+  isOlderAgeGroup,
+  juniorAgeGroup,
   isCoxed,
   isHotSeat,
   isSculling,
@@ -251,6 +254,8 @@ export interface RosterAthlete {
   available: boolean;
   /** The unavailability reason, when one was given. */
   reason?: string;
+  /** On a multi-day regatta, the days they are coming when they miss some: "Sat only". */
+  comingDays?: string[];
 }
 
 export interface RosterLevel {
@@ -262,6 +267,7 @@ export interface RosterLevel {
 export interface RosterView {
   /** Available athletes, experienced then novice (the boys' sheet groups them this way). */
   levels: RosterLevel[];
+  /** Active team athletes not coming on any day: listed last, dimmed, still pickable. */
   unavailable: RosterAthlete[];
   /** Athletes of other teams seated in this team's entries. */
   borrowed: RosterAthlete[];
@@ -319,6 +325,10 @@ export function rosterView(index: LineupIndex, teamId: Id): RosterView {
     const available = isComing(av, index.days);
     const row: RosterAthlete = { athlete, entryCount, available };
     if (av?.reason?.trim()) row.reason = av.reason.trim();
+    if (available && index.days.length > 1) {
+      const coming = index.days.filter((d) => isAvailableOn(av, d));
+      if (coming.length < index.days.length) row.comingDays = coming;
+    }
     if (!available) {
       unavailable.push(row);
       continue;
@@ -344,6 +354,8 @@ export interface RosterFilters {
   scullers: boolean;
   coxswains: boolean;
   unboated: boolean;
+  /** Eligible for a U17 event: U17 and younger by birth year (juniors teams only). */
+  u17: boolean;
 }
 
 export const EMPTY_FILTERS: RosterFilters = {
@@ -352,7 +364,22 @@ export const EMPTY_FILTERS: RosterFilters = {
   scullers: false,
   coxswains: false,
   unboated: false,
+  u17: false,
 };
+
+/** The season year for junior age groups: the regatta's year, so fall and spring differ. */
+export function regattaSeasonYear(index: LineupIndex): number {
+  return Number(index.data.regatta.startDate.slice(0, 4));
+}
+
+/**
+ * U17 and younger in `seasonYear` (PLAN.md §9.1): born `seasonYear - 16` or later. An athlete
+ * with no birth year is left out, since their eligibility is unknown.
+ */
+export function isU17Eligible(a: Pick<Athlete, 'birthYear'>, seasonYear: number): boolean {
+  if (!a.birthYear) return false;
+  return !isOlderAgeGroup(juniorAgeGroup(a.birthYear, seasonYear), 'U17');
+}
 
 function normalize(s: string): string {
   return s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
@@ -362,8 +389,9 @@ export function athleteSearchText(a: Athlete): string {
   return normalize([a.firstName, a.preferredName ?? '', a.lastName].join(' '));
 }
 
-export function matchesFilters(row: RosterAthlete, f: RosterFilters): boolean {
+export function matchesFilters(row: RosterAthlete, f: RosterFilters, seasonYear: number): boolean {
   const a = row.athlete;
+  if (f.u17 && !isU17Eligible(a, seasonYear)) return false;
   if (f.side && a.side !== f.side && a.side !== 'both') return false;
   if (f.scullers && !a.canScull) return false;
   if (f.coxswains && !a.canCox) return false;
@@ -377,7 +405,7 @@ export function matchesFilters(row: RosterAthlete, f: RosterFilters): boolean {
 }
 
 export function filtersActive(f: RosterFilters): boolean {
-  return !!(f.query.trim() || f.side || f.scullers || f.coxswains || f.unboated);
+  return !!(f.query.trim() || f.side || f.scullers || f.coxswains || f.unboated || f.u17);
 }
 
 // ---------------------------------------------------------------------------

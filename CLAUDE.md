@@ -73,7 +73,10 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
 - Data access: components never import the PocketBase SDK. All reads and writes go through the
   `DataStore` (`apps/web/src/data/store.ts`) via hooks in `apps/web/src/data/`.
 - **Athlete names from the club's workbooks never enter the repository**: not in seed, tests,
-  fixtures, screenshots, or docs. Seed athletes are invented. Equipment names are fine.
+  fixtures, screenshots, or docs. Seed athletes are invented. `pb:seed` and `pnpm demo` read the
+  ignored roster workbooks at run time (`@srt/seed/local-rosters`), so the local database and the
+  local demo show real juniors: never print or log the names, and run the demo with
+  `SRT_SEED_INVENTED=1` for any screenshot or recording. Equipment names are fine.
 - UI words follow the glossary (§3) exactly. Sentence case. Buttons say what happens. No
   exclamation points, no apologies, no all-caps or eyebrow labels (§5.5).
 - Styling: Tailwind utilities with the tokens in `apps/web/src/styles/tokens.css`. No inline hex

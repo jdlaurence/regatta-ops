@@ -10,6 +10,13 @@ interface ImportMetaEnv {
   readonly VITE_CACHE_BUSTER?: string;
 }
 
+declare module 'virtual:srt-local-rosters' {
+  import type { RosterAthlete } from '@srt/seed';
+  /** Real junior rosters in demo mode (scripts/local-rosters.ts); empty otherwise. */
+  const rosters: RosterAthlete[];
+  export default rosters;
+}
+
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }

@@ -1,8 +1,9 @@
-// A team's page (PLAN.md §6.10): team settings and the roster table with inline editing,
-// filters, bulk actions, the athlete drawer, CSV import, and export.
+// A team's page (PLAN.md §6.10): team settings, and two tabs. Roster: the athlete table with
+// inline editing, filters, bulk actions, the athlete drawer, CSV import, and export.
+// Availability (/teams/:id/availability): the season sheet, athletes by regattas (§4.2).
 
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, Navigate, NavLink, useParams } from 'react-router';
 import { Check, Download, Plus, Search, Settings2, Upload, UserPlus } from 'lucide-react';
 import { athleteName, type Athlete, type Team } from '@srt/domain';
 import { batchOp, useBatch, useCan, useList, useRecord, useUpdate, type Patch } from '@/data';
@@ -18,6 +19,7 @@ import { cn } from '@/lib/cn';
 import { downloadText } from '@/components/CsvImport';
 import { useSeasonYear } from '@/features/settings/hooks';
 import { BackLink } from '@/components/BackLink';
+import { AvailabilitySheet } from '@/features/availability/AvailabilitySheet';
 import { AddAthleteDialog } from './AddAthleteDialog';
 import { AthleteSheet } from './AthleteSheet';
 import { useMediaQuery } from './hooks';
@@ -35,9 +37,39 @@ import {
 import { RosterTable } from './RosterTable';
 import { TeamFormDialog } from './TeamFormDialog';
 
+export const TEAM_TABS = [
+  { tab: '', label: 'Roster' },
+  { tab: 'availability', label: 'Availability' },
+] as const;
+
+export type TeamTab = (typeof TEAM_TABS)[number]['tab'];
+
+function TeamNav({ team }: { team: Team }) {
+  return (
+    <nav aria-label="Team sections" className="flex gap-1 border-b border-line">
+      {TEAM_TABS.map((t) => (
+        <NavLink
+          key={t.tab}
+          to={t.tab ? `/teams/${team.id}/${t.tab}` : `/teams/${team.id}`}
+          end
+          className={({ isActive }) =>
+            cn(
+              '-mb-px flex h-10 items-center border-b-2 px-2.5 text-base font-medium pointer-coarse:h-11',
+              isActive ? 'border-accent text-ink' : 'border-transparent text-ink-2 hover:text-ink',
+            )
+          }
+        >
+          {t.label}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
 export default function TeamPage() {
-  const { id = '' } = useParams();
+  const { id = '', tab = '' } = useParams();
   const team = useRecord('teams', id);
+  if (!TEAM_TABS.some((t) => t.tab === tab)) return <Navigate to={`/teams/${id}`} replace />;
   if (team.isError) {
     return (
       <ErrorState
@@ -64,12 +96,12 @@ export default function TeamPage() {
       </div>
     );
   }
-  return <TeamRoster team={team.data} />;
+  return <TeamRoster team={team.data} tab={tab as TeamTab} />;
 }
 
 type DialogName = 'add' | 'import' | 'settings';
 
-function TeamRoster({ team }: { team: Team }) {
+function TeamRoster({ team, tab }: { team: Team; tab: TeamTab }) {
   const canEdit = useCan('roster.edit');
   const canManage = useCan('team.manage');
   const seasonYear = useSeasonYear();
@@ -206,11 +238,13 @@ function TeamRoster({ team }: { team: Team }) {
               <Settings2 aria-hidden />
               Team settings
             </Button>
-            <Button onClick={exportCsv} disabled={roster.length === 0}>
-              <Download aria-hidden />
-              Export CSV
-            </Button>
-            {canEdit && (
+            {tab === '' && (
+              <Button onClick={exportCsv} disabled={roster.length === 0}>
+                <Download aria-hidden />
+                Export CSV
+              </Button>
+            )}
+            {canEdit && tab === '' && (
               <>
                 <Button onClick={() => setDialog('import')}>
                   <Upload aria-hidden />
@@ -225,8 +259,11 @@ function TeamRoster({ team }: { team: Team }) {
           </>
         }
       />
+      <TeamNav team={team} />
 
-      {error ? (
+      {tab === 'availability' ? (
+        <AvailabilitySheet team={team} />
+      ) : error ? (
         <ErrorState
           title="The roster did not load."
           error={error}

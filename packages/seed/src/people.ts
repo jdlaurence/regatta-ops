@@ -112,67 +112,118 @@ export function addTeams(w: World): void {
 // ---------------------------------------------------------------------------
 // Athletes
 
+/**
+ * A junior athlete from the club's roster workbooks. `pnpm pb:seed` reads them from the ignored
+ * files in data/ and passes them to buildSeedWorld, so real names reach the local database and
+ * never the repository (CLAUDE.md). Sides and sculling are not on the rosters and are assigned.
+ */
+export interface RosterAthlete {
+  team: 'boys' | 'girls';
+  firstName: string;
+  lastName: string;
+  preferredName?: string;
+  birthYear: number;
+  /** Defaults to birthYear + 19. */
+  gradYear?: number;
+  level: AthleteLevel;
+  cox: boolean;
+}
+
 interface AthleteSpec {
   cox: boolean;
   birthYear: number;
   level: AthleteLevel;
   gender: 'M' | 'F';
+  /** Defaults to birthYear + 19 for juniors. */
+  gradYear?: number;
   inactive?: boolean;
   notes?: string;
+  /** Real names from a roster; invented names are drawn when absent. */
+  name?: { firstName: string; lastName: string; preferredName?: string };
 }
 
-function repeat(n: number, spec: Omit<AthleteSpec, 'cox'>): AthleteSpec[] {
-  return Array.from({ length: n }, () => ({ cox: false, ...spec }));
+/** Roster rows in the invented rosters' order: by birth year, coxswains then experienced first. */
+function rosterSpecs(rows: readonly RosterAthlete[]): AthleteSpec[] {
+  const rank = (r: RosterAthlete) => (r.cox ? 0 : r.level === 'experienced' ? 1 : 2);
+  return [...rows]
+    .sort((a, b) => a.birthYear - b.birthYear || rank(a) - rank(b))
+    .map((r) => ({
+      cox: r.cox,
+      birthYear: r.birthYear,
+      level: r.level,
+      gender: r.team === 'boys' ? 'M' : 'F',
+      ...(r.gradYear !== undefined && { gradYear: r.gradYear }),
+      name: {
+        firstName: r.firstName,
+        lastName: r.lastName,
+        ...(r.preferredName && { preferredName: r.preferredName }),
+      },
+    }));
 }
 
 /**
- * Junior rosters for the 2026/27 season (seasonYear 2026: born 2008 is U19, 2012 is U15; in the
- * 2025 season the same athletes are one year younger). Three dedicated coxswains per team.
+ * Junior rosters for the 2026/27 season (seasonYear 2026: born 2008 is U19, 2013 is U15). The
+ * counts by birth year, level, grade, and coxswain match the club's fall 2026 rosters; the names
+ * are invented. The rosters do not record sides or sculling, so addAthletes assigns those.
  */
 function juniorSpecs(team: 'boys' | 'girls'): AthleteSpec[] {
-  const g = team === 'boys' ? 'M' : 'F';
   if (team === 'boys') {
+    const b = (n: number, birthYear: number, level: AthleteLevel, cox = false) =>
+      Array.from({ length: n }, () => ({ cox, birthYear, level, gender: 'M' as const }));
     return [
-      { cox: true, birthYear: 2009, level: 'experienced', gender: g, notes: 'Head coxswain.' },
-      { cox: true, birthYear: 2010, level: 'experienced', gender: g },
-      { cox: true, birthYear: 2011, level: 'novice', gender: g },
-      ...repeat(6, { birthYear: 2008, level: 'experienced', gender: g }),
-      {
-        cox: false,
-        birthYear: 2008,
-        level: 'experienced',
-        gender: g,
-        inactive: true,
-        notes: 'Taking the fall season off for cross country.',
-      },
-      ...repeat(7, { birthYear: 2009, level: 'experienced', gender: g }),
-      ...repeat(4, { birthYear: 2010, level: 'experienced', gender: g }),
-      ...repeat(2, { birthYear: 2009, level: 'novice', gender: g }),
-      ...repeat(5, { birthYear: 2010, level: 'novice', gender: g }),
-      ...repeat(6, { birthYear: 2011, level: 'novice', gender: g }),
-      ...repeat(5, { birthYear: 2012, level: 'novice', gender: g }),
-      { cox: false, birthYear: 2012, level: 'novice', gender: g, inactive: true },
+      { cox: true, birthYear: 2008, level: 'experienced', gender: 'M', notes: 'Head coxswain.' },
+      ...b(5, 2008, 'experienced'),
+      ...b(1, 2008, 'novice'),
+      ...b(4, 2009, 'experienced', true),
+      ...b(12, 2009, 'experienced'),
+      ...b(2, 2009, 'novice'),
+      ...b(1, 2010, 'experienced', true),
+      ...b(16, 2010, 'experienced'),
+      ...b(2, 2010, 'novice'),
+      ...b(2, 2011, 'experienced', true),
+      ...b(12, 2011, 'experienced'),
+      ...b(6, 2011, 'novice'),
+      ...b(4, 2012, 'experienced'),
+      ...b(1, 2012, 'novice', true),
+      ...b(8, 2012, 'novice'),
+      ...b(1, 2013, 'novice'),
     ];
   }
+  // The girls' roster lists grades; 12th grade graduates in 2027. A few rows pair a birth year
+  // with an unusual grade; they are kept as the roster has them.
+  const g = (n: number, birthYear: number, grade: number, level: AthleteLevel, cox = false) =>
+    Array.from({ length: n }, () => ({
+      cox,
+      birthYear,
+      gradYear: 2039 - grade,
+      level,
+      gender: 'F' as const,
+    }));
   return [
-    { cox: true, birthYear: 2009, level: 'experienced', gender: g, notes: 'Head coxswain.' },
-    { cox: true, birthYear: 2010, level: 'experienced', gender: g },
-    { cox: true, birthYear: 2012, level: 'novice', gender: g },
-    ...repeat(7, { birthYear: 2008, level: 'experienced', gender: g }),
-    ...repeat(6, { birthYear: 2009, level: 'experienced', gender: g }),
-    {
-      cox: false,
-      birthYear: 2009,
-      level: 'experienced',
-      gender: g,
-      inactive: true,
-      notes: 'Out for the season with a back injury.',
-    },
-    ...repeat(5, { birthYear: 2010, level: 'experienced', gender: g }),
-    ...repeat(1, { birthYear: 2009, level: 'novice', gender: g }),
-    ...repeat(4, { birthYear: 2010, level: 'novice', gender: g }),
-    ...repeat(5, { birthYear: 2011, level: 'novice', gender: g }),
-    ...repeat(4, { birthYear: 2012, level: 'novice', gender: g }),
+    { ...g(1, 2008, 12, 'experienced', true)[0]!, notes: 'Head coxswain.' },
+    ...g(1, 2008, 11, 'experienced'),
+    ...g(1, 2009, 12, 'experienced', true),
+    ...g(7, 2009, 12, 'experienced'),
+    ...g(2, 2009, 11, 'experienced'),
+    ...g(1, 2009, 10, 'experienced'),
+    ...g(1, 2009, 8, 'novice'),
+    ...g(1, 2010, 11, 'experienced', true),
+    ...g(7, 2010, 11, 'experienced'),
+    ...g(1, 2010, 10, 'experienced', true),
+    ...g(5, 2010, 10, 'experienced'),
+    ...g(1, 2010, 10, 'novice', true),
+    ...g(4, 2010, 10, 'novice'),
+    ...g(1, 2011, 10, 'experienced', true),
+    ...g(3, 2011, 10, 'experienced'),
+    ...g(5, 2011, 9, 'experienced'),
+    ...g(1, 2011, 9, 'novice'),
+    ...g(1, 2012, 11, 'experienced'),
+    ...g(1, 2012, 9, 'experienced', true),
+    ...g(6, 2012, 9, 'experienced'),
+    ...g(1, 2012, 9, 'novice', true),
+    ...g(3, 2012, 9, 'novice'),
+    ...g(1, 2012, 8, 'novice'),
+    ...g(1, 2013, 8, 'novice'),
   ];
 }
 
@@ -221,8 +272,11 @@ function mastersSpecs(team: '5am' | 'evening'): AthleteSpec[] {
   ];
 }
 
-/** Every athlete's last name is unique across the club, so "Ava C." style short names differ. */
-export function addAthletes(w: World): void {
+/**
+ * Every invented last name is unique across the club, so "Ava C." style short names differ. A
+ * junior team with rows in `rosters` gets those athletes instead of invented ones.
+ */
+export function addAthletes(w: World, rosters: readonly RosterAthlete[] = []): void {
   const lastNames = rng('names:last').shuffle(LAST_NAMES);
   let nextLast = 0;
   const firstNamePools: Record<TeamKey, { M: readonly string[]; F: readonly string[] }> = {
@@ -240,14 +294,21 @@ export function addAthletes(w: World): void {
   };
 
   for (const team of ['boys', 'girls', '5am', 'evening'] as const) {
-    const specs = team === 'boys' || team === 'girls' ? juniorSpecs(team) : mastersSpecs(team);
+    const roster = rosters.filter((r) => r.team === team);
+    const specs =
+      team === 'boys' || team === 'girls'
+        ? roster.length > 0
+          ? rosterSpecs(roster)
+          : juniorSpecs(team)
+        : mastersSpecs(team);
     const used = { M: 0, F: 0 };
     let rowerIndex = 0;
     let portNext = true;
     let rowersWhoCox = 0;
     specs.forEach((spec, i) => {
-      const firstName = firstNamePools[team][spec.gender][used[spec.gender]++]!;
-      const lastName = lastNames[nextLast++]!;
+      const firstName =
+        spec.name?.firstName ?? firstNamePools[team][spec.gender][used[spec.gender]++]!;
+      const lastName = spec.name?.lastName ?? lastNames[nextLast++]!;
       const junior = team === 'boys' || team === 'girls';
       let side: AthleteSide = 'none';
       let canScull = false;
@@ -268,7 +329,10 @@ export function addAthletes(w: World): void {
         rowerIndex++;
       }
       const athlete: Athlete = {
-        id: stableId(`athlete:${team}:${i}`),
+        // Roster athletes keep their id when the roster gains or loses someone.
+        id: stableId(
+          spec.name ? `athlete:${team}:${firstName} ${lastName}` : `athlete:${team}:${i}`,
+        ),
         teamId: teamId(team),
         firstName,
         lastName,
@@ -277,11 +341,11 @@ export function addAthletes(w: World): void {
         canCox,
         birthYear: spec.birthYear,
         gender: spec.gender,
-        gradYear: junior ? spec.birthYear + 19 : null,
+        gradYear: junior ? (spec.gradYear ?? spec.birthYear + 19) : null,
         level: spec.level,
         status: spec.inactive ? 'inactive' : 'active',
       };
-      const preferred = PREFERRED_NAMES[firstName];
+      const preferred = spec.name ? spec.name.preferredName : PREFERRED_NAMES[firstName];
       if (preferred) athlete.preferredName = preferred;
       if (spec.notes) athlete.notes = spec.notes;
       w.athletes.push(athlete);

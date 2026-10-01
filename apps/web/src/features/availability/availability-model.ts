@@ -1,9 +1,17 @@
 // Availability rules (PLAN.md §4.2, §8.1): absence of a record means available, so a record
 // exists only while an athlete is not plainly available (a status other than available, a
 // per-day override, or a reason). `days[day]` overrides the regatta-wide status on that day.
-// Pure; the page turns drafts into batch writes.
+// Pure; the team's availability sheet and the lineups roster turn drafts into batch writes.
 
-import { isComing, type Athlete, type Availability, type AvailabilityStatus } from '@srt/domain';
+import {
+  isAvailableOn,
+  isComing,
+  type Athlete,
+  type Availability,
+  type AvailabilityStatus,
+  type Entry,
+  type RegattaEvent,
+} from '@srt/domain';
 import { batchOp, type BatchOp } from '@/data';
 
 export interface AvailabilityDraft {
@@ -111,25 +119,6 @@ export function planWrite(
   return batchOp.update('availability', existing.id, { status: d.status, days, reason });
 }
 
-/**
- * The draft for another regatta's record, with per-day overrides moved by position (day 1 to
- * day 1). Overrides for days the target does not have are dropped.
- */
-export function carryOver(
-  source: Availability | undefined,
-  sourceDays: readonly string[],
-  targetDays: readonly string[],
-): AvailabilityDraft {
-  const d = draftOf(source);
-  const days: Record<string, AvailabilityStatus> = {};
-  sourceDays.forEach((day, i) => {
-    const v = d.days[day];
-    const target = targetDays[i];
-    if (v && target) days[target] = v;
-  });
-  return normalizeDraft({ ...d, days }, targetDays);
-}
-
 export interface AvailabilityCounts {
   total: number;
   /** Coming on at least one day ('maybe' counts, PLAN.md §18 item 5). */
@@ -159,25 +148,54 @@ export function countText(c: AvailabilityCounts): string {
 }
 
 /**
- * Writes that make this regatta's availability match another's for these athletes: the
- * source's status, reason, and per-day choices (by position); athletes with no source record
- * become available here.
+ * What one regatta looks like for one athlete, at a glance: coming every day, out every day,
+ * out on some days of a multi-day regatta, or a maybe.
  */
-export function copyOps(
-  athletes: readonly Pick<Athlete, 'id'>[],
-  target: ReadonlyMap<string, Availability>,
-  source: ReadonlyMap<string, Availability>,
-  ctx: { regattaId: string; sourceDays: readonly string[]; targetDays: readonly string[] },
-): BatchOp[] {
-  const ops: BatchOp[] = [];
-  for (const a of athletes) {
-    const draft = carryOver(source.get(a.id), ctx.sourceDays, ctx.targetDays);
-    const op = planWrite(target.get(a.id), draft, {
-      regattaId: ctx.regattaId,
-      athleteId: a.id,
-      regattaDays: ctx.targetDays,
-    });
-    if (op) ops.push(op);
-  }
-  return ops;
+export type CellState = 'available' | 'unavailable' | 'partial' | 'maybe';
+
+export function cellState(av: Availability | undefined, regattaDays: readonly string[]): CellState {
+  const d = draftOf(av);
+  const statuses = regattaDays.length > 0 ? regattaDays.map((day) => statusOn(d, day)) : [d.status];
+  if (statuses.every((s) => s === 'unavailable')) return 'unavailable';
+  if (statuses.some((s) => s === 'unavailable')) return 'partial';
+  if (statuses.some((s) => s === 'maybe')) return 'maybe';
+  return 'available';
+}
+
+/** The regatta days the athlete is coming (available or maybe). */
+export function comingDays(av: Availability | undefined, regattaDays: readonly string[]): string[] {
+  const d = draftOf(av);
+  return regattaDays.filter((day) => statusOn(d, day) !== 'unavailable');
+}
+
+/**
+ * A checkbox click on the sheet or the roster: someone plainly coming is marked out for the
+ * whole regatta (any reason stays); anyone else (out, out some days, maybe) becomes plainly
+ * available, and the absence reason goes with the absence.
+ */
+export function toggledDraft(
+  av: Availability | undefined,
+  regattaDays: readonly string[],
+): AvailabilityDraft {
+  return cellState(av, regattaDays) === 'available'
+    ? { status: 'unavailable', days: {}, reason: draftOf(av).reason }
+    : { status: 'available', days: {}, reason: '' };
+}
+
+export interface SeatProblem {
+  entry: Entry;
+  event: RegattaEvent | null;
+}
+
+/** Entries (not scratched) where the athlete is seated on a day they are not available. */
+export function seatProblems(
+  av: Availability | undefined,
+  entries: readonly Entry[],
+  events: ReadonlyMap<string, RegattaEvent>,
+): SeatProblem[] {
+  if (!av) return [];
+  return entries
+    .filter((entry) => entry.status !== 'scratched')
+    .map((entry) => ({ entry, event: entry.eventId ? (events.get(entry.eventId) ?? null) : null }))
+    .filter(({ event }) => !isAvailableOn(av, event?.day));
 }

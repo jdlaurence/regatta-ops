@@ -7,12 +7,12 @@
 //   /regattas/:id/schedule              features/schedule/SchedulePage
 //   /regattas/:id/lineups               features/lineups/LineupsRedirect (default or first team)
 //   /regattas/:id/lineups/:teamId       features/lineups/LineupsPage
-//   /regattas/:id/availability          features/availability/AvailabilityPage
+//   /regattas/:id/availability          redirects to lineups (availability lives on the team page)
 //   /regattas/:id/trailer[/:trailerId]  features/trailer/TrailerPage
 //   /regattas/:id/load                  features/load-list/LoadListPage
 //   /fleet/:tab (shells|oars|gear)      features/fleet/FleetPage
 //   /trailers, /trailers/:id            features/trailers-admin/TrailersListPage, TrailerEditPage
-//   /teams, /teams/:id                  features/teams/TeamsListPage, TeamPage
+//   /teams, /teams/:id[/availability]   features/teams/TeamsListPage, TeamPage
 //   /settings                           features/settings/SettingsPage
 //   /print/regattas/:id/lineups/:teamId features/print/PrintLineupsPage (no shell)
 //   /print/regattas/:id/schedule        features/print/PrintSchedulePage (no shell)
@@ -57,7 +57,8 @@ export function buildRoutes({ queryClient, store }: RouterDeps): RouteObject[] {
     { path: 'schedule', lazy: page(() => import('@/features/schedule/SchedulePage')) },
     { path: 'lineups', lazy: page(() => import('@/features/lineups/LineupsRedirect')) },
     { path: 'lineups/:teamId', lazy: page(() => import('@/features/lineups/LineupsPage')) },
-    { path: 'availability', lazy: page(() => import('@/features/availability/AvailabilityPage')) },
+    // Availability moved to each team's page (PLAN.md §18); old links land on the lineups.
+    { path: 'availability', element: <Navigate to="../lineups" relative="path" replace /> },
     { path: 'trailer', lazy: page(() => import('@/features/trailer/TrailerPage')) },
     { path: 'trailer/:trailerId', lazy: page(() => import('@/features/trailer/TrailerPage')) },
     { path: 'load', lazy: page(() => import('@/features/load-list/LoadListPage')) },
@@ -84,6 +85,7 @@ export function buildRoutes({ queryClient, store }: RouterDeps): RouteObject[] {
     { path: 'trailers/:id', lazy: page(() => import('@/features/trailers-admin/TrailerEditPage')) },
     { path: 'teams', lazy: page(() => import('@/features/teams/TeamsListPage')) },
     { path: 'teams/:id', lazy: page(() => import('@/features/teams/TeamPage')) },
+    { path: 'teams/:id/:tab', lazy: page(() => import('@/features/teams/TeamPage')) },
     { path: 'settings', lazy: page(() => import('@/features/settings/SettingsPage')) },
     ...(DEV_ROUTES_ENABLED
       ? [{ path: 'dev/components', lazy: page(() => import('./dev/ComponentGallery')) }]

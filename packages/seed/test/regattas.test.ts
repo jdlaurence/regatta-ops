@@ -41,9 +41,9 @@ const count = (fs: Finding[], code: FindingCode) => fs.filter((f) => f.code === 
 const seatsOf = (entryId: Id) => world.entry_seats.filter((s) => s.entryId === entryId);
 
 describe('rosters', () => {
-  it('has 40 junior boys, 36 junior girls, 14 5am masters, and 12 evening masters', () => {
-    expect(byTeam(SEED_TEAM_IDS.boys)).toHaveLength(40);
-    expect(byTeam(SEED_TEAM_IDS.girls)).toHaveLength(36);
+  it('has 78 junior boys, 57 junior girls, 14 5am masters, and 12 evening masters', () => {
+    expect(byTeam(SEED_TEAM_IDS.boys)).toHaveLength(78);
+    expect(byTeam(SEED_TEAM_IDS.girls)).toHaveLength(57);
     expect(byTeam(SEED_TEAM_IDS.fiveAm)).toHaveLength(14);
     expect(byTeam(SEED_TEAM_IDS.evening)).toHaveLength(12);
     expect(world.teams.map((t) => [t.name, t.shortName, t.colorKey])).toEqual([
@@ -54,11 +54,14 @@ describe('rosters', () => {
     ]);
   });
 
-  it('gives each junior team three coxswains, scullers, novices, and U15 to U19', () => {
-    for (const teamId of [SEED_TEAM_IDS.boys, SEED_TEAM_IDS.girls]) {
+  it("gives each junior team its roster's coxswains, scullers, novices, and U15 to U19", () => {
+    for (const [teamId, coxCount] of [
+      [SEED_TEAM_IDS.boys, 9],
+      [SEED_TEAM_IDS.girls, 8],
+    ] as const) {
       const team = byTeam(teamId);
       const coxes = team.filter((a) => a.side === 'none');
-      expect(coxes).toHaveLength(3);
+      expect(coxes).toHaveLength(coxCount);
       for (const c of coxes) expect(c.canCox).toBe(true);
       expect(team.some((a) => a.canScull)).toBe(true);
       expect(new Set(team.map((a) => a.level))).toEqual(new Set(['novice', 'experienced']));
@@ -76,10 +79,9 @@ describe('rosters', () => {
     expect(cats).toEqual(new Set(['B', 'C', 'D', 'E', 'F']));
   });
 
-  it('has a few inactive athletes', () => {
+  it('keeps the junior rosters active and one masters athlete inactive', () => {
     const inactive = world.athletes.filter((a) => a.status === 'inactive');
-    expect(inactive.length).toBeGreaterThanOrEqual(3);
-    expect(inactive.length).toBeLessThanOrEqual(6);
+    expect(inactive.map((a) => a.teamId)).toEqual([SEED_TEAM_IDS.evening]);
   });
 });
 

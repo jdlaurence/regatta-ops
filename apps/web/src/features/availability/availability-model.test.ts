@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import type { Availability } from '@srt/domain';
+import type { Availability, Entry, RegattaEvent } from '@srt/domain';
 import {
-  carryOver,
-  copyOps,
+  cellState,
+  comingDays,
   countAvailability,
   countText,
   draftOf,
   normalizeDraft,
   planWrite,
+  seatProblems,
   statusOn,
+  toggledDraft,
   toggleDay,
   withStatus,
 } from './availability-model';
@@ -100,38 +102,65 @@ describe('planWrite', () => {
   });
 });
 
-describe('copying availability', () => {
-  it('moves per-day choices by position', () => {
-    const source = rec({ status: 'available', days: { '2025-05-18': 'unavailable' } });
-    expect(carryOver(source, DAYS, ['2026-05-15', '2026-05-16', '2026-05-17'])).toMatchObject({
+describe('the availability sheet', () => {
+  it('reads each cell as coming, out, out some days, or maybe', () => {
+    expect(cellState(undefined, DAYS)).toBe('available');
+    expect(cellState(rec({ status: 'unavailable' }), DAYS)).toBe('unavailable');
+    expect(cellState(rec({ status: 'maybe' }), DAYS)).toBe('maybe');
+    const sundayOut = rec({ status: 'available', days: { '2025-05-18': 'unavailable' } });
+    expect(cellState(sundayOut, DAYS)).toBe('partial');
+    expect(comingDays(sundayOut, DAYS)).toEqual(['2025-05-16', '2025-05-17']);
+    // Out on every day by override is out.
+    const allDays = rec({
       status: 'available',
-      days: { '2026-05-17': 'unavailable' },
+      days: Object.fromEntries(DAYS.map((d) => [d, 'unavailable' as const])),
     });
-    // A one-day target keeps only day 1.
-    expect(carryOver(source, DAYS, ['2026-11-01'])).toMatchObject({
-      status: 'available',
-      days: {},
-    });
+    expect(cellState(allDays, DAYS)).toBe('unavailable');
+    // An available record kept only for its reason is still coming.
+    expect(cellState(rec({ status: 'available', reason: 'Late' }), ['2026-11-01'])).toBe(
+      'available',
+    );
   });
 
-  it('makes the target match the source for the listed athletes', () => {
-    const athletes = [{ id: 'a1' }, { id: 'a2' }, { id: 'a3' }];
-    const target = new Map([
-      ['a1', rec({ id: 't1', athleteId: 'a1', status: 'unavailable' })],
-      ['a2', rec({ id: 't2', athleteId: 'a2', status: 'maybe', reason: 'Exam' })],
-    ]);
-    const source = new Map([
-      ['a2', rec({ id: 's2', athleteId: 'a2', status: 'maybe', reason: 'Exam' })],
-      ['a3', rec({ id: 's3', athleteId: 'a3', status: 'unavailable', reason: 'Away' })],
-    ]);
-    const ops = copyOps(athletes, target, source, {
-      regattaId: ctx.regattaId,
-      sourceDays: ['2025-05-16'],
-      targetDays: ['2026-11-01'],
+  it('toggles coming to out for the whole regatta, and anything else back to plainly coming', () => {
+    expect(toggledDraft(undefined, DAYS)).toEqual({ status: 'unavailable', days: {}, reason: '' });
+    expect(toggledDraft(rec({ status: 'available', reason: 'Late' }), DAYS)).toEqual({
+      status: 'unavailable',
+      days: {},
+      reason: 'Late',
     });
-    expect(
-      ops.map((o) => `${o.op}:${o.op === 'create' ? (o.data as Availability).athleteId : o.id}`),
-    ).toEqual(['delete:t1', 'create:a3']);
+    for (const r of [
+      rec({ status: 'unavailable', reason: 'Trip' }),
+      rec({ status: 'maybe' }),
+      rec({ status: 'available', days: { '2025-05-18': 'unavailable' } }),
+    ]) {
+      expect(toggledDraft(r, DAYS)).toEqual({ status: 'available', days: {}, reason: '' });
+      // Plainly available needs no record: the write deletes it.
+      expect(planWrite(r, toggledDraft(r, DAYS), ctx)).toEqual({
+        op: 'delete',
+        collection: 'availability',
+        id: r.id,
+      });
+    }
+  });
+
+  it('finds seats on days the athlete is out, skipping scratched entries', () => {
+    const entry = (id: string, eventId: string | null, status: Entry['status'] = 'planned') =>
+      ({ id, eventId, status }) as Entry;
+    const events = new Map([
+      ['sat', { id: 'sat', day: '2025-05-17' } as RegattaEvent],
+      ['sun', { id: 'sun', day: '2025-05-18' } as RegattaEvent],
+    ]);
+    const entries = [
+      entry('e1', 'sat'),
+      entry('e2', 'sun'),
+      entry('e3', 'sun', 'scratched'),
+      entry('e4', null),
+    ];
+    const sundayOut = rec({ status: 'available', days: { '2025-05-18': 'unavailable' } });
+    expect(seatProblems(sundayOut, entries, events).map((p) => p.entry.id)).toEqual(['e2']);
+    expect(seatProblems(rec(), entries, events).map((p) => p.entry.id)).toEqual(['e1', 'e2', 'e4']);
+    expect(seatProblems(undefined, entries, events)).toEqual([]);
   });
 
   it('counts athletes coming on some day, maybe included', () => {

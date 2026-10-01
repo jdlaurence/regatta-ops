@@ -45,7 +45,7 @@ describe('the app in demo mode', () => {
       within(tabs)
         .getAllByRole('link')
         .map((a) => a.textContent),
-    ).toEqual(['Overview', 'Schedule', 'Lineups', 'Availability', 'Trailer', 'Load list']);
+    ).toEqual(['Overview', 'Schedule', 'Lineups', 'Trailer', 'Load list']);
     const inspector = screen.getByRole('complementary', { name: 'Conflicts and activity' });
     expect(
       await within(inspector).findByRole('heading', { name: /^Conflicts \d+$/ }),

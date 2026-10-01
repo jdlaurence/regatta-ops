@@ -20,7 +20,9 @@ import {
   groupEntries,
   hotSeatPlans,
   labelPrefix,
+  isU17Eligible,
   matchesFilters,
+  regattaSeasonYear,
   normalizeEventName,
   oarOptions,
   placementOps,
@@ -108,7 +110,7 @@ describe('rosterView', () => {
     const all = r.levels.flatMap((l) => l.athletes);
     const names = (f: Partial<typeof EMPTY_FILTERS>) =>
       all
-        .filter((a) => matchesFilters(a, { ...EMPTY_FILTERS, ...f }))
+        .filter((a) => matchesFilters(a, { ...EMPTY_FILTERS, ...f }, 2026))
         .map((a) => a.athlete.firstName);
     expect(names({ side: 'starboard' })).toEqual(['Arlo', 'Cole', 'Eli', 'Gus']);
     expect(names({ scullers: true })).toEqual(['Arlo', 'Beck', 'Emery', 'Rowan']);
@@ -116,6 +118,32 @@ describe('rosterView', () => {
     // Experienced first, then novice (Hal).
     expect(names({ unboated: true, side: 'port' })).toEqual(['Dax', 'Finn', 'Emery', 'Hal']);
     expect(names({ query: 'row co' })).toEqual(['Cole']);
+  });
+
+  it("filters to U17 and younger by birth year, in the regatta's year", () => {
+    const w = lineupWorld();
+    const born = (first: string, year: number | null) => {
+      w.athletes.find((a) => a.firstName === first)!.birthYear = year;
+    };
+    born('Dax', 2010);
+    born('Finn', 2011);
+    born('Cole', null);
+    const u17 = (startDate: string) => {
+      w.regattas.forEach((r) => (r.startDate = r.endDate = startDate));
+      const idx = buildIndex(lineupData(w));
+      return rosterView(idx, IDS.boys)
+        .levels.flatMap((l) => l.athletes)
+        .filter((a) => matchesFilters(a, { ...EMPTY_FILTERS, u17: true }, regattaSeasonYear(idx)))
+        .map((a) => a.athlete.firstName);
+    };
+    // Fall 2026: born 2010 is U17, 2011 U16; born 2009 is U19; no birth year is left out.
+    expect(u17('2026-11-01')).toEqual(['Dax', 'Finn']);
+    // Spring 2027: the 2010s have aged into U19.
+    expect(u17('2027-03-01')).toEqual(['Finn']);
+    expect(isU17Eligible({ birthYear: 2010 }, 2026)).toBe(true);
+    expect(isU17Eligible({ birthYear: 2010 }, 2027)).toBe(false);
+    expect(isU17Eligible({ birthYear: 2014 }, 2026)).toBe(true);
+    expect(isU17Eligible({ birthYear: null }, 2026)).toBe(false);
   });
 });
 

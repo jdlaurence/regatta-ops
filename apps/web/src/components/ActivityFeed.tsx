@@ -67,7 +67,8 @@ export function activityLink(
         ? { href: `${base}/schedule`, label: 'Open schedule' }
         : { href: `${base}/schedule?event=${row.targetId}`, label: 'Open schedule' };
     case 'availability':
-      return base ? { href: `${base}/availability`, label: 'Open availability' } : null;
+      // The lineups roster shows who is out and toggles it; the redirect picks the team.
+      return base ? { href: `${base}/lineups`, label: 'Open lineups' } : null;
     case 'load_placements': {
       if (!base) return null;
       const placement = lookups.placements?.get(row.targetId);

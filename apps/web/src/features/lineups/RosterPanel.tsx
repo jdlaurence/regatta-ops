@@ -1,22 +1,28 @@
 // The roster panel (PLAN.md §4.4, §5.4 Roster row): every available athlete of the team, grouped
-// by level, crossed off in the team color once they are in a boat, with collapsed Unavailable
-// and Borrowed groups. Rows drag onto seats on desktop; clicking a row (or Space/Enter) picks
-// the athlete up so the next seat clicked takes them, the click equivalent of a drag. Dropping
-// a seat on the panel empties it.
+// by level, crossed off in the team color once they are in a boat, then a collapsed Borrowed
+// group, then the unavailable athletes at the bottom, dimmed. Rows drag onto seats on desktop;
+// clicking a row (or Space/Enter) picks the athlete up so the next seat clicked takes them, the
+// click equivalent of a drag. Dropping a seat on the panel empties it. Coaches mark an athlete
+// unavailable (or available again) for this regatta with the button at the end of the row; days,
+// maybes, and reasons live on the team's availability sheet.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import { ChevronRight, Search, X } from 'lucide-react';
+import { ChevronRight, Search, UserCheck, UserX, X } from 'lucide-react';
 import { athleteName, type Athlete } from '@srt/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { TeamChip } from '@/components/chips';
+import { Tooltip } from '@/components/ui/menu';
 import { prefersReducedMotion } from '@/lib/motion';
+import { formatWeekday } from '@/lib/dates';
 import { useLineup } from './context';
 import {
   EMPTY_FILTERS,
   filtersActive,
   matchesFilters,
+  regattaSeasonYear,
   rosterView,
   type RosterAthlete,
   type RosterFilters,
@@ -76,13 +82,18 @@ function RosterRow({
   const status = boated
     ? `in ${row.entryCount} ${row.entryCount === 1 ? 'entry' : 'entries'}`
     : 'not in a boat';
+  const note = row.available
+    ? row.comingDays &&
+      `${row.comingDays.map((d) => formatWeekday(d).split(',')[0]).join(', ')} only`
+    : row.reason;
   const body = (
     <>
       <span className="relative min-w-0 truncate">
         {/* Dimmed with the secondary ink, not opacity, so the name keeps 4.5:1 (PLAN.md §5.6). */}
-        <span className={cn(boated && 'text-ink-2')}>{name}</span>
-        <Strike on={boated} />
+        <span className={cn((boated || !row.available) && 'text-ink-2')}>{name}</span>
+        <Strike on={boated && row.available} />
       </span>
+      {note && <span className="min-w-0 shrink truncate text-sm text-ink-2">{note}</span>}
       {homeTeam}
       <span className="ml-auto flex shrink-0 items-center gap-2">
         <AthleteBadges athlete={a} />
@@ -90,7 +101,7 @@ function RosterRow({
           aria-hidden
           className={cn(
             'w-4 text-right font-display text-sm font-semibold tabular-nums',
-            boated ? 'text-ink-2' : 'text-ink',
+            boated || !row.available ? 'text-ink-2' : 'text-ink',
           )}
         >
           {row.entryCount}
@@ -100,11 +111,17 @@ function RosterRow({
   );
   const rowClass =
     'flex min-h-9 w-full min-w-0 items-center gap-2 rounded-control px-2 text-left text-base pointer-coarse:min-h-11';
+  const spoken = `${name}, ${status}${row.available ? '' : ', unavailable'}${note ? `, ${note}` : ''}`;
+  // Borrowed athletes' availability belongs to their home team's coach.
+  const toggle = canEdit && !homeTeam && <AvailabilityToggle row={row} />;
   if (!canEdit || isPhone) {
     return (
-      <li className={rowClass}>
-        {body}
-        <span className="sr-only">, {status}</span>
+      <li className="group flex items-center gap-1">
+        <div className={rowClass}>
+          {body}
+          <span className="sr-only">, {spoken}</span>
+        </div>
+        {toggle}
       </li>
     );
   }
@@ -121,15 +138,15 @@ function RosterRow({
     );
   };
   return (
-    <li>
+    <li className="group flex items-center gap-1">
       <button
         ref={setNodeRef}
         type="button"
         {...listeners}
         onClick={pickUp}
         aria-pressed={carrying}
-        aria-label={`${name}, ${status}${row.available ? '' : ', unavailable'}. Pick up to seat.`}
-        title={row.reason ? `Unavailable: ${row.reason}` : undefined}
+        aria-label={`${spoken}. Pick up to seat.`}
+        title={row.reason ? `${row.available ? '' : 'Unavailable: '}${row.reason}` : undefined}
         className={cn(
           rowClass,
           'cursor-grab touch-manipulation select-none hover:bg-surface-2 active:cursor-grabbing',
@@ -139,7 +156,36 @@ function RosterRow({
       >
         {body}
       </button>
+      {toggle}
     </li>
+  );
+}
+
+/** Mark unavailable for this regatta, or available again: one click, the whole regatta. */
+function AvailabilityToggle({ row }: { row: RosterAthlete }) {
+  const { actions } = useLineup();
+  const name = athleteName(row.athlete);
+  const label = row.available ? `Mark ${name} unavailable` : `Mark ${name} available`;
+  const tip = row.available
+    ? 'Mark unavailable for this regatta'
+    : 'Mark available for this regatta';
+  const Icon = row.available ? UserX : UserCheck;
+  return (
+    <Tooltip content={tip} side="left">
+      <button
+        type="button"
+        aria-label={label}
+        onClick={() => actions.toggleAvailability(row.athlete.id)}
+        className={cn(
+          'inline-flex size-8 shrink-0 items-center justify-center rounded-control text-ink-2 hover:bg-surface-2 hover:text-ink pointer-coarse:size-11',
+          // Quiet until wanted on desktop; always there on touch and for unavailable rows.
+          row.available &&
+            'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100',
+        )}
+      >
+        <Icon aria-hidden className="size-4" />
+      </button>
+    </Tooltip>
   );
 }
 
@@ -192,14 +238,18 @@ function FilterToggle({
   pressed,
   onChange,
   children,
-}: {
+  className,
+  ...props
+}: Omit<ComponentProps<'button'>, 'onChange'> & {
   pressed: boolean;
   onChange: (v: boolean) => void;
   children: ReactNode;
 }) {
+  // Extra props (and the ref) come from a Tooltip trigger wrapping the button.
   return (
     <button
       type="button"
+      {...props}
       aria-pressed={pressed}
       onClick={() => onChange(!pressed)}
       className={cn(
@@ -207,6 +257,7 @@ function FilterToggle({
         pressed
           ? 'border-accent bg-accent-tint text-ink'
           : 'border-line-strong/60 text-ink-2 hover:bg-surface-2 hover:text-ink',
+        className,
       )}
     >
       {children}
@@ -232,7 +283,9 @@ function Filters({
   filters: RosterFilters;
   onChange: (f: RosterFilters) => void;
 }) {
+  const { index, team } = useLineup();
   const set = (patch: Partial<RosterFilters>) => onChange({ ...filters, ...patch });
+  const seasonYear = regattaSeasonYear(index);
   return (
     <div className="flex flex-col gap-2">
       <div className="relative">
@@ -281,6 +334,14 @@ function Filters({
         <FilterToggle pressed={filters.unboated} onChange={(v) => set({ unboated: v })}>
           Unboated
         </FilterToggle>
+        {team.program === 'juniors' && (
+          // Age groups follow the regatta's year: a fall regatta and the next spring's differ.
+          <Tooltip content={`U17 and younger: born ${seasonYear - 16} or later`}>
+            <FilterToggle pressed={filters.u17} onChange={(v) => set({ u17: v })}>
+              U17
+            </FilterToggle>
+          </Tooltip>
+        )}
       </div>
     </div>
   );
@@ -291,7 +352,9 @@ function RosterBody({ filters, prefix }: { filters: RosterFilters; prefix: strin
   const { index, team } = useLineup();
   const view = rosterView(index, team.id);
   const active = filtersActive(filters);
-  const keep = (rows: RosterAthlete[]) => rows.filter((r) => matchesFilters(r, filters));
+  const seasonYear = regattaSeasonYear(index);
+  const keep = (rows: RosterAthlete[]) =>
+    rows.filter((r) => matchesFilters(r, filters, seasonYear));
   const levels = view.levels.map((l) => ({ ...l, athletes: keep(l.athletes) }));
   const unavailable = keep(view.unavailable);
   const borrowed = keep(view.borrowed);
@@ -321,13 +384,6 @@ function RosterBody({ filters, prefix }: { filters: RosterFilters; prefix: strin
             </Group>
           ),
       )}
-      {unavailable.length > 0 && (
-        <Group title="Unavailable" count={unavailable.length} collapsible defaultOpen={active}>
-          {unavailable.map((r) => (
-            <RosterRow key={r.athlete.id} row={r} dragPrefix={prefix} />
-          ))}
-        </Group>
-      )}
       {borrowed.length > 0 && (
         <Group title="Borrowed" count={borrowed.length} collapsible defaultOpen={active}>
           {borrowed.map((r) => (
@@ -340,7 +396,32 @@ function RosterBody({ filters, prefix }: { filters: RosterFilters; prefix: strin
           ))}
         </Group>
       )}
+      {unavailable.length > 0 && (
+        <Group title="Unavailable" count={unavailable.length} collapsible>
+          {unavailable.map((r) => (
+            <RosterRow key={r.athlete.id} row={r} dragPrefix={prefix} />
+          ))}
+        </Group>
+      )}
+      <SheetLink />
     </div>
+  );
+}
+
+/** Where the rest of availability lives: per-day choices, maybes, reasons, the whole season. */
+function SheetLink() {
+  const { team } = useLineup();
+  return (
+    <p className="px-2 text-sm leading-prose text-ink-2">
+      Days, maybes, and reasons are on the{' '}
+      <Link
+        to={`/teams/${team.id}/availability`}
+        className="text-accent underline-offset-4 hover:underline"
+      >
+        {team.name} availability sheet
+      </Link>
+      .
+    </p>
   );
 }
 

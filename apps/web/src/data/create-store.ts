@@ -3,6 +3,7 @@
 
 import { hash32 } from '@srt/domain';
 import { buildSeedWorld } from '@srt/seed';
+import juniorRosters from 'virtual:srt-local-rosters';
 import { MemoryStore, readPersistedWorld } from './memory-store';
 import { PocketBaseStore } from './pocketbase-store';
 import type { DataStore } from './store';
@@ -18,9 +19,13 @@ export function dataMode(): DataMode {
     : 'pocketbase';
 }
 
-/** Demo mode: the seed world, with the visitor's changes kept in localStorage. */
+/**
+ * Demo mode: the seed world, with the real junior rosters when the workbooks are in data/
+ * (scripts/local-rosters.ts), and the visitor's changes kept in localStorage. A roster change
+ * changes the seed hash, which starts the demo over.
+ */
 export function createDemoStore(): MemoryStore {
-  const seed = () => buildSeedWorld().world;
+  const seed = () => buildSeedWorld({ juniorRosters }).world;
   const fresh = seed();
   const seedHash = hash32(JSON.stringify(fresh));
   const store = new MemoryStore({

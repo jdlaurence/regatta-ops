@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { localRosters } from './scripts/local-rosters.js';
 import { tokenColor } from './scripts/tokens.js';
 
 // PocketBase listens on 127.0.0.1:8090 in development (`pnpm pb:serve`). The dev server proxies
@@ -30,10 +31,11 @@ const schemaHash = SCHEMA_FILES.reduce(
   .digest('hex')
   .slice(0, 12);
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
+    localRosters(mode),
     // PWA (PLAN.md §7.1, §10.4): installable, and the app shell opens with no connection.
     // The service worker precaches the build and never caches API responses; data offline
     // comes from the query cache saved in IndexedDB. Off in `vite dev` unless SRT_PWA_DEV=1.
@@ -119,4 +121,4 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
   },
-});
+}));

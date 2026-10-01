@@ -23,12 +23,15 @@ pnpm demo              # http://localhost:5173, seed data in the browser, nothin
 
 Demo mode keeps its data in the browser's local storage. Sign in by picking one of the seeded
 accounts. "Reset demo data" is in the user menu.
+With the club's roster workbooks in `data/`, the junior teams are the real athletes (they stay
+out of git); `SRT_SEED_INVENTED=1 pnpm demo` uses invented ones.
 
 ## Run it locally with PocketBase
 
 ```sh
 pnpm pb:download   # fetch the pinned PocketBase binary into backend/bin/ (once)
-pnpm pb:reset      # create the database, migrate, and load the seed world
+pnpm pb:reset      # create the database, migrate, and load the seed world (real junior
+                   # rosters from data/ when present; see backend/README.md)
 pnpm dev           # PocketBase on :8090 and the app on :5173
 ```
 

@@ -87,7 +87,7 @@ describe('activityLink', () => {
       `${base}/trailer`,
     );
     expect(activityLink(row({ targetType: 'load_items' }))!.href).toBe(`${base}/load`);
-    expect(activityLink(row({ targetType: 'availability' }))!.href).toBe(`${base}/availability`);
+    expect(activityLink(row({ targetType: 'availability' }))!.href).toBe(`${base}/lineups`);
     expect(activityLink(row({ targetType: 'shells', regattaId: null }))!.href).toBe(
       '/fleet/shells',
     );

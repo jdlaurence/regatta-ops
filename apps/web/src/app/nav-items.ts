@@ -7,7 +7,6 @@ import {
   Rows3,
   Settings,
   Truck,
-  UserCheck,
   Users,
   Warehouse,
   Container,
@@ -27,7 +26,6 @@ export const REGATTA_TABS: RegattaTab[] = [
   { segment: '', label: 'Overview', icon: LayoutDashboard, phone: false },
   { segment: 'schedule', label: 'Schedule', icon: CalendarClock, phone: true },
   { segment: 'lineups', label: 'Lineups', icon: Rows3, phone: true },
-  { segment: 'availability', label: 'Availability', icon: UserCheck, phone: false },
   { segment: 'trailer', label: 'Trailer', icon: Truck, phone: true },
   { segment: 'load', label: 'Load list', icon: ClipboardCheck, phone: true },
 ];

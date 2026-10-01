@@ -2,11 +2,13 @@
 //
 // Seeds the server at SRT_PB_URL (default http://127.0.0.1:8090) when one is running, otherwise
 // starts a temporary server on backend/pb_data. Upserts by id, so it is safe to run again;
-// pnpm pb:reset wipes the data first for a clean slate.
+// pnpm pb:reset wipes the data first for a clean slate. Both seed the real junior rosters in data/
+// when they are there (@srt/seed/local-rosters); SRT_SEED_INVENTED=1 keeps the invented athletes.
 
 import { pathToFileURL } from 'node:url';
 import type { SeedAccount, World } from '@srt/domain';
-import { buildSeedWorld } from '@srt/seed';
+import { buildSeedWorld, type SeedOptions } from '@srt/seed';
+import { readLocalRosters } from '@srt/seed/local-rosters';
 import PocketBase from 'pocketbase';
 import {
   DATA_DIR,
@@ -40,9 +42,9 @@ export async function superuserClient(url: string): Promise<PocketBase> {
   return pb;
 }
 
-export async function seedInto(url: string): Promise<SeedRun> {
+export async function seedInto(url: string, options: SeedOptions = {}): Promise<SeedRun> {
   const pb = await superuserClient(url);
-  const { world, accounts } = buildSeedWorld();
+  const { world, accounts } = buildSeedWorld(options);
   const summary = await loadWorld(pb, world, accounts);
   return { summary, world, accounts };
 }
@@ -63,16 +65,29 @@ export function printSummary(run: SeedRun, url: string): void {
   console.log(`\nPocketBase dashboard: ${url}/_/  (${SUPERUSER.email} / ${SUPERUSER.password})`);
 }
 
+/** The real junior rosters in data/, reported by count (names stay out of the terminal). */
+export async function localSeedOptions(): Promise<SeedOptions> {
+  const rosters = await readLocalRosters();
+  for (const r of rosters) {
+    console.log(`Junior ${r.team}: ${r.athletes.length} athletes from ${r.file}`);
+  }
+  const have = new Set(rosters.map((r) => r.team));
+  const invented = (['boys', 'girls'] as const).filter((t) => !have.has(t));
+  if (invented.length) console.log(`Junior ${invented.join(' and ')}: invented athletes`);
+  return { juniorRosters: rosters.flatMap((r) => r.athletes) };
+}
+
 async function main(): Promise<void> {
+  const options = await localSeedOptions();
   if (await isUp(DEFAULT_URL)) {
-    printSummary(await seedInto(DEFAULT_URL), DEFAULT_URL);
+    printSummary(await seedInto(DEFAULT_URL, options), DEFAULT_URL);
     return;
   }
   await migrateUp(DATA_DIR);
   await upsertSuperuser(DATA_DIR);
   const server = await startPocketBase({ dataDir: DATA_DIR });
   try {
-    const run = await seedInto(server.url);
+    const run = await seedInto(server.url, options);
     printSummary(run, DEFAULT_URL);
   } finally {
     await server.stop();

@@ -8,7 +8,7 @@ import { createTestRouter } from '@/app/router';
 import type { MemoryStore } from '@/data/memory-store';
 import { IDS } from '@/test/fixtures';
 import { testQueryClient } from '@/test/render';
-import { BOYS, L, lineupStore, lineupWorld } from './test-world';
+import { BOYS, BOYS_OUT, L, lineupStore, lineupWorld } from './test-world';
 
 const PATH = `/regattas/${IDS.regatta}/lineups/${IDS.boys}`;
 
@@ -59,12 +59,46 @@ describe('the lineup builder', () => {
     expect(boatedText()).toBe('4 of 11 boated');
     expect(screen.getByRole('button', { name: /^Arlo Rower, in 1 entry/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Dax Rower, not in a boat/ })).toBeInTheDocument();
-    // Unavailable and borrowed athletes sit in collapsed groups.
-    expect(screen.getByRole('button', { name: /^Unavailable\s*1$/ })).toHaveAttribute(
-      'aria-expanded',
-      'false',
+    // Junior teams get the U17 filter.
+    expect(screen.getByRole('button', { name: 'U17' })).toHaveAttribute('aria-pressed', 'false');
+    // Borrowed athletes sit in a collapsed group; unavailable ones are listed last, open.
+    const borrowed = screen.getByRole('button', { name: /^Borrowed\s*1$/ });
+    expect(borrowed).toHaveAttribute('aria-expanded', 'false');
+    const unavailable = screen.getByRole('button', { name: /^Unavailable\s*1$/ });
+    expect(unavailable).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      borrowed.compareDocumentPosition(unavailable) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: /^Jay Away, not in a boat, unavailable, Family trip/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Junior boys availability sheet' })).toHaveAttribute(
+      'href',
+      `/teams/${IDS.boys}/availability`,
     );
-    expect(screen.getByRole('button', { name: /^Borrowed\s*1$/ })).toBeInTheDocument();
+  });
+
+  it('marks an athlete unavailable from the roster, and available again', async () => {
+    const { store, user } = renderBuilder();
+    await card(L.boysEight);
+    const record = (athleteId: string) =>
+      store
+        .snapshot()
+        .availability.find((a) => a.regattaId === IDS.regatta && a.athleteId === athleteId);
+
+    await user.click(screen.getByRole('button', { name: 'Mark Dax Rower unavailable' }));
+    await waitFor(() => expect(record(BOYS[3]!)?.status).toBe('unavailable'));
+    expect(boatedText()).toBe('4 of 10 boated');
+    expect(screen.getByRole('button', { name: /^Unavailable\s*2$/ })).toBeInTheDocument();
+
+    // Back to available: the record goes, since no record means available.
+    await user.click(screen.getByRole('button', { name: 'Mark Dax Rower available' }));
+    await waitFor(() => expect(record(BOYS[3]!)).toBeUndefined());
+    // And the athlete who was out comes back, reason and all cleared.
+    await user.click(screen.getByRole('button', { name: 'Mark Jay Away available' }));
+    await waitFor(() => expect(record(BOYS_OUT)).toBeUndefined());
+    expect(boatedText()).toBe('4 of 12 boated');
+    expect(screen.queryByRole('button', { name: /^Unavailable\s*\d/ })).not.toBeInTheDocument();
   });
 
   it('fills a seat by typing a name, then moves down to the next seat', async () => {

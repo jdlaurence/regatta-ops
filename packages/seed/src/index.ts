@@ -6,7 +6,7 @@
 import type { SeedAccount, World } from '@srt/domain';
 import { addActivity, addComments } from './comms';
 import { FleetIndex, addFleet } from './fleet';
-import { addAthletes, addClubSettings, addTeams, addUsers } from './people';
+import { addAthletes, addClubSettings, addTeams, addUsers, type RosterAthlete } from './people';
 import {
   addHeadOfTheLake2025,
   addHeadOfTheLake2026,
@@ -25,12 +25,17 @@ export interface SeedResult {
 /** Password of every seeded account. Local development only. */
 export const SEED_PASSWORD = 'srt-local-dev';
 
-export function buildSeedWorld(): SeedResult {
+export interface SeedOptions {
+  /** Real junior rosters (read from data/ by pnpm pb:seed); teams without rows stay invented. */
+  juniorRosters?: readonly RosterAthlete[];
+}
+
+export function buildSeedWorld(options: SeedOptions = {}): SeedResult {
   const w = emptyWorld();
   addClubSettings(w);
   addTeams(w);
   addUsers(w);
-  addAthletes(w);
+  addAthletes(w, options.juniorRosters);
   addFleet(w);
   addTrailers(w);
   const fleet = new FleetIndex(w);
@@ -64,6 +69,7 @@ export {
   seedShellId,
 } from './ids';
 export type { TeamKey, UserKey } from './ids';
+export type { RosterAthlete } from './people';
 export { bucketRigSides } from './fleet';
 export { OAR_SET_ROWS, SCHEDULE_ROWS, SHELL_ROWS } from './generated/reference';
 export type { OarSetRow, ScheduleRow, ShellRow } from './reference-types';
