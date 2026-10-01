@@ -1,8 +1,8 @@
-// The schedule (PLAN.md §4.5, §6.3): the whole club's day as a list of races with their entries
-// and logistics lines, or as a timeline of busy windows by shell, team, or oar set, with
-// conflicts marked. Event times and names edit inline; "Shift times" moves the rest of a day.
-// The conflicts panel sits in the inspector on desktop and in a tab on narrower screens.
-// "Print" opens the print view of the list as it is: same day, filters, and "Show entries".
+// The schedule: the whole club's day as a list of races with their entries and logistics lines,
+// or as a timeline of busy windows by shell, team, or oar set, with conflicts marked. Event times
+// and names edit inline; "Shift times" moves the rest of a day. The conflicts panel sits in the
+// inspector on desktop and in a tab on narrower screens. "Print" opens the print view of the list
+// as it is: same day, filters, and "Show entries".
 
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';

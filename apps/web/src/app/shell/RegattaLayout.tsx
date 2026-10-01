@@ -1,5 +1,5 @@
-// The frame of every /regattas/:id page: the regatta's name and dates, its tabs, and the
-// "final" banner (PLAN.md §4.1, §5.3). Pages render below it with their own PageHeader.
+// The frame of every /regattas/:id page: the regatta's name and dates, its tabs, and the "final"
+// banner. Pages render below it with their own PageHeader.
 
 import { Suspense } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
@@ -64,7 +64,7 @@ function RegattaHeader({ regatta }: { regatta: Regatta }) {
   );
 }
 
-/** Presence heartbeats and "Updated by ..." toasts for the open regatta (PLAN.md §10.2, §10.3). */
+/** Presence heartbeats and "Updated by ..." toasts for the open regatta. */
 function useRegattaCollaboration(regattaId: string, exists: boolean) {
   const where = presencePageFromPath(useLocation().pathname);
   usePresence({

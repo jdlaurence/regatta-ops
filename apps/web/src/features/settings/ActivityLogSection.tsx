@@ -1,5 +1,5 @@
-// The activity log (PLAN.md §2, §4.12, §8.1): every logged edit, newest first, with search and
-// filters by regatta, person, and kind of record. Shown 50 at a time.
+// The activity log (PLAN.md §8.1): every logged edit, newest first, with search and filters by
+// regatta, person, and kind of record. Shown 50 at a time.
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';

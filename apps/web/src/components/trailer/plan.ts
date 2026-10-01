@@ -1,6 +1,6 @@
-// Geometry of the plan view (PLAN.md §4.10, §16.5): the trailer from above, front (the truck) at
-// the left, one level at a time, or the bed with its zones along the length (§4.9). Pure: the
-// component draws what this returns, and tests check it without a DOM.
+// Geometry of the plan view (PLAN.md §16.5): the trailer from above, front (the truck) at the
+// left, one level at a time, or the bed with its zones along the length. Pure: the component
+// draws what this returns, and tests check it without a DOM.
 
 import {
   REAR_FLAG_THRESHOLD_CM,
@@ -202,7 +202,7 @@ export function planViewGeometry(input: {
 }
 
 // ---------------------------------------------------------------------------
-// The bed from above (§4.9): zones along the length, each across the bed's full width
+// The bed from above: zones along the length, each across the bed's full width
 
 export interface PlanZone {
   id: Id;

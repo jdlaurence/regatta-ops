@@ -1,4 +1,4 @@
-// @-mentions in comments (PLAN.md §4.6). Used by comments.pb.js.
+// @-mentions in comments. Used by comments.pb.js.
 //
 // A mention is "@" at the start of the body or after a non-word character, followed by one of:
 //   - a user's full name ("@Dana Whitcombe"), case-insensitive, longest match first;

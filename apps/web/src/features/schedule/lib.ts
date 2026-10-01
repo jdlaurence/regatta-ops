@@ -1,5 +1,5 @@
-// Pure helpers for the schedule page (PLAN.md §4.3, §4.5, §6.3): the day's order of races and
-// logistics lines, filters, and the bulk time shift. No React; tested in lib.test.ts.
+// Pure helpers for the schedule page: the day's order of races and logistics lines, filters, and
+// the bulk time shift. No React; tested in lib.test.ts.
 
 import {
   addMinutes,
@@ -36,10 +36,10 @@ export function defaultDay(days: readonly string[], today: string): string {
 // Order within a day
 
 /**
- * One day's events in schedule order (§4.3): races and logistics lines with a time run in time
- * order; logistics lines without a time ("Bus departs hotel @ 6:15", "Lunch") keep their place
- * from the published schedule (sortOrder), just before the first timed event that came after
- * them; races without a time ("TBD") go last.
+ * One day's events in schedule order: races and logistics lines with a time run in time order;
+ * logistics lines without a time ("Bus departs hotel @ 6:15", "Lunch") keep their place from the
+ * published schedule (sortOrder), just before the first timed event that came after them; races
+ * without a time ("TBD") go last.
  */
 export function orderDay(events: readonly RegattaEvent[]): RegattaEvent[] {
   const bySort = (a: RegattaEvent, b: RegattaEvent) =>

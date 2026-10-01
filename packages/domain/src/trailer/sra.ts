@@ -1,8 +1,7 @@
-// SRA's two trailers and the default rule set (PLAN.md §4.9, §14, §17.1, §17.2).
-// Dimensions are placeholders until measured (PLAN.md §15 Q1). The upper levels allow enough
-// front overhang for an eight (1990 cm, §16.1) with a little slack. The 2026 layout puts an
-// eight on level 3 of the boys' trailer and on level 2 of the girls', so those levels get the
-// long overhang too.
+// SRA's two trailers and the default rule set (PLAN.md §14, §17.1, §17.2). Dimensions are
+// placeholders until measured (PLAN.md §15 Q1). The upper levels allow enough front overhang for
+// an eight (1990 cm, §16.1) with a little slack. The 2026 layout puts an eight on level 3 of the
+// boys' trailer and on level 2 of the girls', so those levels get the long overhang too.
 
 import type { CompartmentDef, Rule, ShelfDef, TrailerDef } from './types';
 
@@ -60,10 +59,9 @@ interface BedLayout {
 }
 
 /**
- * SRA's bed as zones along the frame, front to back (PLAN.md §4.9, §16.4): oars, which are
- * long, take roughly the front half; slings a small section in the middle; riggers the rest of
- * the back of the bed, across its full width. The lengths are placeholders until measured
- * (§15 Q1).
+ * SRA's bed as zones along the frame, front to back (PLAN.md §16.4): oars, which are long, take
+ * roughly the front half; slings a small section in the middle; riggers the rest of the back of
+ * the bed, across its full width. The lengths are placeholders until measured (§15 Q1).
  */
 function bedZonesAlong(prefix: string, frameLengthCm: number, bed: BedLayout): CompartmentDef[] {
   return [

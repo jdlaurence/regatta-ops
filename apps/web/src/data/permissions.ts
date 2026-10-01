@@ -1,5 +1,5 @@
-// Role checks (PLAN.md §2, §8.2). The server enforces the same rules; these only decide what
-// the UI offers. Viewers read everything and comment. Offline, every action is off (§10.4).
+// Role checks (PLAN.md §8.2). The server enforces the same rules; these only decide what the UI
+// offers. Viewers read everything and comment. Offline, every action is off.
 
 import type { Role } from '@regatta-ops/domain';
 
@@ -31,8 +31,7 @@ export type Action = keyof typeof ACTIONS;
 
 export interface CanOptions {
   /**
-   * Offline, every action is off (PLAN.md §10.4): each one writes, and writes need the server.
-   * Default true.
+   * Offline, every action is off: each one writes, and writes need the server. Default true.
    */
   online?: boolean;
 }

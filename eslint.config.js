@@ -40,7 +40,7 @@ export default tseslint.config(
     },
   },
   {
-    // The domain package must stay pure (PLAN.md §7.3, §11.2).
+    // The domain package must stay pure (CLAUDE.md).
     files: ['packages/domain/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [

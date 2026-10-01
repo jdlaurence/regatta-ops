@@ -1,5 +1,4 @@
-// Club defaults (PLAN.md §4.12, §8.1 club_settings). Other features read the season year
-// through these.
+// Club defaults (PLAN.md §8.1 club_settings). Other features read the season year through these.
 
 import { DEFAULT_CLUB_SETTINGS, type ClubSettings } from '@regatta-ops/domain';
 import { useList } from '@/data';

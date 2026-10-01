@@ -1,4 +1,4 @@
-// "Works at the trailer" (PLAN.md principle 5, §10.4, the Phase 2 demo in §12.1): open the
+// "Works at the trailer" (the Phase 2 demo in PLAN.md §12.1): open the
 // schedule and the load list on a phone, lose the connection, reload, and the pages still
 // render from the device, with the offline banner and no editing controls.
 

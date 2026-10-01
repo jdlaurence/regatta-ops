@@ -1,5 +1,5 @@
-// MemoryStore: the DataStore over an in-memory World (PLAN.md §7.1). Powers unit tests, the
-// component gallery, and demo mode (`pnpm demo`, persisted to localStorage, no backend).
+// MemoryStore: the DataStore over an in-memory World. Powers unit tests, the component gallery,
+// and demo mode (`pnpm demo`, persisted to localStorage, no backend).
 //
 // It emulates the server behavior the UI depends on (PLAN.md §8.3), so demo mode behaves like
 // the real app: created/updated timestamps, createdBy/updatedBy stamping, activity_log lines,

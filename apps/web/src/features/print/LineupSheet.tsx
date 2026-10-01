@@ -1,7 +1,7 @@
-// The lineup sheet (PLAN.md §4.11): one page per team per day, entries in time order, each with
-// its event, stage, time, shell and oars, and its crew, then a roster footer listing who is
-// unboated. The crew is a boat stood on end, as on the lineup page (cards in a grid, cox on top,
-// stroke down to bow), or a names list in the same order. Hot seat plans print under the crew.
+// The lineup sheet: one page per team per day, entries in time order, each with its event, stage,
+// time, shell and oars, and its crew, then a roster footer listing who is unboated. The crew is a
+// boat stood on end, as on the lineup page (cards in a grid, cox on top, stroke down to bow), or
+// a names list in the same order. Hot seat plans print under the crew.
 
 import {
   athleteName,

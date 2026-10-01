@@ -29,8 +29,8 @@ export interface CompartmentDef {
   label: string;
   capacity: number;
   /**
-   * A zone of the bed along the frame, cm from the front (PLAN.md §4.9), across the bed's full
-   * width. Both set, or both unset for a compartment that runs the whole length.
+   * A zone of the bed along the frame, cm from the front, across the bed's full width. Both set,
+   * or both unset for a compartment that runs the whole length.
    */
   startCm?: number;
   endCm?: number;

@@ -91,9 +91,9 @@
 }
 
 /*
- * A touch target of at least 44 x 44 px around a smaller control on touch screens (PLAN.md
- * §5.2, §5.6): checkboxes, switches, and conflict badges keep their size and gain an invisible
- * hit area. The control must be positioned (relative or absolute) for the area to center on it.
+ * A touch target of at least 44 x 44 px around a smaller control on touch screens: checkboxes,
+ * switches, and conflict badges keep their size and gain an invisible hit area. The control must
+ * be positioned (relative or absolute) for the area to center on it.
  */
 @utility touch-hit {
   @media (pointer: coarse) {

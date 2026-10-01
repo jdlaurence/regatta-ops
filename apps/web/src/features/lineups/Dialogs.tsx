@@ -246,7 +246,7 @@ function DeleteDialog({ entry }: { entry: Entry }) {
   );
 }
 
-/** Confirm once per visit before the first edit of a final regatta (PLAN.md §4.1). */
+/** Confirm once per visit before the first edit of a final regatta. */
 function FinalConfirmDialog() {
   const { ws } = useLineup();
   const pending = useLineupUi((s) => !!s.pendingEdit);

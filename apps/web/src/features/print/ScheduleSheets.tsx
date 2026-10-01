@@ -1,4 +1,4 @@
-// The day schedule and the master schedule (PLAN.md §4.11).
+// The day schedule and the master schedule.
 //
 // Day schedule, as the club publishes it today: per day, one row per race with time, stage,
 // cox, shell, oars, and the lineup as a name list, with logistics lines (bus departures, lunch,

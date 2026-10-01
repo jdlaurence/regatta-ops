@@ -231,7 +231,7 @@ describe('print routes', () => {
     expect(within(shelves).getAllByRole('row')[1]).toHaveTextContent(
       /^5 \(top\)Narrow side1Peggy \(Peggy's Delight\)8\+Boys/,
     );
-    // The bed's zones front to back, riggers at the back (PLAN.md §4.9).
+    // The bed's zones front to back, riggers at the back.
     const bed = within(sheet).getByRole('table', { name: 'Bed, front to back' });
     const zones = within(bed)
       .getAllByRole('rowheader')

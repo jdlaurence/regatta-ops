@@ -1,6 +1,6 @@
-// Geometry of the trailer end view (PLAN.md §5.4, §9.3.2). Pure: a trailer definition, its
-// effective shelves, and a width in pixels in; rectangles in pixels out. The component draws
-// what this returns, and tests check it without a DOM.
+// Geometry of the trailer end view (PLAN.md §9.3.2). Pure: a trailer definition, its effective
+// shelves, and a width in pixels in; rectangles in pixels out. The component draws what this
+// returns, and tests check it without a DOM.
 //
 // Horizontal positions are to scale (one px/cm factor for the whole drawing, so the one-hull
 // side really is half the two-hull side). Vertical spacing is fixed per size so chips stay
@@ -108,8 +108,8 @@ export interface EndViewGeometry {
   shelves: ShelfGeometry[];
   bed: Rect;
   /**
-   * The bed zones seen from the back (PLAN.md §4.9): the ones at the back of the bed, side by
-   * side across its width (SRA's riggers fill it).
+   * The bed zones seen from the back: the ones at the back of the bed, side by side across its
+   * width (SRA's riggers fill it).
    */
   compartments: CompartmentGeometry[];
   /** What rides ahead of them, in the lower half of the bed: "Oars and slings ahead". */

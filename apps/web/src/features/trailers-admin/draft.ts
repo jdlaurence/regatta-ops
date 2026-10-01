@@ -1,7 +1,7 @@
-// The trailer editor's unsaved draft (PLAN.md §6.9): the trailer, its shelves, and its
-// compartments as the form holds them, with number fields that may be blank or invalid while
-// someone types. Pure: converting records to a draft, a draft to a packer TrailerDef for the
-// live diagram, validation, shelf edits, and the batch of writes that saves it.
+// The trailer editor's unsaved draft: the trailer, its shelves, and its compartments as the form
+// holds them, with number fields that may be blank or invalid while someone types. Pure:
+// converting records to a draft, a draft to a packer TrailerDef for the live diagram, validation,
+// shelf edits, and the batch of writes that saves it.
 
 import {
   BOAT_CLASSES,
@@ -50,8 +50,8 @@ export interface CompartmentDraft {
   capacity: NumberValue;
   capacityUnit: string;
   /**
-   * Where it sits along the frame, cm from the front (PLAN.md §4.9). Blank "from" is the front
-   * and blank "to" the back; both blank, the whole length.
+   * Where it sits along the frame, cm from the front. Blank "from" is the front and blank "to"
+   * the back; both blank, the whole length.
    */
   startCm: NumberValue;
   endCm: NumberValue;
@@ -333,7 +333,7 @@ export function validateDraft(d: TrailerDraft): DraftErrors {
     const k = (f: keyof CompartmentDraft) => fieldKey.compartment(c.id, f);
     if (!c.label.trim()) e[k('label')] = 'Enter a label.';
     if (!isNum(c.capacity) || c.capacity < 0) e[k('capacity')] = 'Capacity is 0 or more.';
-    // Where it sits along the frame (§4.9): inside the frame, starting before it ends.
+    // Where it sits along the frame: inside the frame, starting before it ends.
     const start = c.startCm;
     const end = c.endCm;
     if (start !== null && (!isNum(start) || start < 0 || (frame !== null && start >= frame))) {

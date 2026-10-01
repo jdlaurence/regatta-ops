@@ -1,4 +1,4 @@
-// URLs of the print views (PLAN.md §6.12). Other pages link here through these helpers:
+// URLs of the print views. Other pages link here through these helpers:
 //
 //   /print/regattas/:id/lineups/:teamId?day=&source=published|live&layout=sheet|grid&boats=strip|names
 //       (:teamId may be "all" for every participating team)

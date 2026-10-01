@@ -73,7 +73,7 @@ describe('buildLoadRows', () => {
     expect(alma.suggestedContainer).toBe('Boys trailer');
     expect(alma.loadPlanId).not.toBeNull();
     const almaRiggers = row(rows, 'riggers', seedShellId('Alma Marie'));
-    // Riggers ride at the back of the bed of the trailer their shell is on (PLAN.md §4.9).
+    // Riggers ride at the back of the bed of the trailer their shell is on.
     expect(almaRiggers.suggestedContainer).toBe('Boys trailer · Riggers (back of bed)');
     expect(almaRiggers.suggestedWhy).toBe('the shell is on that trailer');
   });

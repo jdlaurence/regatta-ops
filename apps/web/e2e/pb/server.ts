@@ -1,4 +1,4 @@
-// The web server for the `pocketbase` Playwright project (playwright.config.ts, PLAN.md §11.3):
+// The web server for the `pocketbase` Playwright project (playwright.config.ts):
 // a real PocketBase on a temporary data folder, migrated and loaded with the full seed world,
 // serving the production build from backend/pb_public/ (the webServer command builds it first).
 // backend/pb_data is never touched, and the temporary folder is deleted on exit.

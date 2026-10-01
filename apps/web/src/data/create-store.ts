@@ -1,6 +1,6 @@
-// Picks the DataStore for this build (PLAN.md §7.1): `vite --mode demo`, the published demo
-// (`--mode pages`), or VITE_DATA_MODE=memory runs on MemoryStore with the seed world and no
-// backend; anything else talks to PocketBase.
+// Picks the DataStore for this build: `vite --mode demo`, the published demo (`--mode pages`), or
+// VITE_DATA_MODE=memory runs on MemoryStore with the seed world and no backend; anything else
+// talks to PocketBase.
 
 import { hash32 } from '@regatta-ops/domain';
 import { buildSeedWorld, type RosterAthlete } from '@regatta-ops/seed';

@@ -1,8 +1,8 @@
-// A team's availability sheet (PLAN.md §4.2, §6.10): the season at a glance, one row per active
-// athlete and one column per regatta the team is entered in, with a checkbox per cell that is
-// on unless the athlete is out. Coaches fill it in at the start of the season, when they know
-// who misses what. A name opens the athlete's season for days, maybes, and reasons; a column's
-// menu opens the lineups, marks everyone available, or imports the absence form.
+// A team's availability sheet: the season at a glance, one row per active athlete and one column
+// per regatta the team is entered in, with a checkbox per cell that is on unless the athlete is
+// out. Coaches fill it in at the start of the season, when they know who misses what. A name
+// opens the athlete's season for days, maybes, and reasons; a column's menu opens the lineups,
+// marks everyone available, or imports the absence form.
 //
 // The cells form one keyboard grid (one tab stop, arrow keys between cells, Space to toggle)
 // so a 30 by 10 sheet does not cost 300 tab stops.

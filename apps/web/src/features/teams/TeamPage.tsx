@@ -1,6 +1,6 @@
-// A team's page (PLAN.md §6.10): team settings, and two tabs. Roster: the athlete table with
-// inline editing, filters, bulk actions, the athlete drawer, CSV import, and export.
-// Availability (/teams/:id/availability): the season sheet, athletes by regattas (§4.2).
+// A team's page: team settings, and two tabs. Roster: the athlete table with inline editing,
+// filters, bulk actions, the athlete drawer, CSV import, and export. Availability
+// (/teams/:id/availability): the season sheet, athletes by regattas.
 
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, NavLink, useParams } from 'react-router';

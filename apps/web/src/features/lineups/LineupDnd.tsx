@@ -68,8 +68,7 @@ export function LineupDnd({ children }: { children: ReactNode }) {
     });
   };
 
-  // What a drop here would do, shown on the overlay (PLAN.md §6.4: a swap cursor over a seat
-  // that is taken).
+  // What a drop here would do, shown on the overlay ("Swap" over a seat that is taken).
   const [intent, setIntent] = useState<'swap' | 'replace' | 'clear' | null>(null);
   const onDragOver = (e: DragOverEvent) => {
     const d = e.active.data.current as DragData | undefined;

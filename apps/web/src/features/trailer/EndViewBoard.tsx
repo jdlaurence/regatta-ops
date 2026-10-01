@@ -1,7 +1,7 @@
-// The end view on the trailer page (PLAN.md §4.10, §5.4): the shared TrailerEndView with boats
-// that drag between lanes (dnd-kit, desktop and tablet), and the click and keyboard
-// equivalent: select a boat, then activate a lane. Drop feedback comes from the page, which
-// runs `dropBoat` for the lane under the pointer (or the focused lane button).
+// The end view on the trailer page: the shared TrailerEndView with boats that drag between lanes
+// (dnd-kit, desktop and tablet), and the click and keyboard equivalent: select a boat, then
+// activate a lane. Drop feedback comes from the page, which runs `dropBoat` for the lane under
+// the pointer (or the focused lane button).
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import type { MouseEvent } from 'react';

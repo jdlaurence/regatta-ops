@@ -684,10 +684,10 @@ export interface DropResult {
 }
 
 /**
- * Drop a boat into a cell of the end view (shelf and lane). Finds the offset the packer would
- * use (after the last boat, else in front of the first) and validates it. When it breaks a hard
- * rule, the move is still returned with `ok: false` and the violations, so the UI can refuse it
- * or accept it flagged (§4.10). The moved placement is locked unless `lock` is false.
+ * Drop a boat into a cell of the end view (shelf and lane). Finds the offset the packer would use
+ * (after the last boat, else in front of the first) and validates it. When it breaks a hard rule,
+ * the move is still returned with `ok: false` and the violations, so the UI can refuse it or
+ * accept it flagged. The moved placement is locked unless `lock` is false.
  */
 export function dropBoat(
   trailer: TrailerDef,

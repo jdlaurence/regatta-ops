@@ -1,4 +1,4 @@
-// The published demo on GitHub Pages (`vite build --mode pages`, PLAN.md §7.1). In that mode:
+// The published demo on GitHub Pages (`vite build --mode pages`). In that mode:
 // `virtual:regatta-ops-sealed-roster` is the encrypted junior rosters from `pnpm pages:seal` (and the
 // build stops without them, so the site never goes up without its password); search engines are
 // asked not to index the site; and 404.html is a copy of the app, so GitHub Pages answers deep

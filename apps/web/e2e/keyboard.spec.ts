@@ -1,6 +1,6 @@
-// Keyboard walkthrough (PLAN.md §1.3 "keyboard-first", §5.6, §13): the lineup builder's core
-// path without a mouse, plus the dialogs, menus, pickers, inline edits, and the trailer's
-// select-then-place path. Every step presses keys; nothing is clicked.
+// Keyboard walkthrough (PLAN.md §13): the lineup builder's core path without a mouse, plus the
+// dialogs, menus, pickers, inline edits, and the trailer's select-then-place path. Every step
+// presses keys; nothing is clicked.
 //
 //   pnpm --filter @regatta-ops/web exec playwright test e2e/keyboard.spec.ts
 

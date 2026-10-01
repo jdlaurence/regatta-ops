@@ -1,4 +1,4 @@
-// The regatta's own fields, shared by "New regatta" and the settings dialog (PLAN.md §4.1).
+// The regatta's own fields, shared by "New regatta" and the settings dialog.
 
 import { Controller, type UseFormReturn } from 'react-hook-form';
 import { Field, Input } from '@/components/ui/input';

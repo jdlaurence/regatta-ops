@@ -130,8 +130,8 @@ export function clock(ctx: Ctx, iso: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Availability (PLAN.md §4.2): absence of a record means available; `days[day]` overrides the
-// regatta-wide status for multi-day regattas. 'maybe' counts as available (no error).
+// Availability: absence of a record means available; `days[day]` overrides the regatta-wide
+// status for multi-day regattas. 'maybe' counts as available (no error).
 
 /** Whether the athlete is available on `day` (or for the regatta when no day is known). */
 export function isAvailableOn(av: Availability | undefined, day?: string): boolean {
@@ -160,7 +160,7 @@ export function isComing(av: Availability | undefined, days: readonly string[]):
 
 /**
  * Effective seat sides for an entry: the entry's own override, else the shell's rig (a
- * starboard-stroke shell flips every standard side, PLAN.md §4.7), else the standard rig.
+ * starboard-stroke shell flips every standard side), else the standard rig.
  * The UI should use the same helper so what the strip shows matches SIDE_MISMATCH.
  */
 export function entrySeatSides(

@@ -1,5 +1,5 @@
-// Roster helpers: age badges, filters, and the CSV import and export (PLAN.md §4.2).
-// Every name here is invented.
+// Roster helpers: age badges, filters, and the CSV import and export. Every name here is
+// invented.
 
 import { describe, expect, it } from 'vitest';
 import type { Athlete } from '@regatta-ops/domain';

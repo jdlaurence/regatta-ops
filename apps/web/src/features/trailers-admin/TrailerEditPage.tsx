@@ -1,7 +1,7 @@
-// Trailers admin, one trailer (PLAN.md §6.9): the frame, shelves, and compartments on the left,
-// the live end view on the right (drawn from the unsaved draft, with a test pack), and the
-// default loading rules. Admins edit; everyone else reads. Save writes the trailer, its
-// shelves, and its compartments in one batch.
+// Trailers admin, one trailer: the frame, shelves, and compartments on the left, the live end
+// view on the right (drawn from the unsaved draft, with a test pack), and the default loading
+// rules. Admins edit; everyone else reads. Save writes the trailer, its shelves, and its
+// compartments in one batch.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useBlocker, useNavigate, useParams } from 'react-router';

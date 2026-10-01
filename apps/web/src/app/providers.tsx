@@ -1,5 +1,5 @@
 // Providers around the whole app: the DataStore, TanStack Query (saved on the device for
-// offline reads, PLAN.md §10.4), theme, realtime, tooltips, and toasts. Tests render the same
+// offline reads), theme, realtime, tooltips, and toasts. Tests render the same
 // tree with a MemoryStore and no persister.
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';

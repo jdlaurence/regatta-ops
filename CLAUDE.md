@@ -91,7 +91,8 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
   `pnpm pb:types` and commit the regenerated `apps/web/src/data/pb-types.ts`.
 - Comments say what the code does now and what is not obvious about it: no build history, no
   usage samples that repeat a call site, no restating the code below. Cite `PLAN.md` only where
-  a section is the contract the code implements (§8, §9, §16, §17).
+  a section is the contract the code implements, such as the data model (§8), the domain logic
+  (§9), and the reference dimensions (§16).
 - Commits: Conventional Commits (`feat(lineups): drag athlete into seat`).
 
 ## Testing

@@ -113,7 +113,7 @@ test.describe('desktop', () => {
     const pack = page.getByRole('main').getByRole('button', { name: 'Auto pack both trailers' });
     await expect(pack).toBeEnabled();
     await pack.click();
-    // The regatta is final: the first load-plan change asks (PLAN.md §4.1). Time from the yes.
+    // The regatta is final: the first load-plan change asks. Time from the yes.
     const ask = page.getByRole('dialog', { name: 'This regatta is final' });
     await expect(ask).toBeVisible();
     const p0 = Date.now();

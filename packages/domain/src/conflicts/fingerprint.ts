@@ -1,4 +1,4 @@
-// Hot-seat fingerprints (PLAN.md §9.2 Determinism and ids, §4.4 Hot seat acknowledgment).
+// Hot-seat fingerprints (PLAN.md §9.2 Determinism and ids).
 //
 // A fingerprint captures what must stay unchanged for an acknowledgment to hold: the resource
 // (shell or oar set), both entries, and both scheduled times. It is readable on purpose, so a

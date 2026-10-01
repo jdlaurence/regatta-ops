@@ -1,5 +1,5 @@
 // Fleet: shells and oar sets from data/reference, and the gear list from the trailer sheet
-// (PLAN.md §4.7, §14). Mapping rules are documented next to each helper.
+// (PLAN.md §14). Mapping rules are documented next to each helper.
 
 import {
   BOAT_CLASSES,
@@ -59,8 +59,8 @@ const MODEL_LENGTH_CM: [RegExp, number][] = [
 
 /**
  * Classes a shell can race as. The Lundberg 4+ is the club's one 4+ used as a 4x+: the 2025
- * schedule lists it as "Lundberg 4x+ (rerig)" (PLAN.md §4.7), though shells.csv lists no
- * compatible classes for it.
+ * schedule lists it as "Lundberg 4x+ (rerig)", though shells.csv lists no compatible classes for
+ * it.
  */
 const COMPATIBLE_OVERRIDES: Record<string, BoatClass[]> = { Lundberg: ['4+', '4x+'] };
 

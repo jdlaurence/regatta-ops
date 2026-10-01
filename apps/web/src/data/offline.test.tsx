@@ -1,5 +1,5 @@
-// Read-only while offline (PLAN.md §10.4): useCan turns every action off, writes refuse before
-// anything changes on screen, and queries with nothing saved say so instead of loading forever.
+// Read-only while offline: useCan turns every action off, writes refuse before anything changes
+// on screen, and queries with nothing saved say so instead of loading forever.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';

@@ -1,5 +1,5 @@
-// Conflict findings for a regatta (PLAN.md §4.5, §9.2): the working set turned into a
-// ConflictInput and run through the pure engine, recomputed only when the data changes.
+// Conflict findings for a regatta (PLAN.md §9.2): the working set turned into a ConflictInput and
+// run through the pure engine, recomputed only when the data changes.
 
 import { useMemo } from 'react';
 import {

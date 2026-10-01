@@ -1,6 +1,6 @@
-// Share links, the public side (PLAN.md §2, §4.8, §4.11). A share link's page is read
-// without signing in, so it does not use collections: the server answers two public routes
-// (backend/README.md "Share links"). This module is the only place the app knows those URLs.
+// Share links, the public side. A share link's page is read without signing in, so it does not
+// use collections: the server answers two public routes (backend/README.md "Share links"). This
+// module is the only place the app knows those URLs.
 //
 //   GET  /api/regatta-ops/share/{token}                   → ShareView
 //   POST /api/regatta-ops/share/{token}/load-items/{id}   { loaded?, returned?, by? } → { item }
@@ -754,8 +754,8 @@ export interface ShareTickVars extends ShareTickInput {
 
 export interface UseTickShareItemOptions {
   /**
-   * Return true to keep the optimistic tick after a failure (the caller queued it for later,
-   * PLAN.md §10.4). Otherwise the line is restored and a toast says why.
+   * Return true to keep the optimistic tick after a failure (the caller queued it for later).
+   * Otherwise the line is restored and a toast says why.
    */
   keepOnError?: (error: unknown, vars: ShareTickVars) => boolean;
   onSuccess?: (item: ShareLoadItem, vars: ShareTickVars) => void;

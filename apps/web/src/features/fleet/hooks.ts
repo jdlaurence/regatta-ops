@@ -53,7 +53,7 @@ export function useMediaQuery(query: string): boolean {
   );
 }
 
-/** Tables from 768 px up; stacked cards on phones (PLAN.md §5.3). */
+/** Tables from 768 px up; stacked cards on phones. */
 export function useWideLayout(): boolean {
   return useMediaQuery('(min-width: 768px)');
 }

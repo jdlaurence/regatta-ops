@@ -1,8 +1,8 @@
-// The page around every print view (PLAN.md §6.12): no app shell, an on-screen toolbar that
-// does not print (back, the view's options, Print), and the sheets below it. On screen each
-// sheet is a sheet of paper on the page background, in either theme; in print it is the page,
-// black on white, with a page break after it (styles/print.css). "Save as PDF" comes from the
-// browser's print dialog; there is no PDF library.
+// The page around every print view: no app shell, an on-screen toolbar that does not print (back,
+// the view's options, Print), and the sheets below it. On screen each sheet is a sheet of paper
+// on the page background, in either theme; in print it is the page, black on white, with a page
+// break after it (styles/print.css). "Save as PDF" comes from the browser's print dialog; there
+// is no PDF library.
 
 import { useCallback, type CSSProperties, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';

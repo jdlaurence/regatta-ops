@@ -1,6 +1,6 @@
 // A box that scrolls its content (a wide table on a phone, a long preview in a dialog). While
 // the content overflows, the box is a labelled, focusable group so keyboard users can scroll it
-// with the arrow keys (PLAN.md §5.6; WCAG 2.1.1). When everything fits it is a plain div with no
+// with the arrow keys (WCAG 2.1.1). When everything fits it is a plain div with no
 // extra tab stop. A group rather than a region: the section around it usually is the landmark.
 
 import { useEffect, useRef, useState, type ComponentProps } from 'react';

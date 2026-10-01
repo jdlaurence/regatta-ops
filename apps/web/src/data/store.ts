@@ -1,6 +1,6 @@
-// The DataStore contract (PLAN.md §7.1, §7.3, §10). Everything the app reads or writes goes
-// through this interface, via the hooks in data/hooks.ts. Two implementations:
-// PocketBaseStore (the real backend) and MemoryStore (tests, the gallery, and demo mode).
+// The DataStore contract. Everything the app reads or writes goes through this interface, via the
+// hooks in data/hooks.ts. Two implementations: PocketBaseStore (the real backend) and MemoryStore
+// (tests, the gallery, and demo mode).
 
 import type { BaseRecord, CollectionMap, CollectionName, User } from '@regatta-ops/domain';
 
@@ -36,8 +36,8 @@ export type Patch<T extends BaseRecord> = Partial<Omit<T, 'id' | 'created' | 'up
 export interface UpdateOptions {
   /**
    * The `updated` stamp the caller last saw. When the stored record has moved on, the write is
-   * refused with a StoreError of code 'conflict' (HTTP 409) instead of overwriting someone
-   * else's change. Used for event times and trailer placements (PLAN.md §8.3, §10.2).
+   * refused with a StoreError of code 'conflict' (HTTP 409) instead of overwriting someone else's
+   * change. Used for event times and trailer placements (PLAN.md §8.3).
    */
   expectedUpdated?: string;
 }
@@ -176,7 +176,7 @@ export type StoreErrorCode =
   | 'network'
   | 'unknown';
 
-/** Errors from either store. `message` is a sentence ready for a toast (PLAN.md §5.5). */
+/** Errors from either store. `message` is a sentence ready for a toast. */
 export class StoreError extends Error {
   readonly code: StoreErrorCode;
   readonly status?: number;

@@ -68,8 +68,8 @@ export interface DataTableProps<T> {
 
 /**
  * A plain, dense table on TanStack Table: sortable headers, a global filter, optional row
- * selection, sticky header. Rows stretch full width (PLAN.md §5.3). Inline editing is done by
- * rendering inputs in cells.
+ * selection, sticky header. Rows stretch full width. Inline editing is done by rendering inputs
+ * in cells.
  */
 export function DataTable<T>({
   data,

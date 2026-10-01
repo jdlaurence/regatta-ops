@@ -1,6 +1,6 @@
-// PocketBaseStore: the DataStore over the PocketBase JS SDK (PLAN.md §7.1, §10).
-// This is the only file in the app that imports the SDK. Field and value mapping lives in
-// pb-mapper.ts; server-side behavior (stamping, activity log, entry sync) lives in pb_hooks.
+// PocketBaseStore: the DataStore over the PocketBase JS SDK. This is the only file in the app
+// that imports the SDK. Field and value mapping lives in pb-mapper.ts; server-side behavior
+// (stamping, activity log, entry sync) lives in pb_hooks.
 
 import PocketBase, { ClientResponseError, type RecordModel } from 'pocketbase';
 import type { CollectionName, User } from '@regatta-ops/domain';

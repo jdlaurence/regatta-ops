@@ -34,7 +34,7 @@ const STATUS_ICON: Record<EquipmentStatus, { icon: typeof Ban; tone: string }> =
   retired: { icon: Archive, tone: 'text-ink-2' },
 };
 
-/** Icon and words, never color alone (PLAN.md §5.4). */
+/** Icon and words, never color alone. */
 export function StatusLabel({
   status,
   className,
@@ -190,7 +190,7 @@ function lineupPath(regattaId: string, teamId: string, entryId: string) {
   return `/regattas/${regattaId}/lineups/${teamId}?entry=${entryId}`;
 }
 
-/** Entries across upcoming regattas that use this shell or oar set (§4.5). */
+/** Entries across upcoming regattas that use this shell or oar set. */
 export function UpcomingUse({
   usage,
   teamsById,

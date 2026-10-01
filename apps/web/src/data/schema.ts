@@ -154,7 +154,7 @@ export const NULLABLE_NUMBERS: Partial<Record<CollectionName, string[]>> = {
   oar_sets: ['lengthCm', 'inboardCm', 'gripMm'],
   trailers: ['postOffsetPct'],
   trailer_shelves: ['lanesOverride', 'maxBoats', 'maxWeightKg'],
-  // A blank start is the front of the frame, a blank end the back (PLAN.md §4.9).
+  // A blank start is the front of the frame, a blank end the back.
   trailer_compartments: ['startCm', 'endCm'],
 };
 

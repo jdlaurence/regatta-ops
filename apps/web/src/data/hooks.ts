@@ -1,5 +1,5 @@
-// Generic data hooks: the only way the app reads and writes (PLAN.md §11.2). Feature hooks
-// such as useSetSeat() are built from these, usually with useStoreMutation.
+// Generic data hooks: the only way the app reads and writes. Feature hooks such as useSetSeat()
+// are built from these, usually with useStoreMutation.
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import {
@@ -149,8 +149,8 @@ export function useStoreMutation<TVars, TResult = unknown>(
   return useMutation<TResult, unknown, TVars, { snap: CacheSnapshot; touched: CollectionName[] }>({
     mutationFn: (vars) => opts.mutationFn(store, vars),
     onMutate: async (vars) => {
-      // Editing is off offline (PLAN.md §10.4). useCan hides the controls; this catches the
-      // rest before anything changes on screen, so nothing is queued or half-saved.
+      // Editing is off offline. useCan hides the controls; this catches the rest before anything
+      // changes on screen, so nothing is queued or half-saved.
       if (!networkMonitor.isOnline()) throw new OfflineError();
       const changes = opts.optimistic?.(vars, qc) ?? [];
       const touched = Array.from(
@@ -303,8 +303,8 @@ export function useCurrentUser(): User | null {
 }
 
 /**
- * Whether the signed-in user's role allows an action (PLAN.md §2). False for everything while
- * offline (§10.4), so every feature's edit controls turn off together.
+ * Whether the signed-in user's role allows an action. False for everything while offline, so
+ * every feature's edit controls turn off together.
  */
 export function useCan(action: Action): boolean {
   const user = useCurrentUser();

@@ -1,4 +1,4 @@
-// The schedule toolbar (PLAN.md §6.3): day, view, rows (timeline), and filters.
+// The schedule toolbar: day, view, rows (timeline), and filters.
 
 import { useMemo, useState } from 'react';
 import { ChartNoAxesGantt, List, ListFilter, X } from 'lucide-react';

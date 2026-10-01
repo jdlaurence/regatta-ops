@@ -1,4 +1,4 @@
-// Hot-seat acknowledgment helper for the UI (PLAN.md §4.4). Pure: returns the patch to write.
+// Hot-seat acknowledgment helper for the UI. Pure: returns the patch to write.
 
 import type { Id } from '../types';
 import { findConflicts } from './engine';

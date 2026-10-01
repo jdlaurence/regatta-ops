@@ -1,7 +1,7 @@
-// The regatta working set (PLAN.md §6, §8.4, §10.1): everything a regatta page needs, loaded
-// once with a handful of list queries and kept fresh by realtime invalidation. Each piece is
-// an ordinary list query, so optimistic updates from useUpdate/useStoreMutation flow straight
-// into the working set without special cases.
+// The regatta working set (PLAN.md §8.4): everything a regatta page needs, loaded once with a
+// handful of list queries and kept fresh by realtime invalidation. Each piece is an ordinary list
+// query, so optimistic updates from useUpdate/useStoreMutation flow straight into the working set
+// without special cases.
 
 import { useMemo } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
@@ -111,7 +111,7 @@ function independentQueries(regattaId: string) {
 }
 
 /**
- * Start loading a regatta's working set without waiting (used by the route loader, §10.1).
+ * Start loading a regatta's working set without waiting (used by the route loader).
  * The hook then finds everything already in flight or cached.
  */
 export function prefetchRegattaWorkingSet(qc: QueryClient, store: DataStore, regattaId: string) {
@@ -143,7 +143,7 @@ function byId<T extends { id: Id }>(rows: T[]): Map<Id, T> {
 }
 
 function sortEvents(events: RegattaEvent[]): RegattaEvent[] {
-  // Unscheduled events go last within their day (PLAN.md §4.3).
+  // Unscheduled events go last within their day.
   return [...events].sort((a, b) => {
     if (a.day !== b.day) return a.day < b.day ? -1 : 1;
     const ta = a.scheduledAt ?? '￿';

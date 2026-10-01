@@ -1,6 +1,6 @@
-// Counts for the regattas list and the regatta overview (PLAN.md §4.1, §6.1, §6.2): entries,
-// boated athletes, conflicts by severity, and load plan status per team. Pure; the pages feed
-// it the working set and the findings.
+// Counts for the regattas list and the regatta overview: entries, boated athletes, conflicts by
+// severity, and load plan status per team. Pure; the pages feed it the working set and the
+// findings.
 
 import {
   isComing,
@@ -67,7 +67,7 @@ export interface TeamSummary {
   load: LoadStatus;
 }
 
-/** One row per participating team, in team order (PLAN.md §6.2). */
+/** One row per participating team, in team order. */
 export function teamSummaries(
   ws: RegattaWorkingSet,
   input: ConflictInput,

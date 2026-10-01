@@ -1,6 +1,6 @@
-// Presence rows (PLAN.md §4.6, §8.1 presence, §10.3): one row per open tab per regatta, kept
-// fresh by a heartbeat every 30 s and ignored after 2 minutes (the server prunes them). This file
-// is the store-facing part without React or the DOM, so the real-backend test drives it too;
+// Presence rows (PLAN.md §8.1 presence): one row per open tab per regatta, kept fresh by a
+// heartbeat every 30 s and ignored after 2 minutes (the server prunes them). This file is the
+// store-facing part without React or the DOM, so the real-backend test drives it too;
 // data/presence.ts adds the hooks.
 
 import type { Presence, TeamColorKey, User } from '@regatta-ops/domain';

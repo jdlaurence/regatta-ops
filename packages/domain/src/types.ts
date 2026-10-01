@@ -102,7 +102,7 @@ export interface Athlete extends BaseRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Regattas (PLAN.md §4.1)
+// Regattas
 
 export interface RegattaSettings {
   launchLeadMin: number;
@@ -132,7 +132,7 @@ export interface Regatta extends BaseRecord {
   createdBy?: Id | null;
 }
 
-/** One entry of a team's published lineups (PLAN.md §4.1 Publishing). */
+/** One entry of a team's published lineups. */
 export interface PublishedEntry {
   entryId: Id;
   label: string;
@@ -232,7 +232,7 @@ export interface EntrySeat extends BaseRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Fleet (PLAN.md §4.7)
+// Fleet
 
 export type EquipmentStatus = 'in_service' | 'limited' | 'out_of_service' | 'retired';
 export type GenderAffinity = 'women' | 'men' | 'any';
@@ -313,7 +313,7 @@ export interface GearItem extends BaseRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Trailers and load plans (PLAN.md §4.8, §4.9). Packer-facing types live in trailer/types.ts.
+// Trailers and load plans. Packer-facing types live in trailer/types.ts.
 
 export type TrailerStyle = 'offset_post' | 'center_post' | 'goalpost';
 
@@ -361,9 +361,9 @@ export interface TrailerCompartment extends BaseRecord {
   capacity: number;
   capacityUnit?: string;
   /**
-   * Where the compartment sits along the frame (PLAN.md §4.9): a zone of the bed from `startCm`
-   * to `endCm`, cm from the front of the frame, across the bed's full width. A blank start is
-   * the front and a blank end the back; both blank means the whole length.
+   * Where the compartment sits along the frame: a zone of the bed from `startCm` to `endCm`, cm
+   * from the front of the frame, across the bed's full width. A blank start is the front and a
+   * blank end the back; both blank means the whole length.
    */
   startCm?: number | null;
   endCm?: number | null;
@@ -413,7 +413,7 @@ export interface LoadItem extends BaseRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Communication (PLAN.md §4.6)
+// Communication
 
 export type CommentTarget = 'entry' | 'event' | 'load_plan';
 
@@ -456,7 +456,7 @@ export interface ShareLink extends BaseRecord {
   createdBy?: Id | null;
 }
 
-/** Club-wide defaults (PLAN.md §4.12). A single record. */
+/** Club-wide defaults. A single record. */
 export interface ClubSettings extends BaseRecord {
   clubName: string;
   timezone: string;

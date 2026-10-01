@@ -1,13 +1,13 @@
-// The plan view (PLAN.md §4.10, §16.5): one level from above, front (the truck) at the left.
-// Each lane is a track as long as the shelf takes (dashed ends at its overhang limits); boats
-// are hulls drawn to length along it, small boats end to end. The frame's front and rear edges
-// cross every lane, so what hangs past them reads at a glance, with the overhang in meters on
-// that part of the hull. The 1.2 m (4 ft) rear flag threshold is a dashed line across the tier.
-// The pointed end of a hull is its bow.
+// The plan view (PLAN.md §16.5): one level from above, front (the truck) at the left. Each lane
+// is a track as long as the shelf takes (dashed ends at its overhang limits); boats are hulls
+// drawn to length along it, small boats end to end. The frame's front and rear edges cross every
+// lane, so what hangs past them reads at a glance, with the overhang in meters on that part of
+// the hull. The 1.2 m (4 ft) rear flag threshold is a dashed line across the tier. The pointed
+// end of a hull is its bow.
 //
 // Below the levels, "Bed" shows the bottom of the trailer from above: the frame's outline with
-// its compartments as zones along the length, each named with its length (§4.9). On SRA's
-// trailers the riggers fill the back of the bed across its full width.
+// its compartments as zones along the length, each named with its length. On SRA's trailers the
+// riggers fill the back of the bed across its full width.
 
 import { useCallback, useMemo, useState } from 'react';
 import {

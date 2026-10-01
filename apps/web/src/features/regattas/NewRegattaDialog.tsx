@@ -1,4 +1,4 @@
-// "New regatta" (PLAN.md §6.1): a short form, then the new regatta's overview.
+// "New regatta": a short form, then the new regatta's overview.
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

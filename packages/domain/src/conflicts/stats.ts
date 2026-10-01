@@ -1,4 +1,4 @@
-// Roster and entry facts (PLAN.md §4.4, §9.2): unboated athletes, entry stats, busy windows.
+// Roster and entry facts (PLAN.md §9.2): unboated athletes, entry stats, busy windows.
 
 import {
   isOlderAgeGroup,
@@ -54,10 +54,10 @@ export function unboatedAthletes(
 }
 
 /**
- * Computed facts for an entry (PLAN.md §4.4 Entry details). Rowers exclude the cox for
- * age and side counts; `ageGroup` is the oldest junior group of anyone seated, cox
- * included. Ages need `seasonYear` (age = seasonYear − birthYear, USRowing convention).
- * `portCount` / `starboardCount` count seated rowers by their own side (both/none count as neither).
+ * Computed facts for an entry. Rowers exclude the cox for age and side counts; `ageGroup` is the
+ * oldest junior group of anyone seated, cox included. Ages need `seasonYear` (age = seasonYear −
+ * birthYear, USRowing convention). `portCount` / `starboardCount` count seated rowers by their
+ * own side (both/none count as neither).
  */
 export function entryStats(
   entry: Entry,
@@ -103,7 +103,7 @@ export function entryStats(
   return stats;
 }
 
-/** An entry's busy window as ISO instants, for the timeline view (PLAN.md §4.5). */
+/** An entry's busy window as ISO instants, for the timeline view. */
 export interface BusyWindow {
   entryId: Id;
   day: string;

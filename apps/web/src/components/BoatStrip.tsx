@@ -171,7 +171,7 @@ interface VerticalSpec {
   rowPx: number;
   sternPx: number;
   bowPx: number;
-  /** Row height; md rows grow to 44 px on touch screens (PLAN.md §5.6). */
+  /** Row height; md rows grow to 44 px on touch screens. */
   row: string;
   pad: string;
   /** The number column (the cox's circle sits in it too). */
@@ -537,7 +537,7 @@ export interface BoatStripProps {
   seats?: Partial<Record<Seat, SeatOccupant | null>>;
   /**
    * The shell's cox position. Accepted so callers can pass the shell's value; every strip draws
-   * the cox first, at the stern end, as the club's lineup sheets list it (PLAN.md §4.4).
+   * the cox first, at the stern end, as the club's lineup sheets list it.
    */
   coxPosition?: 'stern' | 'bow' | null;
   /** Per-seat side overrides for non-standard rigs (entries.seatSides, or the shell's rig). */

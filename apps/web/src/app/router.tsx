@@ -50,7 +50,7 @@ export function buildRoutes({ queryClient, store }: RouterDeps): RouteObject[] {
     {
       path: 'regattas/:id',
       element: <RegattaLayout />,
-      // Start loading the working set with the route (§10.1); pages render skeletons meanwhile.
+      // Start loading the working set with the route; pages render skeletons meanwhile.
       loader: ({ params }) => {
         if (params.id && store.auth.user) {
           prefetchRegattaWorkingSet(queryClient, store, params.id);

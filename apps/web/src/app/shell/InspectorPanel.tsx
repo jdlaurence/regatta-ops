@@ -40,9 +40,9 @@ function focusInPanel(): boolean {
 }
 
 /**
- * `]` toggles the inspector (PLAN.md §5.3). Escape closes the slide-over; on desktop, Escape
- * inside the column sends focus back to where it came from. Closing the panel from inside it
- * never drops focus to the top of the page.
+ * `]` toggles the inspector. Escape closes the slide-over; on desktop, Escape inside the column
+ * sends focus back to where it came from. Closing the panel from inside it never drops focus to
+ * the top of the page.
  */
 export function useInspectorShortcut(available: boolean) {
   const { open, toggle, setOpen } = useInspector();

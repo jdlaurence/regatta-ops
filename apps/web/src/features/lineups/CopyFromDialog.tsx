@@ -1,6 +1,6 @@
-// "Copy lineups from" a previous regatta for the same team (PLAN.md §4.4 Copy and move): pick
-// the regatta, preview how its entries map onto this regatta's events (by name, then category,
-// then a lone event of the class), untick what you do not want, and create them as drafts.
+// "Copy lineups from" a previous regatta for the same team: pick the regatta, preview how its
+// entries map onto this regatta's events (by name, then category, then a lone event of the
+// class), untick what you do not want, and create them as drafts.
 
 import { useId, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';

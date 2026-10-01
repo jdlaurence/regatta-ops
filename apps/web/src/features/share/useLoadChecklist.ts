@@ -1,7 +1,6 @@
-// The phone checklist's state (PLAN.md §4.8, §10.4): the share page's load items with ticks
-// shown at once, a queue for ticks made without a connection, and the replay when it comes
-// back. The queue lives on the device (offline-queue.ts), so closing the page offline loses
-// nothing.
+// The phone checklist's state: the share page's load items with ticks shown at once, a queue for
+// ticks made without a connection, and the replay when it comes back. The queue lives on the
+// device (offline-queue.ts), so closing the page offline loses nothing.
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -165,7 +164,7 @@ export function useLoadChecklist(
   }, [api, qc, queue, token]);
 
   const mutation = useTickShareItem(token, {
-    // No connection: keep the tick on screen and queue it (PLAN.md §10.4).
+    // No connection: keep the tick on screen and queue it.
     keepOnError: (error, vars) => {
       if (!isTransientShareError(error)) return false;
       const field: TickField = typeof vars.loaded === 'boolean' ? 'loaded' : 'returned';

@@ -1,4 +1,4 @@
-// Phones (< 768 px, PLAN.md §5.3): tapping a seat opens this bottom sheet with the athlete
+// Phones (< 768 px): tapping a seat opens this bottom sheet with the athlete
 // picker. Rows are 44 px tall; the search box filters the same candidates the desktop picker
 // shows. Viewers see who sits there and nothing to change.
 

@@ -532,7 +532,7 @@ function FullTimeline({
                       className="stroke-accent"
                     />
                   )}
-                  {/* Focus ring: 2 px accent, 2 px offset (§5.6). */}
+                  {/* Focus ring: 2 px accent, 2 px offset. */}
                   <rect
                     x={x0 - 3}
                     y={y - 3}

@@ -1,4 +1,4 @@
-// Data for the trailers admin pages, through the generic data hooks (PLAN.md §11.2).
+// Data for the trailers admin pages, through the generic data hooks.
 
 import { useMemo } from 'react';
 import {

@@ -54,8 +54,8 @@ export const commentInputSchema = commentSchema.omit(BASE_KEYS);
 export const clubSettingsInputSchema = clubSettingsSchema.omit(BASE_KEYS);
 
 /**
- * A compartment: a zone along the frame starts before it ends (PLAN.md §4.9). A blank start is
- * the front, so an end alone is fine.
+ * A compartment: a zone along the frame starts before it ends. A blank start is the front, so an
+ * end alone is fine.
  */
 export const trailerCompartmentInputSchema = trailerCompartmentSchema
   .omit(BASE_KEYS)

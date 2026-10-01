@@ -1,4 +1,4 @@
-// Network status (PLAN.md §10.4, principle 5: "Works at the trailer"). The app is offline when
+// Network status. The app is offline when
 // the browser says so, or when a check of the server fails: once on load, after any request
 // that could not reach it, and every few seconds until it answers again. navigator.onLine alone
 // is not enough; it stays true on boathouse wifi with no internet behind it. Offline, pages

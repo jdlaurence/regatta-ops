@@ -1,7 +1,7 @@
-// Realtime collaboration through the web app's own PocketBaseStore against a real PocketBase
-// (PLAN.md §10.2, §10.3): two coaches on two clients. One changes an entry and the other's
-// subscription sees it with the author; a stale expected_updated comes back as a 'conflict';
-// presence rows written by one are visible (and live) to the other. Skips without the binary.
+// Realtime collaboration through the web app's own PocketBaseStore against a real PocketBase: two
+// coaches on two clients. One changes an entry and the other's subscription sees it with the
+// author; a stale expected_updated comes back as a 'conflict'; presence rows written by one are
+// visible (and live) to the other. Skips without the binary.
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { ActivityEntry, Entry, Presence } from '@regatta-ops/domain';

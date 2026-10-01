@@ -1,7 +1,7 @@
-// Availability rules (PLAN.md §4.2, §8.1): absence of a record means available, so a record
-// exists only while an athlete is not plainly available (a status other than available, a
-// per-day override, or a reason). `days[day]` overrides the regatta-wide status on that day.
-// Pure; the team's availability sheet and the lineups roster turn drafts into batch writes.
+// Availability rules (PLAN.md §8.1): absence of a record means available, so a record exists only
+// while an athlete is not plainly available (a status other than available, a per-day override,
+// or a reason). `days[day]` overrides the regatta-wide status on that day. Pure; the team's
+// availability sheet and the lineups roster turn drafts into batch writes.
 
 import {
   isAvailableOn,

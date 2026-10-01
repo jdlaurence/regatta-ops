@@ -1,5 +1,5 @@
-// Small roster labels: the derived age badge (U17, masters C) and the inactive tag.
-// Control radius, not pills: pills mean boats (PLAN.md §5.2).
+// Small roster labels: the derived age badge (U17, masters C) and the inactive tag. Control
+// radius, not pills: pills mean boats.
 
 import { cn } from '@/lib/cn';
 import type { AgeBadge } from './lib';

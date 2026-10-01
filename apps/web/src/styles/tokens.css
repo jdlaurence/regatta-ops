@@ -1,8 +1,8 @@
 /*
- * Regatta Ops design tokens (PLAN.md §5.2). The only place colors are written as values.
- * Light is the default; dark applies with the system preference unless the user picked
- * light (data-theme="light"), and always when the user picked dark (data-theme="dark").
- * Tailwind reads these through @theme in globals.css.
+ * Regatta Ops design tokens. The only place colors are written as values. Light is the default;
+ * dark applies with the system preference unless the user picked light (data-theme="light"), and
+ * always when the user picked dark (data-theme="dark"). Tailwind reads these through @theme in
+ * globals.css.
  */
 
 :root {
@@ -53,7 +53,7 @@
   /* Behind dialogs and slide-overs */
   --scrim: rgba(22, 33, 58, 0.28);
 
-  /* Motion (PLAN.md §5.2): only in response to an action */
+  /* Motion: only in response to an action */
   --motion-strike: 180ms;
   --motion-settle: 120ms;
   --motion-pack: 400ms;

@@ -1,5 +1,5 @@
-// Pure roster helpers (PLAN.md §4.2, §9.1): age-group badges, roster filters, and the CSV import
-// and export. No React; tested in lib.test.ts.
+// Pure roster helpers (PLAN.md §9.1): age-group badges, roster filters, and the CSV import and
+// export. No React; tested in lib.test.ts.
 
 import {
   athleteInputSchema,
@@ -157,7 +157,7 @@ export function nameSortKey(a: Pick<Athlete, 'firstName' | 'lastName' | 'preferr
 }
 
 // ---------------------------------------------------------------------------
-// CSV import (§4.2)
+// CSV import
 
 export type RosterField =
   | 'firstName'

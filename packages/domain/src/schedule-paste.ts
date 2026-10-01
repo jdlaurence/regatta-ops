@@ -1,6 +1,6 @@
-// Schedule paste parser (PLAN.md §4.3, §9.5). A coach pastes rows copied from a published
-// schedule (RegattaCentral, a PDF, a spreadsheet); the parser splits them, guesses what each
-// column is, and returns parsed events for the mapping step. Pure and deterministic.
+// Schedule paste parser (PLAN.md §9.5). A coach pastes rows copied from a published schedule
+// (RegattaCentral, a PDF, a spreadsheet); the parser splits them, guesses what each column is,
+// and returns parsed events for the mapping step. Pure and deterministic.
 
 import { parseBoatClass } from './boat-classes';
 import { detectDelimiter, parseDelimited } from './csv';

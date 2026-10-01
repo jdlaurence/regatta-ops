@@ -1,5 +1,5 @@
-// Hooks for file fields (PLAN.md §4.7): upload or remove a record's photo, and build its URL.
-// `useFileUrl()` returns a function so tables can build a thumbnail URL per row.
+// Hooks for file fields: upload or remove a record's photo, and build its URL. `useFileUrl()`
+// returns a function so tables can build a thumbnail URL per row.
 
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';

@@ -1,17 +1,17 @@
-// The load list as the page shows it (PLAN.md §4.8, §6.7, §9.4): what the regatta's entries
-// call for (`deriveLoadList`), merged with the stored checklist rows (`mergeLoadItems`) so
-// Loaded and Returned survive, plus the flags that keep anything from falling through: a shell
-// with no spot on a trailer, a spare on a trailer that no entry uses, and stored rows nothing
-// needs any more. Pure.
+// The load list as the page shows it (PLAN.md §9.4): what the regatta's entries call for
+// (`deriveLoadList`), merged with the stored checklist rows (`mergeLoadItems`) so Loaded and
+// Returned survive, plus the flags that keep anything from falling through: a shell with no spot
+// on a trailer, a spare on a trailer that no entry uses, and stored rows nothing needs any more.
+// Pure.
 //
 // Stored rows are created lazily: the first tick, container, or note on a line writes its
 // load_items record (with the tick). "Save list" writes every line that has none yet, so the
 // loading crew sees the whole list through a share link, which reads stored rows only.
 //
-// Where a line rides when nobody typed it (`defaultHomes`) follows the trailers' bed zones
-// (PLAN.md §4.9): a shell's riggers ride in the rigger zone of the trailer the shell is on, an
-// oar set in the oar zone of the trailer carrying its first crew's shell, and the slings in
-// the sling zone of the trailer carrying the most boats.
+// Where a line rides when nobody typed it (`defaultHomes`) follows the trailers' bed zones: a
+// shell's riggers ride in the rigger zone of the trailer the shell is on, an oar set in the oar
+// zone of the trailer carrying its first crew's shell, and the slings in the sling zone of the
+// trailer carrying the most boats.
 
 import {
   LOAD_ITEM_KINDS,
@@ -109,7 +109,7 @@ function placementPlans(ws: Pick<LoadListSource, 'placements' | 'loadPlans'>): M
 }
 
 // ---------------------------------------------------------------------------
-// Bed zones and default homes (PLAN.md §4.8, §4.9)
+// Bed zones and default homes
 
 type BedTrailer = Pick<Trailer, 'id' | 'name' | 'frameLengthCm'>;
 
@@ -417,9 +417,8 @@ export function tickPatch(
 }
 
 /**
- * Where-it-rides choices: each trailer, then its bed zones front to back ("Boys trailer ·
- * Riggers (back of bed)"; "Boys trailer bed" when it has none), then the trucks (§4.8 free
- * text).
+ * Where-it-rides choices: each trailer, then its bed zones front to back ("Boys trailer · Riggers
+ * (back of bed)"; "Boys trailer bed" when it has none), then the trucks.
  */
 export function containerPicks(
   trailers: readonly BedTrailer[],

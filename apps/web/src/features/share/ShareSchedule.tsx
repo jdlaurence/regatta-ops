@@ -1,6 +1,5 @@
-// The share page's day (PLAN.md §4.11): race times from the live schedule, each published crew
-// as a boat strip (a name list on phones), logistics lines in order, and when each team
-// published.
+// The share page's day: race times from the live schedule, each published crew as a boat strip (a
+// name list on phones), logistics lines in order, and when each team published.
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';

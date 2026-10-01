@@ -1,7 +1,7 @@
-// Paste import (PLAN.md §4.3, §9.5): paste rows from a published schedule (RegattaCentral, a
-// PDF, a spreadsheet) or upload a CSV, confirm what each column is while a preview shows the
-// parsed events, choose the day for rows without one, and create them all in one batch.
-// Used by the schedule page for "Import events" and by the regatta overview.
+// Paste import (PLAN.md §9.5): paste rows from a published schedule (RegattaCentral, a PDF, a
+// spreadsheet) or upload a CSV, confirm what each column is while a preview shows the parsed
+// events, choose the day for rows without one, and create them all in one batch. Used by the
+// schedule page for "Import events" and by the regatta overview.
 
 import { useId, useMemo, useRef, useState } from 'react';
 import { Upload } from 'lucide-react';

@@ -1,6 +1,6 @@
-// Share links and the load checklist through a link (PLAN.md §2, §4.8, §8.2), against a
-// real PocketBase. The response shapes checked here are the contract for the web share page and
-// the phone checklist (backend/README.md "Share links").
+// Share links and the load checklist through a link (PLAN.md §8.2), against a real PocketBase.
+// The response shapes checked here are the contract for the web share page and the phone
+// checklist (backend/README.md "Share links").
 
 import { stableId, type PublishedSnapshot } from '@regatta-ops/domain';
 import type PocketBase from 'pocketbase';

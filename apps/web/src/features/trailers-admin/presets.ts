@@ -1,6 +1,5 @@
-// Starting points for "New trailer" (PLAN.md §4.9, §16.2, §16.4) and the default rule set that
-// goes with a trailer's tiers (§9.3.3). Dimensions are typical values to edit, not
-// measurements.
+// Starting points for "New trailer" (PLAN.md §16.2, §16.4) and the default rule set that goes
+// with a trailer's tiers (§9.3.3). Dimensions are typical values to edit, not measurements.
 
 import {
   SRA_BOYS_TRAILER,
@@ -39,8 +38,8 @@ function compartment(newId: () => string, fields: Omit<CompartmentDef, 'id'>): C
 }
 
 /**
- * The bed as SRA loads it (PLAN.md §4.9): slings, then oars, then riggers filling the back of
- * the bed, zones along a 1220 cm frame (the boys' trailer's placeholders).
+ * The bed as SRA loads it: slings, then oars, then riggers filling the back of the bed, zones
+ * along a 1220 cm frame (the boys' trailer's placeholders).
  */
 function sraBed(newId: () => string): CompartmentDef[] {
   return SRA_BOYS_TRAILER.compartments.map(({ id: _id, ...c }) => compartment(newId, c));

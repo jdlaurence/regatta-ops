@@ -1,4 +1,4 @@
-// The offline banner (PLAN.md §10.4, principle 5). While the app cannot reach the server,
+// The offline banner. While the app cannot reach the server,
 // every page in the shell says so: it is showing the copy saved on this device, from when, and
 // editing is off (useCan answers false and writes refuse). Reconnecting says so once.
 

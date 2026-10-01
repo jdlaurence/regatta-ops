@@ -1,6 +1,6 @@
-// "Updated by Sarah W. just now" (PLAN.md §10.2): which realtime changes are announced, and how a
-// burst of them becomes one toast. Pure (no React, no toast library) so the unit tests and the
-// real-backend test drive it directly; data/change-toasts.ts wires it to realtime and sonner.
+// "Updated by Sarah W. just now": which realtime changes are announced, and how a burst of them
+// becomes one toast. Pure (no React, no toast library) so the unit tests and the real-backend
+// test drive it directly; data/change-toasts.ts wires it to realtime and sonner.
 //
 // The source is the activity log, not the changed records: every logged write (entries, seats,
 // events, availability, placements, load items) produces one activity_log row carrying the

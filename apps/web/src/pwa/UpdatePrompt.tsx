@@ -1,4 +1,4 @@
-// Registers the service worker (vite-plugin-pwa, PLAN.md §7.1) and offers new versions with a
+// Registers the service worker (vite-plugin-pwa) and offers new versions with a
 // quiet toast instead of reloading under someone's hands. The service worker precaches the app
 // shell so Regatta Ops opens with no connection; data offline comes from the saved query cache
 // (data/persist.ts), never from the service worker.

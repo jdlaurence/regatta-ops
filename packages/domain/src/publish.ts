@@ -1,4 +1,4 @@
-// Publishing a team's lineups (PLAN.md §4.1 Publishing, §8.1 regatta_teams.published_snapshot).
+// Publishing a team's lineups (PLAN.md §8.1 regatta_teams.published_snapshot).
 //
 // Coaches edit entries live; "Publish lineups" freezes the team's entries into a snapshot that
 // printed sheets and share links show until the next publish. These helpers are pure: the UI
@@ -96,9 +96,8 @@ function fingerprintEntryIds(stored: string | null | undefined): Set<Id> {
 }
 
 /**
- * Hot seat plans that print with an entry (PLAN.md §4.4): the entry's own acknowledged plan and
- * the plans of later entries (any team) whose acknowledgment names this entry. Distinct, in
- * that order.
+ * Hot seat plans that print with an entry: the entry's own acknowledged plan and the plans of
+ * later entries (any team) whose acknowledgment names this entry. Distinct, in that order.
  */
 export function hotSeatPlansFor(
   entry: Pick<Entry, 'id' | 'hotSeatPlan' | 'hotSeatAckBy'>,

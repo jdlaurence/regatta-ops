@@ -1,5 +1,5 @@
-// Small labels used across features: team chips, side and class badges, shell and oar chips.
-// Only ShellChip is a pill, because a shell is a boat (PLAN.md §5.2).
+// Small labels used across features: team chips, side and class badges, shell and oar chips. Only
+// ShellChip is a pill, because a shell is a boat.
 
 import type {
   AthleteSide,

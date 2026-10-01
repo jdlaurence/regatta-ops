@@ -1,7 +1,7 @@
-// "Why here?" (PLAN.md §4.10): for a boat on the racks, the rules that put it there as
-// sentences with Must/Prefer and scores, whether it is locked and by whom, and what to do with
-// it; for a boat still to load, the best free spot on this trailer or the rule that rejected
-// every spot. Shown in the inspector on desktop and in a bottom sheet on phones.
+// "Why here?": for a boat on the racks, the rules that put it there as sentences with Must/Prefer
+// and scores, whether it is locked and by whom, and what to do with it; for a boat still to load,
+// the best free spot on this trailer or the rule that rejected every spot. Shown in the inspector
+// on desktop and in a bottom sheet on phones.
 
 import type { ReactNode } from 'react';
 import { Lock, LockOpen, PackagePlus, Undo2 } from 'lucide-react';

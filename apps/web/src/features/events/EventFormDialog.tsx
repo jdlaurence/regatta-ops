@@ -1,6 +1,6 @@
-// Add or edit one event (PLAN.md §4.3): a race or a logistics line on the regatta's schedule.
-// Used by the schedule page for "Add event" and "Edit event", and by the regatta overview.
-// Deleting an event leaves its entries unscheduled; their lineups stay.
+// Add or edit one event: a race or a logistics line on the regatta's schedule. Used by the
+// schedule page for "Add event" and "Edit event", and by the regatta overview. Deleting an event
+// leaves its entries unscheduled; their lineups stay.
 
 import { useId, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';

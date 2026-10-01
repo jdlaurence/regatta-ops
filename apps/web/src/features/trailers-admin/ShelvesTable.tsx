@@ -1,5 +1,5 @@
-// The shelves table (PLAN.md §4.9, §6.9): one row per shelf, every field editable in place.
-// The first column stays put while the table scrolls sideways on narrow screens.
+// The shelves table: one row per shelf, every field editable in place. The first column stays put
+// while the table scrolls sideways on narrow screens.
 
 import { useId } from 'react';
 import { Copy, MoreHorizontal, Plus, Trash2 } from 'lucide-react';

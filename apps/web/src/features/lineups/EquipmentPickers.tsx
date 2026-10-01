@@ -1,6 +1,6 @@
-// Shell and oar pickers (PLAN.md §4.4): compatible equipment first, grouped by home team, with
-// live conflict hints computed from the working set. Out-of-service equipment is listed but
-// disabled with the reason; incompatible shells and other rigging sit behind "Show all".
+// Shell and oar pickers: compatible equipment first, grouped by home team, with live conflict
+// hints computed from the working set. Out-of-service equipment is listed but disabled with the
+// reason; incompatible shells and other rigging sit behind "Show all".
 
 import { useId, useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';

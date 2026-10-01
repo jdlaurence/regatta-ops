@@ -1,5 +1,5 @@
-// Loading, empty, and error states (PLAN.md §5.6: every list has all three).
-// Empty states say what to do; errors say what went wrong and offer a retry.
+// Loading, empty, and error states: every list has all three. Empty states say what to do;
+// errors say what went wrong and offer a retry.
 
 import type { ReactNode } from 'react';
 import { RotateCw } from 'lucide-react';
@@ -76,7 +76,7 @@ export function ErrorState({
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  // Static on purpose: motion only answers an action (PLAN.md §5.2).
+  // Static on purpose: motion only answers an action.
   return <div aria-hidden className={cn('rounded-control bg-surface-2', className)} />;
 }
 

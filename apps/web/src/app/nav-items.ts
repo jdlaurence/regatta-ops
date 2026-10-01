@@ -1,4 +1,4 @@
-// Navigation entries shared by the side nav, the tablet rail, and the phone bars (PLAN.md §5.3).
+// Navigation entries shared by the side nav, the tablet rail, and the phone bars.
 
 import {
   CalendarClock,

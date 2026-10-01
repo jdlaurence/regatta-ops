@@ -3,10 +3,10 @@
 // crosses athletes off as they are boated, and marking a seated athlete unavailable is an error.
 //
 // The scenario runs on Tail of the Lake (seeded with events and no entries), so every count
-// starts from zero. Head race timing (PLAN.md §4.1, §9.2): a boat is busy until 20 minutes of
-// racing and 15 of return after its start, so a second crew 55 minutes later has 20 minutes
-// between the boat landing and its race: a hot seat (at least 15, under the 40 minute launch
-// lead). No seeded race is 50 to 75 minutes after a boys' eight, so the girls' coach adds one.
+// starts from zero. Head race timing (PLAN.md §9.2): a boat is busy until 20 minutes of racing
+// and 15 of return after its start, so a second crew 55 minutes later has 20 minutes between the
+// boat landing and its race: a hot seat (at least 15, under the 40 minute launch lead). No seeded
+// race is 50 to 75 minutes after a boys' eight, so the girls' coach adds one.
 //
 // Demo mode keeps data in the browser context, so both coaches work in one context, signing out
 // and in, as two coaches on one laptop would.

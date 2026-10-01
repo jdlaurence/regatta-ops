@@ -1,6 +1,6 @@
-// Realtime (PLAN.md §10.3). While someone is signed in, subscribe to every collection the UI
-// reads and invalidate its queries when anything changes, batched so a burst of changes
-// refetches once. Works the same for PocketBase (server-sent events) and MemoryStore.
+// Realtime. While someone is signed in, subscribe to every collection the UI reads and invalidate
+// its queries when anything changes, batched so a burst of changes refetches once. Works the same
+// for PocketBase (server-sent events) and MemoryStore.
 //
 // useRealtimeEvents(handler) receives every change event after invalidation is scheduled; the
 // "Updated by Sarah W. just now" toasts (change-toasts.ts) listen there. Presence is not in the

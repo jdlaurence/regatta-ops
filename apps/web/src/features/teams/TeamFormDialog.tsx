@@ -1,5 +1,5 @@
-// Create or edit a team (PLAN.md §4.2): name, short name, program, color, sort order, archived.
-// Admins edit; everyone else sees the same settings read-only.
+// Create or edit a team: name, short name, program, color, sort order, archived. Admins edit;
+// everyone else sees the same settings read-only.
 
 import { useId } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';

@@ -147,7 +147,7 @@ export type ConfirmFn = (opts: {
 
 /**
  * Edits to events from the schedule: time and name inline, and the bulk shift. Optimistic, so
- * conflicts recompute at once. On a final regatta each edit asks first (§4.1).
+ * conflicts recompute at once. On a final regatta each edit asks first.
  */
 export function useEventEdits(regatta: Regatta | undefined, confirm: ConfirmFn) {
   const update = useUpdate('events', { errorMessage: 'The event was not saved. Try again.' });

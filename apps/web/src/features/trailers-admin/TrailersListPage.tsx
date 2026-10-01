@@ -1,5 +1,5 @@
-// Trailers admin, the list (PLAN.md §6.9, §4.12): every trailer with a small end view and what
-// it holds. Admins add trailers; everyone can open one to read it.
+// Trailers admin, the list: every trailer with a small end view and what it holds. Admins add
+// trailers; everyone can open one to read it.
 
 import { useState } from 'react';
 import { Link } from 'react-router';

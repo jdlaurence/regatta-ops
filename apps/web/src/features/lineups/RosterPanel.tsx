@@ -1,10 +1,10 @@
-// The roster panel (PLAN.md §4.4, §5.4 Roster row): every available athlete of the team, grouped
-// by level, crossed off in the team color once they are in a boat, then a collapsed Borrowed
-// group, then the unavailable athletes at the bottom, dimmed. Rows drag onto seats on desktop;
-// clicking a row (or Space/Enter) picks the athlete up so the next seat clicked takes them, the
-// click equivalent of a drag. Dropping a seat on the panel empties it. Coaches mark an athlete
-// unavailable (or available again) for this regatta with the button at the end of the row; days,
-// maybes, and reasons live on the team's availability sheet.
+// The roster panel: every available athlete of the team, grouped by level, crossed off in the
+// team color once they are in a boat, then a collapsed Borrowed group, then the unavailable
+// athletes at the bottom, dimmed. Rows drag onto seats on desktop; clicking a row (or
+// Space/Enter) picks the athlete up so the next seat clicked takes them, the click equivalent of
+// a drag. Dropping a seat on the panel empties it. Coaches mark an athlete unavailable (or
+// available again) for this regatta with the button at the end of the row; days, maybes, and
+// reasons live on the team's availability sheet.
 
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -89,7 +89,7 @@ function RosterRow({
   const body = (
     <>
       <span className="relative min-w-0 truncate">
-        {/* Dimmed with the secondary ink, not opacity, so the name keeps 4.5:1 (PLAN.md §5.6). */}
+        {/* Dimmed with the secondary ink, not opacity, so the name keeps 4.5:1. */}
         <span className={cn((boated || !row.available) && 'text-ink-2')}>{name}</span>
         <Strike on={boated && row.available} />
       </span>

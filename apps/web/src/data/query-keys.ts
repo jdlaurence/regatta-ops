@@ -1,6 +1,6 @@
-// TanStack Query keys (PLAN.md §10.1). Every key starts with ['regatta-ops', collection], so a change to
-// a collection invalidates everything read from it with one call. List keys carry the
-// normalized query, whose `where.regattaId` namespaces them by regatta:
+// TanStack Query keys. Every key starts with ['regatta-ops', collection], so a change to a
+// collection invalidates everything read from it with one call. List keys carry the normalized
+// query, whose `where.regattaId` namespaces them by regatta:
 //
 //   ['regatta-ops', 'entries', 'list', { where: { regattaId: 'abc' } }]
 //   ['regatta-ops', 'entries', 'record', 'k2j...']

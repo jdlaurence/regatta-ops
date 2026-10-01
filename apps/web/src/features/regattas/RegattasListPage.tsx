@@ -1,6 +1,6 @@
-// Regattas list (PLAN.md §6.1): upcoming regattas first as cards with dates, place, teams,
-// conflicts, and load plan status; past ones collapsed; archived ones behind a toggle.
-// "New regatta" opens a short form and lands on the new regatta's overview.
+// Regattas list: upcoming regattas first as cards with dates, place, teams, conflicts, and load
+// plan status; past ones collapsed; archived ones behind a toggle. "New regatta" opens a short
+// form and lands on the new regatta's overview.
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';

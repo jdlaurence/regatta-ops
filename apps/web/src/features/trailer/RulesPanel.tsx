@@ -1,8 +1,8 @@
-// The rules panel (PLAN.md §4.10, §6.6 right column): the plan's loading rules in the shared
-// RulesEditor, regatta mode. Changes are this regatta's overrides (the first one starts the
-// trailer's load plan); they never repack by themselves ("Rules changed · Auto pack to apply").
-// The panel folds under its heading and starts closed; the heading shows the override count and
-// "Changed" so a closed panel still says what matters.
+// The rules panel: the plan's loading rules in the shared RulesEditor, regatta mode. Changes are
+// this regatta's overrides (the first one starts the trailer's load plan); they never repack by
+// themselves ("Rules changed · Auto pack to apply"). The panel folds under its heading and starts
+// closed; the heading shows the override count and "Changed" so a closed panel still says what
+// matters.
 
 import { useState } from 'react';
 import { ChevronDown, Info } from 'lucide-react';

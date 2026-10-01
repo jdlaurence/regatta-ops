@@ -1,5 +1,5 @@
-// The "Publish lineups" slot in the lineup page header (PLAN.md §4.1 Publishing): the publish
-// button and the "Published 2 h ago · 3 changes since" line (components/PublishStatus.tsx).
+// The "Publish lineups" slot in the lineup page header: the publish button and the "Published 2 h
+// ago · 3 changes since" line (components/PublishStatus.tsx).
 
 import { PublishStatus } from '@/components/PublishStatus';
 
