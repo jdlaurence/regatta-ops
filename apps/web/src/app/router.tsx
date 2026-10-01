@@ -130,7 +130,9 @@ export function buildRoutes({ queryClient, store }: RouterDeps): RouteObject[] {
 }
 
 export function createAppRouter(deps: RouterDeps) {
-  return createBrowserRouter(buildRoutes(deps));
+  // The published demo lives under /<repository>/ on GitHub Pages (vite.config.ts `base`).
+  const basename = import.meta.env.BASE_URL.replace(/\/+$/, '') || '/';
+  return createBrowserRouter(buildRoutes(deps), { basename });
 }
 
 /** For tests: the same routes in memory, starting at `initialPath`. */

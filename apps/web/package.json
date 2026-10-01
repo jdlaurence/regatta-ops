@@ -14,6 +14,9 @@
     "typecheck": "tsc -p tsconfig.json",
     "build:demo": "vite build --mode demo --outDir dist/demo",
     "preview:demo": "vite preview --mode demo --outDir dist/demo",
+    "build:pages": "tsc -p tsconfig.json && vite build --mode pages --outDir dist/pages",
+    "preview:pages": "vite preview --mode pages --outDir dist/pages",
+    "seal-rosters": "tsx scripts/seal-rosters.ts",
     "test:e2e": "playwright test --project=demo",
     "test:e2e:pb": "playwright test --project=pocketbase",
     "icons": "tsx scripts/generate-icons.ts"

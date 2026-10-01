@@ -17,6 +17,13 @@ declare module 'virtual:srt-local-rosters' {
   export default rosters;
 }
 
+declare module 'virtual:srt-sealed-roster' {
+  import type { SealedRoster } from './app/unlock/sealed-roster';
+  /** The published demo's encrypted rosters (`--mode pages`, scripts/pages.ts); null otherwise. */
+  const sealed: SealedRoster | null;
+  export default sealed;
+}
+
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }

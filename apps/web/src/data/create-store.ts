@@ -1,9 +1,9 @@
-// Picks the DataStore for this build (PLAN.md §7.1): `vite --mode demo` or VITE_DATA_MODE=memory
-// runs on MemoryStore with the seed world and no backend; anything else talks to PocketBase.
+// Picks the DataStore for this build (PLAN.md §7.1): `vite --mode demo`, the published demo
+// (`--mode pages`, §18), or VITE_DATA_MODE=memory runs on MemoryStore with the seed world and no
+// backend; anything else talks to PocketBase.
 
 import { hash32 } from '@srt/domain';
-import { buildSeedWorld } from '@srt/seed';
-import juniorRosters from 'virtual:srt-local-rosters';
+import { buildSeedWorld, type RosterAthlete } from '@srt/seed';
 import { MemoryStore, readPersistedWorld } from './memory-store';
 import { PocketBaseStore } from './pocketbase-store';
 import type { DataStore } from './store';
@@ -14,17 +14,18 @@ export const DEMO_AUTH_KEY = 'srt-demo-auth-v1';
 export type DataMode = 'memory' | 'pocketbase';
 
 export function dataMode(): DataMode {
-  return import.meta.env.MODE === 'demo' || import.meta.env.VITE_DATA_MODE === 'memory'
+  const mode = import.meta.env.MODE;
+  return mode === 'demo' || mode === 'pages' || import.meta.env.VITE_DATA_MODE === 'memory'
     ? 'memory'
     : 'pocketbase';
 }
 
 /**
- * Demo mode: the seed world, with the real junior rosters when the workbooks are in data/
- * (scripts/local-rosters.ts), and the visitor's changes kept in localStorage. A roster change
- * changes the seed hash, which starts the demo over.
+ * Demo mode: the seed world, with real junior rosters when there are any (the workbooks in data/
+ * through scripts/local-rosters.ts, or the published demo's sealed rosters), and the visitor's
+ * changes kept in localStorage. A roster change changes the seed hash, which starts the demo over.
  */
-export function createDemoStore(): MemoryStore {
+export function createDemoStore(juniorRosters: RosterAthlete[] = []): MemoryStore {
   const seed = () => buildSeedWorld({ juniorRosters }).world;
   const fresh = seed();
   const seedHash = hash32(JSON.stringify(fresh));
@@ -41,7 +42,7 @@ export function createDemoStore(): MemoryStore {
   return store;
 }
 
-export function createStore(): DataStore {
-  if (dataMode() === 'memory') return createDemoStore();
+export function createStore(juniorRosters: RosterAthlete[] = []): DataStore {
+  if (dataMode() === 'memory') return createDemoStore(juniorRosters);
   return new PocketBaseStore(import.meta.env.VITE_PB_URL || '/');
 }

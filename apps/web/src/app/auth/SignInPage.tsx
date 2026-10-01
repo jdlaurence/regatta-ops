@@ -49,8 +49,8 @@ function DemoAccounts({ onPick, busy }: { onPick: (email: string) => void; busy:
           Demo accounts
         </h2>
         <p className="text-base leading-prose text-ink-2">
-          Demo mode runs in this browser with invented athletes. Pick anyone; changes stay on this
-          device until you reset them.
+          Demo mode runs in this browser. Pick anyone; changes stay on this device until you reset
+          them.
         </p>
       </div>
       <ul className="flex flex-col gap-1.5">

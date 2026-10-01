@@ -37,7 +37,8 @@ const WHOLE = 'regatta';
 
 /** The full address of a share link's page, for copying into a message. */
 export function shareLinkUrl(token: string, origin = window.location.origin): string {
-  return `${origin}${sharePath(token)}`;
+  // BASE_URL is '/' except on the published demo, which lives under /<repository>/.
+  return `${origin}${import.meta.env.BASE_URL.replace(/\/+$/, '')}${sharePath(token)}`;
 }
 
 async function copyToClipboard(text: string) {

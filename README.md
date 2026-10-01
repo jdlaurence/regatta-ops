@@ -26,6 +26,22 @@ accounts. "Reset demo data" is in the user menu.
 With the club's roster workbooks in `data/`, the junior teams are the real athletes (they stay
 out of git); `SRT_SEED_INVENTED=1 pnpm demo` uses invented ones.
 
+## Publish the demo on GitHub Pages
+
+The demo builds as a static site: the app and the seed data run in each visitor's browser, behind
+one shared password that unlocks the junior rosters (first names and short last names, encrypted
+in the repository). Each visitor's changes stay in their own browser.
+
+```sh
+pnpm pages:seal      # rosters in data/ → data/reference/junior-rosters.sealed.json; asks for the password
+pnpm pages:build     # the site in apps/web/dist/pages, for /srt/
+pnpm pages:preview   # check it at http://localhost:4173/srt/
+```
+
+Commit the sealed file. Once, in the repository's Settings → Pages, set Source to "GitHub
+Actions"; `.github/workflows/pages.yml` then deploys every push to `main` (or run it from the
+Actions tab) to `https://<owner>.github.io/srt/`. To change the password, seal again and commit.
+
 ## Run it locally with PocketBase
 
 ```sh

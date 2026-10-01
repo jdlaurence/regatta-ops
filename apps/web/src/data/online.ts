@@ -185,7 +185,8 @@ export function pocketBaseHealthUrl(baseUrl = import.meta.env.VITE_PB_URL || '/'
  * worker's precache from answering, so the request reaches the network.
  */
 export function appServerUrl(): string {
-  return new URL(`/favicon.svg?online=${Date.now()}`, window.location.href).href;
+  const icon = `${import.meta.env.BASE_URL}favicon.svg?online=${Date.now()}`;
+  return new URL(icon, window.location.href).href;
 }
 
 // ---------------------------------------------------------------------------
