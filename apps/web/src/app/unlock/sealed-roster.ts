@@ -1,4 +1,4 @@
-// The junior rosters for the published demo (PLAN.md §18): first names and short last names,
+// The junior rosters for the published demo (PLAN.md §14): first names and short last names,
 // encrypted with the demo password, so the public site and the repository carry only ciphertext.
 // Light protection by design, enough to keep strangers out: PBKDF2 and AES-GCM from Web Crypto,
 // which the browser and Node 22 both have, so `pnpm pages:seal` and the unlock page share it.

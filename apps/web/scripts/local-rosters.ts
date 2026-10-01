@@ -1,4 +1,4 @@
-// `virtual:regatta-ops-local-rosters` (PLAN.md §18): in demo mode, the real junior rosters from the
+// `virtual:regatta-ops-local-rosters` (PLAN.md §14): in demo mode, the real junior rosters from the
 // ignored workbooks in data/, so `pnpm demo` shows the club's athletes; in every other mode, and
 // when the workbooks are missing or REGATTA_OPS_SEED_INVENTED is set, an empty list and the invented
 // athletes. The names end up only in the local demo build (dist/demo, ignored by git).

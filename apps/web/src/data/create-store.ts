@@ -1,5 +1,5 @@
 // Picks the DataStore for this build (PLAN.md §7.1): `vite --mode demo`, the published demo
-// (`--mode pages`, §18), or VITE_DATA_MODE=memory runs on MemoryStore with the seed world and no
+// (`--mode pages`), or VITE_DATA_MODE=memory runs on MemoryStore with the seed world and no
 // backend; anything else talks to PocketBase.
 
 import { hash32 } from '@regatta-ops/domain';

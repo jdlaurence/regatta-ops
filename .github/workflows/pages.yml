@@ -1,4 +1,4 @@
-# The published demo on GitHub Pages (PLAN.md §18): the app on MemoryStore, under
+# The published demo on GitHub Pages (PLAN.md §7.1): the app on MemoryStore, under
 # /<repository>/, with the junior rosters sealed by `pnpm pages:seal` behind the demo password.
 # Deploys on every push to main, or by hand from the Actions tab. One-time setup: Settings →
 # Pages → Source: GitHub Actions.

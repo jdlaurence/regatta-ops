@@ -36,7 +36,7 @@ function start(rosters: RosterAthlete[], { signInAsAdmin = false } = {}) {
   );
 }
 
-// The published demo (`--mode pages`, PLAN.md §18) opens its sealed rosters first: with the key
+// The published demo (`--mode pages`, PLAN.md §14) opens its sealed rosters first: with the key
 // this device remembers, or with the password, after which it signs in as the admin.
 if (sealedRoster) {
   const sealed = sealedRoster;

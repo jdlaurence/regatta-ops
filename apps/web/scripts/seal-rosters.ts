@@ -1,4 +1,4 @@
-// `pnpm pages:seal` (PLAN.md §18): the junior rosters for the published demo. Reads the roster
+// `pnpm pages:seal` (PLAN.md §14): the junior rosters for the published demo. Reads the roster
 // workbooks in data/, keeps first names and the fewest last-name letters that tell athletes
 // apart, encrypts them with the demo password, and writes data/reference/junior-rosters.sealed.json,
 // which is committed and which `vite build --mode pages` puts in the site. Never prints a name.

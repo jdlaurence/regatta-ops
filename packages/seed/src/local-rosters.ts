@@ -1,4 +1,4 @@
-// Real junior rosters for pnpm pb:seed, pb:reset, and demo mode (PLAN.md §14, §18). Node only:
+// Real junior rosters for pnpm pb:seed, pb:reset, and demo mode (PLAN.md §14). Node only:
 // `@regatta-ops/seed/local-rosters`, never imported by the seed itself, which stays pure. Reads the club's
 // roster workbooks in data/, which git ignores, so athletes' names reach the local database and
 // the local demo build and never the repository. Sides and sculling are not on the rosters; the

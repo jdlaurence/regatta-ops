@@ -121,7 +121,7 @@ export function planWrite(
 
 export interface AvailabilityCounts {
   total: number;
-  /** Coming on at least one day ('maybe' counts, PLAN.md §18 item 5). */
+  /** Coming on at least one day ('maybe' counts, PLAN.md §9.2). */
   available: number;
   maybe: number;
 }

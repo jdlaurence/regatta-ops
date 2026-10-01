@@ -726,7 +726,7 @@ function shellDetail(shell: Shell): string {
 
 /**
  * Shells for an entry: those that race as its class, grouped by home team (this team first,
- * then the other teams, then club boats) and sorted by nickname. `showAll` adds the other
+ * then club boats, then the other teams) and sorted by nickname. `showAll` adds the other
  * classes as a last group. Out-of-service and retired shells are disabled with a reason; retired
  * ones only show with `showAll`. The entry's current shell always shows.
  */

@@ -1,4 +1,4 @@
-// The published demo's door (PLAN.md §18): one shared password opens the sealed junior rosters
+// The published demo's door (PLAN.md §14): one shared password opens the sealed junior rosters
 // in this browser. It stands in for sign-in; the app then opens signed in as the admin.
 
 import { useState, type FormEvent } from 'react';

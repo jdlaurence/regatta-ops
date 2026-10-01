@@ -173,7 +173,7 @@ function LoadedEventForm({
         toast.success(race ? 'Event added' : 'Logistics item added');
       } else {
         const ops: BatchOp[] = [batchOp.update('events', event.id, fields)];
-        // The server moves the entries with the event's class (§18); do the same here so the
+        // The server moves the entries with the event's class (§8.3); do the same here so the
         // change shows at once and demo mode matches.
         if (fields.boatClass && fields.boatClass !== event.boatClass) {
           for (const e of onEvent) {

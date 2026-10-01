@@ -1,4 +1,4 @@
-// Real junior rosters passed in by pnpm pb:seed (PLAN.md §14, §18). The rows here are synthetic:
+// Real junior rosters passed in by pnpm pb:seed (PLAN.md §14). The rows here are synthetic:
 // real names never enter the repository.
 
 import { describe, expect, it } from 'vitest';

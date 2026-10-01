@@ -1,8 +1,9 @@
 # Regatta Ops
 
 Regatta lineup planning and trailer loading for Sammamish Rowing Association coaches.
-**`PLAN.md` is the spec and wins over code until amended** (amend it in the same change that
-changes behavior). Read §1–§3 before any work, then the sections your work package points to (§12).
+**`PLAN.md` is the spec and wins over code until amended**: amend it in the same change that
+changes behavior, in the section the behavior belongs to (it carries no changelog). Read §1–§3
+before any work, then the sections your change touches.
 
 ## Commands
 
@@ -41,7 +42,6 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
 - PocketBase field names drop the `Id` suffix of relations (`eventId` → `event`); days are text;
   empty relations come back as `''`. `apps/web/src/data/pb-mapper.ts` + `schema.ts` own the
   mapping (one line per field); `backend/README.md` lists the record shapes.
-- PLAN.md §18 records every deviation made during the build; read it before assuming §1–§17.
 
 ## App building blocks (apps/web/src)
 
@@ -63,7 +63,7 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
   `/regattas/:id/schedule?event=<id>`, fleet `/fleet/shells?shell=<id>`.
 - Seed and PocketBase ids are 15 lowercase alphanumerics; `stableId(key)` makes them.
 
-## Conventions (PLAN.md §11.2, mandatory)
+## Conventions (mandatory)
 
 - TypeScript strict everywhere; no `any` without a comment saying why.
 - `packages/domain` has no React, no PocketBase, no `Date.now()`, no `Math.random()`
@@ -78,7 +78,7 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
   the local database and the local demo show real juniors: never print or log the names, and run the
   demo with `REGATTA_OPS_SEED_INVENTED=1` for any screenshot or recording. The one exception is
   `data/reference/junior-rosters.sealed.json` from `pnpm pages:seal`: first names and short last
-  names, encrypted with the published demo's password (PLAN.md §18). Equipment names are fine.
+  names, encrypted with the published demo's password (PLAN.md §14). Equipment names are fine.
 - UI words follow the glossary (§3) exactly. Sentence case. Buttons say what happens. No
   exclamation points, no apologies, no all-caps or eyebrow labels (§5.5).
 - Styling: Tailwind utilities with the tokens in `apps/web/src/styles/tokens.css`. No inline hex
@@ -89,8 +89,10 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
 - Dependencies: add one only when an existing one cannot do the job; say why in the commit.
 - PocketBase migrations: one JS migration per change, never edited after merge; run
   `pnpm pb:types` and commit the regenerated `apps/web/src/data/pb-types.ts`.
-- Commits: Conventional Commits (`feat(lineups): drag athlete into seat`). One work package
-  per branch, `wp/<letter>-<slug>`.
+- Comments say what the code does now and what is not obvious about it: no build history, no
+  usage samples that repeat a call site, no restating the code below. Cite `PLAN.md` only where
+  a section is the contract the code implements (§8, §9, §16, §17).
+- Commits: Conventional Commits (`feat(lineups): drag athlete into seat`).
 
 ## Testing
 

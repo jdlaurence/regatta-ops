@@ -1,8 +1,8 @@
 # Regatta Ops
 
-**Product and build plan.** Version 0.3, 2026-09-29 (v0.2 revised after owner answers and review of the club's spreadsheets; v0.3 amendments from the build are listed in §18). Author: J.D. Laurence-Chasen with Claude.
+**Product spec.** Author: J.D. Laurence-Chasen with Claude.
 
-This document is the single source of truth for the team of agents building Regatta Ops. It covers what the tool is for, who uses it, how it should look and feel, how it is built, and in what order. Where the plan makes an assumption instead of a decision, the assumption is tagged `[ASSUMPTION]` and listed again in §15 so the owner can confirm or overrule it.
+This document is the spec for Regatta Ops: what the tool is for, who uses it, how it looks and feels, and how it is built. It describes the app as it stands. Questions still open for the owner are listed in §15.
 
 ---
 
@@ -20,23 +20,21 @@ This document is the single source of truth for the team of agents building Rega
 9. [Domain logic](#9-domain-logic)
 10. [Realtime, concurrency, and offline](#10-realtime-concurrency-and-offline)
 11. [Repository layout and conventions](#11-repository-layout-and-conventions)
-12. [Build plan and work packages](#12-build-plan-and-work-packages)
+12. [Phase demos](#12-phase-demos)
 13. [Testing and quality](#13-testing-and-quality)
 14. [Seed data](#14-seed-data)
-15. [Open questions and assumptions](#15-open-questions-and-assumptions)
+15. [Open questions](#15-open-questions)
 16. [Appendix A: Reference dimensions and trailer conventions](#16-appendix-a-reference-dimensions-and-trailer-conventions)
 17. [Appendix B: Sample JSON](#17-appendix-b-sample-json)
-18. [Amendments during the build](#18-amendments-during-the-build)
 
 ---
 
 ## 0. How to use this document
 
-- **Agents building the tool:** read §1 to §3 fully, then the sections relevant to your work package (§12 lists them with pointers). §11 conventions are mandatory. §9 domain specs are contracts: the pure functions described there are what the UI consumes, and their test cases are acceptance criteria.
-- **The owner:** §15 lists the questions whose answers change the build. Everything else is ready to execute under the stated assumptions.
-- **Precedence:** if this document and the code disagree, this document wins until it is amended. Amend it in the same PR that changes behavior.
-- **Reference data:** `data/reference/` holds sanitized extracts of the club's spreadsheets (fleet, oar sets, a real three-day schedule, the trailer layout coaches drew). Use them for seed data and parser fixtures. The original workbooks with athlete names are git-ignored and their names never enter the codebase.
-- **First task for the build team:** create `CLAUDE.md` at the repo root summarizing §11 (conventions), the repo layout, and the commands to run tests and the dev server. Keep it under 150 lines and link back here.
+- **Contributors, people and agents:** read §1 to §3 fully, then the sections your change touches. Conventions are in `CLAUDE.md`. §9 domain specs are contracts: the pure functions described there are what the UI consumes, and their test cases are acceptance criteria.
+- **The owner:** §15 lists the questions that are still open.
+- **Precedence:** if this document and the code disagree, this document wins until it is amended. Amend it in the same change that changes behavior, in the section the behavior belongs to. This document carries no changelog; git has the history.
+- **Reference data:** `data/reference/` holds sanitized extracts of the club's spreadsheets (fleet, oar sets, a real three-day schedule, the trailer layout coaches drew). Use them for seed data and parser fixtures. The original workbooks with athlete names are git-ignored, and their names never enter the repository in plain text (`CLAUDE.md`).
 
 ---
 
@@ -86,7 +84,7 @@ Every edit is written to the activity log with the editor's name, so mistakes ar
 
 **Sign-in.** Google sign-in through the club's Google Workspace domain (the owner confirmed every coach has one). Anyone who signs in with an account on that domain gets a Regatta Ops account automatically with the coach role; admins adjust roles in Settings. Accounts from any other domain are rejected. The domain is a configuration value (`REGATTA_OPS_ALLOWED_DOMAIN`, to be filled in; §15). Local development uses email and password accounts created by the seed, so no Google Cloud project is needed until deployment.
 
-**Share links.** A regatta or a team's published lineups can be shared read-only via a tokenized link (no sign-in) so athletes and parents can see race times and boatings. Share links can be revoked. This is Phase 3 (§12).
+**Share links.** A regatta or a team's published lineups can be shared read-only via a tokenized link (no sign-in) so athletes and parents can see race times and boatings. Coaches and admins create, list, and revoke links; revoking is permanent. A link can also allow ticking the load list (§4.8).
 
 ---
 
@@ -139,41 +137,43 @@ Rowing terms as used in this document and the UI. The UI uses these exact words.
   - `athleteMinGapMin` (default 30): the smallest gap between an athlete's races before a warning.
   - `rerigMin` (default 30): extra minutes a convertible shell needs when its rigging changes between two entries.
   Every timing value is editable per regatta because courses differ (confirmed by the owner); club defaults are only starting values, and the regatta settings dialog shows both.
-- Status: `planning`, `final`, `archived`. `final` shows a banner and requires confirmation to edit; it does not lock. Archived regattas are hidden from the default list. (v0.3: lineups and trailer load plans ask once per visit; load list ticks and share-link check-offs never ask, since they record what happened at the trailer, not a change of plan. §18.)
-- **Publishing.** The boys' team keeps a draft sheet and a published sheet per regatta. Regatta Ops keeps the same distinction per team: entries are always live for coaches, and **Publish lineups** on a team's page stores a snapshot (entries, seats, shells, oars, times) with a timestamp. The team page shows "Published 2 h ago, 3 changes since" and the print and share views default to the published snapshot with a toggle to the live draft.
-- Regatta overview page: participating teams and their entry counts, conflict counts by severity, load plan status, the day's timeline in miniature, recent activity.
-- Duplicating a regatta copies settings, events, and the participating teams, not entries.
+- A regatta spans at most 14 days. Changing its timezone keeps the clock times of its events.
+- Status: `planning`, `final`, `archived`. `final` shows a banner and asks before the first change to lineups or trailer load plans in a visit ("Don't ask again" lasts until reload); it does not lock. Load list ticks and share-link check-offs never ask, since they record what happened at the trailer, not a change of plan. Archived regattas are hidden from the default list.
+- **Publishing.** The boys' team keeps a draft sheet and a published sheet per regatta. Regatta Ops keeps the same distinction per team: entries are always live for coaches, and **Publish lineups** on a team's page stores a snapshot (entries, seats, shells, oars, times) with a timestamp. The lineup page shows "Published 2 h ago · 3 changes since" (the changes listed as sentences; a seat swap counts as one) and the print and share views default to the published snapshot with a toggle to the live draft. The snapshot holds the team's non-scratched entries in schedule order and every seat of each boat class (an empty seat is null), with event, shell, oar set, and athlete names baked in so it reads the same after renames; a hot-seat pair's plans are joined (`buildPublishedSnapshot` and `snapshotChanges` in `packages/domain`).
+- Regatta overview page: participating teams and their entry counts, conflict counts by severity, load plan status per team (the team's shells placed on any of the regatta's load plans; "Nothing loaded yet" before that), the day's timeline in miniature, recent activity, and the share links dialog.
+- Duplicating a regatta copies settings, events, and the participating teams, not entries. The copy defaults to 364 days later, with the year in its name swapped.
 
 ### 4.2 Teams, rosters, and availability
 
 - Admins manage teams: name, short name (used in chips), program (Juniors, Masters, Other), color from the team palette (§5), archived flag.
-- Athletes belong to one home team. Fields: first name, last name, preferred name, side (port, starboard, both, none), can scull, can cox, birth year (the club's roster tracks birth year; a full birthdate is optional), gender (optional), graduation year (juniors), level (novice or experienced; the boys' sheet groups its roster this way and the lineup roster panel groups the same way), status (active, inactive), notes. From birth year Regatta Ops derives the junior age group (U15, U16, U17, U19) and the masters category letter (§9.1) and shows them as badges.
-- Roster import from CSV (paste or upload) with a column-mapping step. Export to CSV.
-- **Availability** is per regatta and per athlete. Default is available. A coach toggles athletes to unavailable, with an optional reason. For multi-day regattas, availability can be set per day. Coaches enter it (confirmed by the owner). The boys' team currently collects absences with a Google Form whose responses have one column per regatta; importing that CSV is a small Phase 3 addition.
-- The availability page for a regatta shows the roster as a list with a toggle per athlete, filterable by team, and a count "24 of 27 available".
+- Athletes belong to one home team. Fields: first name, last name, preferred name, side (port, starboard, both, none), can scull, can cox, birth year (the club's roster tracks birth year; a full birthdate is optional), gender (optional), graduation year (juniors), level (novice or experienced; the boys' sheet groups its roster this way and the lineup roster panel groups the same way), status (active, inactive), notes. From birth year Regatta Ops derives the junior age group (U15, U16, U17, U19) and the masters category letter (§9.1) and shows them as badges. Age badges use the current year in the club's timezone as the season year; juniors past U19 show "Open"; masters letters start at 21; on "other" teams the badge follows age. Athletes carry no weight.
+- Roster import from CSV (paste or upload) with a column-mapping step; it skips duplicates by first and last name. Export to CSV. Athlete and team edits are in the activity log.
+- **Availability** is per regatta and per athlete. Default is available. A coach toggles athletes to unavailable, with an optional reason. For multi-day regattas, availability can be set per day. Coaches enter it (confirmed by the owner).
+- Availability lives on each team's page (§6.5): a season sheet with one row per active athlete and one column per regatta the team is entered in, a checkbox per cell, and a count "24 of 27 available". A name opens the athlete's season for per-day toggles, maybes, and reasons. On the lineups page, the roster panel marks an athlete unavailable or available for that regatta.
+- **Absence form import.** The boys' team collects absences with a Google Form whose responses have one column per regatta. "Import from absence form" reads that CSV: the name and regatta columns are guessed (by name, initials like "HOTL", or a grid question's `[…]`), each distinct answer maps to available, unavailable, or maybe, the latest response per athlete wins, a blank answer leaves the athlete as is, and "available" deletes the record. The coach can uncheck any change in the preview. Checkbox-list questions are not supported (§15).
 
 ### 4.3 Events and schedule
 
 - An event is one race on the regatta schedule: event number (text, since regattas use "14A"), name, boat class, category (free text like "Men's Junior Varsity", "Mixed Masters C"), day, scheduled time, stage (heat, semi, final, time trial, or single race), progression group (optional text that ties "Event 14 Heat 1" to "Event 14 Final"), notes.
-- Events can be added one at a time or by **paste import**: the coach pastes rows copied from a regatta's published schedule (RegattaCentral, a PDF, a spreadsheet); the tool parses tab- or comma-separated lines, guesses columns, and shows a mapping step to confirm. Boat class is parsed from common patterns (`4+`, `4x+`, `Coxed Four`, `V8`, `JV4+`, `1x`).
+- Events can be added one at a time or by **paste import**: the coach pastes rows copied from a regatta's published schedule (RegattaCentral, a PDF, a spreadsheet); the tool parses tab- or comma-separated lines, guesses columns, and shows a mapping step to confirm. Boat class is parsed from common patterns (`4+`, `4x+`, `Coxed Four`, `V8`, `JV4+`, `1x`). The import drops punctuation-only lines and puts rows dated outside the regatta on the chosen day.
 - **Logistics items** live on the same schedule: "Bus departs hotel 6:15", "Coach and coxswain meeting", "Lunch", "Awards". They have a time (or none), a text, and an optional team filter, and they print in order with the races, matching the club's published day schedule.
 - Times can be blank ("TBD"). Events with blank times sort to the end of the day and are excluded from time-based conflict checks, with a visible "unscheduled" tag.
-- Schedule changes are common on race day. Editing an event time re-runs conflict detection immediately across all teams.
+- Schedule changes are common on race day. Editing an event time re-runs conflict detection immediately across all teams. Editing a race's boat class updates its entries in the same batch.
 
 ### 4.4 Lineup builder
 
 The team's page for a regatta. This is where a coach spends most of their time.
 
-- **Roster panel** (left): every athlete on the team who is available for this regatta, plus a collapsed "Unavailable" group and a "Borrowed" group for athletes from other teams added to this team's entries. Each athlete row shows name, side badge, and how many entries they are in. Athletes in at least one entry are **crossed off**: strikethrough in the team color, dimmed. The panel header shows "18 of 24 boated". Filters: side, scullers, coxswains, unboated only. Search.
-- **Entries** (center): grouped by event in schedule order, with unscheduled entries at the end. Each entry is a **boat strip** (§5.4): a lozenge with seats bow to stroke and the cox at the stern end, the shell and oar pickers, the status, and any conflict badges.
-- **Creating an entry:** click "Add entry" on an event, or "Add entry" at the top and pick an event (or leave it unscheduled). The boat class comes from the event; for an unscheduled entry the coach picks the class. The seat template renders immediately.
-- **Filling seats:** drag an athlete from the roster panel onto a seat, or click a seat to open a combobox filtered to sensible candidates (side match first, then everyone). Keyboard: focus a seat, type a name, Enter. Swapping two athletes: drag one onto the other's seat. Removing: click the seat's clear button or press Delete on a focused seat.
-- **Shell picker:** a combobox listing shells whose class is compatible with the event's class, sorted by home team then nickname, showing nickname, full name, weight class ("165-200 lb"), and stroke side. Each option shows status (in service, limited, out of service), and a live conflict hint: "Also used by Girls V4 at 10:20 (hot seat)" or "Busy: Boys 2V at 10:05". Incompatible shells are hidden by default with a "show all" toggle.
-- **Oar picker:** same, filtered to the shell's rigging type and a count that covers the crew.
-- **Entry details:** label (auto "V8", "2V4+", editable), status (draft, planned, confirmed, scratched), coach responsible (optional, the current sheet tracks this), notes, a re-rig flag when the shell's native class differs from the entry's class ("Lundberg rigged as 4x+"), and computed facts: average age with masters category, junior age-group eligibility, side balance.
-- **Seat order on screen and paper:** every boat reads cox first, then stroke down to bow, as coaches write lineups: the builder's boats stand on end (cox on top), horizontal strips read left to right from the cox, and the printed sheet and grid list the same order. (v0.3, owner request; §18.)
+- **Roster panel** (left): every athlete on the team who is available for this regatta, plus a collapsed "Unavailable" group and a "Borrowed" group for athletes from other teams added to this team's entries. Each athlete row shows name, side badge, and how many entries they are in. Athletes in at least one entry are **crossed off**: strikethrough in the team color, text in the secondary ink. The panel header shows "18 of 24 boated". Filters: side, scullers, coxswains, unboated only. Search.
+- **Entries** (center): grouped by event in schedule order, with unscheduled entries at the end. Each entry is a card in a grid of equal columns (at least 224 px; three across at 1280 px): label and menu, status and badges, shell, oars, then the boat as a vertical **boat strip** (§5.4). Rows above the boat have fixed heights so seats line up across cards. The roster sits beside the entries when the builder has 728 px.
+- **Creating an entry:** click "Add entry" on an event, or "Add entry" at the top and pick an event (or leave it unscheduled). The boat class comes from the event; for an unscheduled entry the coach picks the class. The seat template renders immediately. Crew letters fill from A.
+- **Filling seats:** drag an athlete from the roster panel onto a seat, or click a seat to open a combobox filtered to sensible candidates (side match first, then everyone). Swapping two athletes: drag one onto the other's seat. Removing: click the seat's clear button or press Delete on a focused seat. Keyboard: focus a seat and type to search, Enter opens the picker, Space picks an athlete up and puts them down (a swap), Delete clears; Up and Down move within a boat, Home and End to its top and bottom, Left and Right to the same row of the neighboring card; filling a seat moves focus down. A cleared seat keeps its record with a null athlete; seats that don't exist in a new class are deleted when an entry moves.
+- **Shell picker:** a combobox listing shells whose class is compatible with the event's class, grouped by home team (this team, then club boats, then other teams) and sorted by nickname, showing nickname, full name, weight class ("165-200 lb"), and stroke side. Each option shows status (in service, limited, out of service), and a live conflict hint: "Also used by Girls V4 at 10:20 (hot seat)" or "Busy: Boys 2V at 10:05". Incompatible shells are hidden by default with a "show all" toggle.
+- **Oar picker:** same, filtered to the shell's rigging type and a count that covers the crew, with a hint when two crews split one set.
+- **Entry details:** label (auto "V8", "2V4+", editable), status (draft, planned, confirmed, scratched), coach responsible (optional, the current sheet tracks this), notes, a re-rig flag when the shell's native class differs from the entry's class ("Lundberg rigged as 4x+"), and computed facts: average age with masters category, junior age-group eligibility, side balance. Publish status sits in the page header; an entry's comments sit in its details.
+- **Seat order on screen and paper:** every boat reads cox first, then stroke down to bow, as coaches write lineups: the builder's boats stand on end (cox on top), horizontal strips read left to right from the cox, and the printed sheet and grid list the same order. The cox is always drawn first, including in bow-loaded fours (nothing yet marks a bow-loaded shell; §15).
 - **Conflicts** appear inline as badges on the strip and in the right-hand conflicts panel for the whole regatta, filterable to "this team". Clicking a conflict jumps to both entries involved.
-- **Hot seat acknowledgment:** a hot seat warning can be acknowledged with a short plan ("Girls cox meets Boys 2V at dock B"). Acknowledged hot seats show as a calm blue badge instead of an amber one, and the plan text prints on both teams' lineup sheets.
+- **Hot seat acknowledgment:** a hot seat warning can be acknowledged with a short plan ("Girls cox meets Boys 2V at dock B"); the plan is required. Acknowledged hot seats show as a calm blue badge instead of an amber one, and the plan text prints on both teams' lineup sheets.
 - **Views:** by event (default), by athlete (a matrix: athletes as rows, events as columns, seats as cells, useful for spotting who is racing three times), and a print view.
 - **Copy and move:** duplicate an entry into another event (for heats and finals), move an entry to a different event, and "copy lineups from" a previous regatta for the same team.
 
@@ -181,32 +181,34 @@ The team's page for a regatta. This is where a coach spends most of their time.
 
 - The conflict engine (§9.2) is a pure function run in the browser whenever entries, events, availability, or settings change. It produces a list of findings with severity `error`, `warning`, or `info`.
 - **Schedule page** for the regatta: the whole club's day.
-  - **List view:** every entry from every team in time order, with team chip, event, shell, oars, and conflict badges. Filter by team, boat class, shell, or day.
-  - **Timeline view:** a horizontal time axis per day. Rows can be grouped by **shell** (the default, because equipment conflicts are what this page exists to show), by team, or by oar set. Each entry is a bar spanning its busy window (launch lead to return), with the race itself drawn as a darker segment. Overlaps render as a red hatched intersection; hot seats as an amber link between bars. Clicking a bar opens the entry.
+  - **List view:** every entry from every team in time order, with team chip, event, shell, oars, and conflict badges. Filter by team, boat class, shell, or day. A "Show entries" switch (on by default, remembered on the device) hides the entries, leaving races and logistics lines only.
+  - **Timeline view:** a horizontal time axis per day. Rows can be grouped by **shell** (the default, because equipment conflicts are what this page exists to show), by team, or by oar set. Each entry is a bar spanning its busy window (launch lead to return), with the race itself drawn as a darker segment. Bars that overlap in time take separate lanes within a row. Conflicts render as a red hatched intersection and hot seats as an amber link between bars; both come from the engine's findings, not from bars overlapping, since every hot seat overlaps in its busy window. An acknowledged hot seat is drawn dashed as well as blue, so it doesn't rely on color. Clicking a bar opens the entry.
   - **Conflicts panel:** all findings for the regatta, grouped by severity, with one-click navigation and acknowledgment for hot seats.
-- A shell's page in the fleet shows its usage across upcoming regattas.
+- A shell's drawer in the fleet shows its usage across upcoming regattas; scratched entries don't count.
 
 ### 4.6 Communication
 
-- **Activity log:** every create, update, and delete on regatta data is recorded with who, when, and a compact diff. The regatta overview shows recent activity; entries show their last editor.
-- **Comments:** on an entry, an event, and the load plan. Plain text with @-mentions of users (Phase 3 sends email on mention).
-- **Presence** (Phase 2): avatars of who is currently viewing the same regatta, with "editing Girls lineups" hints, via a heartbeat record per user (§8.1).
-- **Notifications** (Phase 3): a daily digest email during regatta week listing new conflicts and changes to your team's entries, and an immediate email when someone else changes an entry on your team. In-app only in earlier phases.
+- **Activity log:** every create, update, and delete on regatta data, teams, athletes, and the fleet is recorded with who, when, and a compact diff. The regatta overview and the inspector share one activity feed, with links to what changed; entries show their last editor. Writes by the superuser (the seed, the dashboard) are not logged.
+- **Comments:** on an entry, an event, and the load plan. Plain text with @-mentions of users, who get an email. Viewers can comment. Race rows on the schedule show their comment count and open the thread.
+- **Presence:** avatars of who is currently viewing the same regatta, with "editing Girls lineups" hints, via a heartbeat record per browser tab (§8.1).
+- **Notifications:** a daily digest email during regatta week listing schedule changes and changes to your team's entries, with a link to the conflicts panel (conflicts are computed in the browser, so the email cannot list them), and an email when someone outside your team changes one of its entries. Each user can turn either off. `backend/README.md` has the timing and the mail setup.
 
 ### 4.7 Fleet: equipment inventory
 
 Three tabs: Shells, Oars, Gear.
 
-- **Shells** (fields follow the club's equipment master list): name, nickname, boat class, compatible classes (the club's 4x/4- hulls and one 4+ used as a 4x+ show why this matters), rigging (sweep, scull, convertible), manufacturer, model ("Hudson S8.32"), serial number, year, weight class as the club writes it ("165-200", "LWT", "<240") parsed into a crew weight range, stroke side (port rig or starboard rig; drives seat sides), cox position (stern, bow), shoes, spread and span (cm, informational), level (beginner, intermediate, racer), gender affinity (women's, men's, any; the list is grouped this way), home team, boathouse location (`C5`, `Meadow`, `Berm`, `Rolling Rack`), status (in service, limited, out of service, retired; the sheet's "Unavailable?" and "do not row" notes map here), rigger type and count, length, beam, weight, private owner flag, notes, photo (Phase 3). Dimensions default from the boat class (§16) and can be overridden.
+- **Shells** (fields follow the club's equipment master list): name, nickname, boat class, compatible classes (the club's 4x/4- hulls and one 4+ used as a 4x+ show why this matters), rigging (sweep, scull, convertible), manufacturer, model ("Hudson S8.32"), serial number, year, weight class as the club writes it ("165-200", "LWT", "<240") parsed into a crew weight range, stroke side (port rig or starboard rig; drives seat sides), cox position (stern, bow), shoes, spread and span (cm, informational), level (beginner, intermediate, racer), gender affinity (women's, men's, any; the list is grouped this way), home team, boathouse location (`C5`, `Meadow`, `Berm`, `Rolling Rack`), status (in service, limited, out of service, retired; the sheet's "Unavailable?" and "do not row" notes map here), rigger type and count, length, beam, weight, private owner flag, notes, photo. Dimensions default from the boat class (§16) and can be overridden. Hull weight stays in kg; the crew weight range follows the viewer's unit. Photos are downscaled to 1600 px on the long edge in the browser before upload, and files the browser cannot decode (HEIC in Chrome) are refused.
 - **Oar sets** (fields follow the master list): name ("24-C", "Blue"), type (sweep, scull), color code ("yellow-red"; how people find them at the trailer), count (oars; scull sets note "only 3 pairs"), blade and shaft ("S2V Skinny", "Fat2"), length (cm), inboard (cm), grip (mm), gender affinity, home team, status, notes. The color code is shown on every oar chip.
 - **Gear:** category (cox box, slings, rigger set, tool kit, tent, launch, straps, spare parts, other), name, quantity, default-load flag (goes on every trailer by default), notes.
-- Bulk CSV import and export for all three. Inline editing in tables. Status changes are logged.
+- Bulk CSV import and export for all three. Export uses the §8.1 snake_case column names; import creates records and skips names already in the fleet, never updating. Inline editing in tables. Status changes are logged. The class filter also matches compatible classes (filtering 4x+ finds Lundberg).
 
 ### 4.8 Load list and checklist
 
 - Derived for a regatta from its entries: every shell used by a non-scratched entry, every oar set used, riggers for each shell (auto-generated from the shell's rigger count and type), and every gear item flagged default-load. Coaches add extras: a spare single, an extra oar set, a specific tool.
-- Presented as a checklist grouped by kind. Each line has two checkboxes: **Loaded** (at the boathouse) and **Returned** (unloaded back at the boathouse after the regatta), each recording who and when. Athletes at the loading party can tick items on a phone using a share link with check permission (Phase 3); in earlier phases a coach ticks.
-- Items on the load list without a placement on the trailer are flagged. Shells on the trailer that no entry uses are flagged as "spare" (allowed, but visible).
+- Presented as a checklist grouped by kind. Each line has two checkboxes: **Loaded** (at the boathouse) and **Returned** (unloaded back at the boathouse after the regatta), each recording who and when. Athletes at the loading party can tick items on a phone using a share link with check permission, typing their name; ticks made with no signal wait on the phone and sync later (§10.4).
+- Items on the load list without a placement on the trailer are flagged. Shells on the trailer that no entry uses are flagged as "spare" (allowed, but visible). The flags (not on a trailer, spare, no longer needed) are computed, not stored.
+- Each line says where it rides: a trailer's bed zone (§4.9) or free text such as "Truck 1 bed". Riggers, oars, and slings default to their zone on the right trailer.
+- A row is stored on its first tick or container change. "Save list" stores every line, so share links, which read stored rows, see the whole list.
 
 ### 4.9 Trailer model and load plan
 
@@ -221,20 +223,21 @@ Three tabs: Shells, Oars, Gear.
 - an access rank (1 = easiest to load and unload; used by the unload-order rule),
 - an `active` flag (the removable top rack is sometimes left off).
 
-Plus **compartments**: zones of the bed along the trailer's length (v0.3), each from and to a distance from the front of the frame (cm; blank = front or back, both blank = the whole length), across the full width, with a kind, a capacity (number of oars, number of riggers), and a label; oar boxes and tubes, rigger racks, and storage boxes are compartments too.
+Plus **compartments**: zones of the bed along the trailer's length, each from and to a distance from the front of the frame (cm; blank = front or back, both blank = the whole length), across the full width, with a kind, a capacity (number of oars, number of riggers), and a label; oar boxes and tubes, rigger racks, and storage boxes are compartments too.
 
-**SRA's trailers.** The club has two: the boys' trailer and the smaller girls' trailer. Both have five rack levels. Each level is an **offset T**: a vertical post one third of the way across, so the narrow (left) side holds one hull and the wide (right) side holds two hulls side by side, slid in from the outside (there is no threading past the post). In Regatta Ops terms each level is two shelves: `left` with one lane and `right` with two lanes whose access is outer-first (the inner lane must be loaded before the outer and unloaded after). Riggers always come off and ride in the bottom of the trailer with oars and slings, so the bed is modeled as compartments along its length, not a rack: oars (long) take roughly the front half, slings a small section in the middle, and riggers the rest of the back, across the full width (owner, v0.3). The bed is a box about 2 ft deep; the first rack sits about 4 in above its walls. The convention is eights on the top two levels, fours below, small boats wherever they fit. Frame lengths and shelf widths are still to be measured (§15); the seed uses plausible values that make the 2026 Regionals layout in `data/reference/trailer-layout-2026-regionals.md` reproducible.
+**SRA's trailers.** The club has two: the boys' trailer and the smaller girls' trailer. Both have five rack levels. Each level is an **offset T**: a vertical post one third of the way across, so the narrow (left) side holds one hull and the wide (right) side holds two hulls side by side, slid in from the outside (there is no threading past the post). In Regatta Ops terms each level is two shelves: `left` with one lane and `right` with two lanes whose access is outer-first (the inner lane must be loaded before the outer and unloaded after). Riggers always come off and ride in the bottom of the trailer with oars and slings, so the bed is modeled as compartments along its length, not a rack: oars (long) take roughly the front half, slings a small section in the middle, and riggers the rest of the back, across the full width. The bed is a box about 2 ft deep; the first rack sits about 4 in above its walls. The convention is eights on the top two levels, fours below, small boats wherever they fit. Frame lengths and shelf widths are still to be measured (§15); the seed uses plausible values that make the 2026 Regionals layout in `data/reference/trailer-layout-2026-regionals.md` reproducible.
 
-Admins define trailers in the Trailers admin page with a live diagram that updates as they type. The model also covers center-post trailers (arms both sides of a spine) and goalpost trailers (crossbars between two uprights, three wide), so a borrowed or future trailer fits.
+Admins define trailers in the Trailers admin page with a live diagram that updates as they type (§6.9). Deleting a trailer deletes its load plans. The model also covers center-post trailers (arms both sides of a spine) and goalpost trailers (crossbars between two uprights, three wide), so a borrowed or future trailer fits.
 
-**Load plan.** One per regatta per trailer (multi-trailer regattas are supported). Coaches never create one: the trailer page *is* the load plan, and the record appears with the first change to that trailer at that regatta (a pack, a boat placed, a rule changed, the status set; v0.3). A load plan is a list of placements: shell, shelf, lane index, position along the shelf (offset from the front, cm; negative means front overhang), bow orientation, and a `locked` flag for placements a coach set by hand. The plan also holds the effective rule set (trailer defaults plus regatta overrides) and the checklist state.
+**Load plan.** One per regatta per trailer (multi-trailer regattas are supported). Coaches never create one: the trailer page *is* the load plan, and the record appears with the first change to that trailer at that regatta (a pack, a boat placed, a rule changed, the status set). A load plan is a list of placements: shell, shelf, lane index, position along the shelf (offset from the front, cm; negative means front overhang), bow orientation, and a `locked` flag for placements a coach set by hand. The plan also holds its regatta rule overrides; its effective rules are the trailer's current defaults with those overrides merged in, so later changes to a trailer's defaults still apply.
 
 ### 4.10 Auto-layout and the rules editor
 
-- **Auto pack trailer** runs the packer (§9.3) over the load list and the effective rules. Locked placements are kept. The result replaces unlocked placements. Boats animate from old to new positions (the one orchestrated motion in the app). With nothing to pack, it says so in a dialog instead: no entry has a shell yet (with a link to the lineups), or every boat is on or headed for the other trailer (v0.3).
-- **Interactive layout:** the primary view is the **end view**, a cross-section grid of tiers by lanes, exactly how people talk about the trailer at the boathouse ("top rack, driver side, outside"). Each cell shows the boat chips in it. Dragging a chip to another cell moves it; if the move breaks a hard rule, the cell shows why and the drop is refused (or, with a modifier key, accepted and flagged). A secondary **plan view** (top-down, one tier at a time) shows length, end-to-end pairing of small boats, and overhang at each end with the legal flag threshold drawn as a dashed line. An optional isometric view is Phase 3.
+- **Auto pack trailer** runs the packer (§9.3) over the load list and the effective rules. Locked placements are kept. The result replaces unlocked placements. Boats animate from old to new positions (the one orchestrated motion in the app). With nothing to pack, it says so in a dialog instead: no entry has a shell yet (with a link to the lineups), or every boat is on or headed for the other trailer. Packing a final plan asks first.
+- **Auto pack both trailers** sends a team's boats to the trailer that shares a word with the team's name (Junior boys to the Boys trailer), other teams whole to the trailer with the most room, and overflow into free space on the other; boats already placed stay.
+- **Interactive layout:** the primary view is the **end view**, a cross-section grid of tiers by lanes, exactly how people talk about the trailer at the boathouse ("top rack, driver side, outside"). Each cell shows the boat chips in it. Dragging a chip to another cell moves it and locks it ("Locked by Sam W."); if the move breaks a hard rule, the cell shows why and the drop is refused (or, with Alt or Option held, accepted, locked, and flagged). Hovering a boat over the other trailer's tab switches to it, and dropping on a tab places the boat in that trailer's best free spot; each tab shows its boat count. A secondary **plan view** (top-down, one tier at a time) shows length, end-to-end pairing of small boats, and overhang at each end with the legal flag threshold drawn as a dashed line, and a "Bed" level with the zones along the length. A read-only **isometric view** shows the whole trailer at once; its lengths are to scale and its heights are not.
 - **Why here?** Clicking a placed boat shows the reasons: "Long boats go on the top rack (must)", "Heavier boats low (+12)", "Balances driver side (+6)", "Locked by Sarah". Unplaced boats show the rule that rejected every candidate: "No active shelf accepts an 8+ with 19.9 m free".
-- **Rules editor:** a panel listing loading rules as sentences with a toggle and an edit control. Each rule is marked **Must** (hard) or **Prefer** (soft, with a weight slider shown as Low, Medium, High). Rules come from the trailer's defaults; a coach can change a rule for this regatta only (badge: "This regatta"), add a rule from a gallery, or reset to defaults. The gallery (initial catalog, §9.3.3):
+- **Rules editor:** a panel listing loading rules as sentences with a toggle and an edit control. Each rule is marked **Must** (hard) or **Prefer** (soft, with a weight slider shown as Low, Medium, High). Rules come from the trailer's defaults; a coach can change a rule for this regatta only (badge: "This regatta"), add a rule from a gallery, or reset to defaults. Rules can be edited before anything is loaded. After an edit the page says "Rules changed · Auto pack to apply" for the rest of the browser session. The gallery (catalog in §9.3.3):
   - Only certain boat classes on a shelf
   - A shelf fits N boats side by side (the "we can fit 3 fours here" override)
   - Don't use a shelf
@@ -250,18 +253,19 @@ Admins define trailers in the Trailers admin page with a live diagram that updat
 
 ### 4.11 Print, share, and export
 
+- Prints default to the published snapshot and say which version and when; the schedule's published or live choice is per team. Oar color codes come from the live oar set.
 - **Lineup sheet** per team per day: printable, one page per team, entries in time order, the boat strip drawn compactly, hot seat plans, and a roster footer showing who is unboated. Print CSS, no PDF library needed; "Save as PDF" from the browser.
 - **Lineup grid**, the layout the club publishes today: events as columns with their time trial and final times in the header rows, seats as rows (cox, then stroke down to bow), names in cells. One grid for eights, one for fours and smaller.
 - **Day schedule**, also as published today: per day, one row per race with time, stage, cox, shell, oars, and the lineup as a name list, with logistics items (bus departures, lunch, awards) in order between them.
 - **Master schedule** for the regatta: all teams, time order, with shells and oars. Coaches tape this to the trailer.
-- **Schedule list**: the schedule page's list as it stands (its day, filters, and "Show entries" switch), with live lineups. The schedule's "Print" button opens it (v0.3).
-- **Load sheet:** shelf-by-shelf list with the end-view diagram, plus the checklist.
-- **Share links** (Phase 3): read-only pages for athletes and parents.
+- **Schedule list**: the schedule page's list as it stands (its day, filters, and "Show entries" switch), with live lineups. The schedule's "Print" button opens it, for everyone; scratched crews are marked, and conflict badges and entries without an event stay off paper.
+- **Load sheet** per trailer: shelf-by-shelf list with the end-view diagram, the bed zones and what rides in each, and the checklist: rows assigned to that trailer, shells placed on it, and spares on it, with rows that have no container flagged.
+- **Share links:** a public page (`/share/:token`) for athletes and parents showing races with a published crew plus logistics lines; it refreshes every minute and keeps a copy on the device for offline reloads. Links with check permission add the phone checklist (`/share/:token/load`).
 - **CSV export** of entries, roster, fleet.
 
 ### 4.12 Admin and settings
 
-Users and roles, teams, fleet, trailers, club defaults (regatta timing settings, weight unit, first day of week), and the activity log with search.
+Users and roles, teams, fleet, trailers, club defaults (regatta timing settings, weight unit, first day of week), and the activity log with search. Users and roles keep at least one admin, and demoting yourself asks first. The weight unit only sets how the fleet shows a shell's crew weight range.
 
 ---
 
@@ -273,7 +277,7 @@ Every rowing club has a whiteboard by the bay doors with lineups written in mark
 
 Two elements carry the personality and get all the visual investment:
 
-1. **The boat strip.** An entry is a long lozenge (a hull seen from above) with seats as segments, bow at the left, stroke at the right, cox at the stern. Names sit inside seats. It is the same shape on the lineup page, the schedule, the print sheet, and at 24 px tall in a table cell.
+1. **The boat strip.** An entry is a long lozenge (a hull seen from above) with seats as segments, read the way coaches write lineups: the cox first, then stroke down to bow. Names sit inside seats. Horizontal, the rounded stern and the cox are on the left and the pointed bow on the right; vertical, the hull stands on end with the cox on top. It is the same shape on the lineup page, the schedule, the print sheet, and at 24 px tall in a table cell.
 2. **The trailer diagram.** The end view of the trailer is a real cross-section: uprights, rack arms, and boat chips sitting on the arms, drawn to proportion. It should look like the thing in the parking lot.
 
 Everything else is quiet: neutral surfaces, one accent, tables and forms that get out of the way.
@@ -290,6 +294,7 @@ Colors are defined once as CSS custom properties on `:root`, redefined for dark 
 | `--surface` | `#FFFFFF` | Cards, panels, table rows. |
 | `--surface-2` | `#E8ECF0` | Hovered rows, empty seats, trailer arms. |
 | `--line` | `#D3DAE2` | Borders and dividers. |
+| `--line-strong` | `#7D8997` | Control boundaries that need 3:1 contrast: inputs, empty seats. |
 | `--ink` | `#16213A` | Primary text: deep lake navy. |
 | `--ink-2` | `#5A6675` | Secondary text. |
 | `--accent` | `#0E6F76` | Interactive: buttons, links, focus, selected. Lake teal. |
@@ -303,6 +308,8 @@ Colors are defined once as CSS custom properties on `:root`, redefined for dark 
 | `--warn` | `#B54708` | Warnings, unacknowledged hot seats. |
 | `--ok` | `#1E7A46` | Confirmed, loaded, no issues. Used sparingly; absence of a badge is the normal "ok". |
 | `--info` | `#1D5BBF` | Acknowledged hot seats, informational findings. |
+
+The accent and each semantic color have a tint for backgrounds (`--accent-tint`, `--danger-tint`, and so on). `--scrim` dims the page behind dialogs and sheets.
 
 **Team palette.** Eight hues, assigned to teams by admins. Used for team chips, roster cross-off strikes, timeline bars, and trailer boat chips. Each has a light tint (12% on white) for backgrounds.
 
@@ -349,7 +356,7 @@ Desktop (≥ 1024 px): a 232 px left navigation, a content column, and an option
 
 - Navigation lists regattas (upcoming first), then club-wide sections. The current regatta expands to show its tabs.
 - Content is left-aligned and full width; tables stretch. No centered marketing-style columns.
-- The inspector is context-sensitive: conflicts and activity by default, entry details when an entry is selected, "Why here?" on the trailer page. It collapses with a keyboard shortcut (`]`).
+- The inspector is context-sensitive: conflicts and activity by default, entry details when an entry is selected, "Why here?" on the trailer page. When more than one page component fills it, the last one mounted shows. It collapses with a keyboard shortcut (`]`).
 
 Tablet (768 to 1023 px): navigation collapses to icons; inspector becomes a slide-over.
 
@@ -357,22 +364,25 @@ Phone (< 768 px): bottom tab bar within a regatta (Schedule, Lineups, Trailer, L
 
 ### 5.4 Core components
 
-**Boat strip** (`<BoatStrip>`): props are boat class, seats (athlete or empty), cox position, size (`xs` 24 px for tables, `sm` 36 px for schedule, `md` 56 px for the builder, `print`), conflict state, team color. Empty seats render as dashed segments with the seat number. Bow has a pointed end; the stern is rounded with the cox seat as a small circle. Sweep seats show a tiny port/starboard tick on the appropriate side.
+**Boat strip** (`<BoatStrip>`): props are boat class, seats (athlete or empty), orientation, size (`xs` 24 px for tables, `sm` 36 px for schedule, `md` 56 px for the builder, `print`), conflict state, team color. The cox is always drawn first, then stroke down to bow. Empty seats render as dashed segments with the seat number. The bow has a pointed end; the stern is rounded with the cox seat as a small circle. Sweep seats show a tiny port or starboard tick on their rigger side.
+
+- **Horizontal** (the default; schedule, tables, share page): stern and cox on the left, bow pointing right, port ticks on top.
+- **Vertical** (the lineup builder and the printed lineup sheet): the hull stands on end with the stern and cox on top, one seat per row from stroke down to bow, and the bow at the bottom.
 
 ```
-  bow                                                     stern
-   ╱‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾╲
-  ⟨ 1 Ava Chen │ 2 Maya P. │ 3 ─ ─ ─ │ 4 Lena K. │ 5 Jo R. │ 6 Sam T. │ 7 Ivy M. │ 8 Zoe L. │ ◯ Cox: Ari ⟩
-   ╲______________________________________________________________________╱
+  stern                                                                                              bow
+  ╭──────────────────────────────────────────────────────────────────────────────────────────────────╲
+  │ ◯ Cox: Ari │ 8 Zoe L. │ 7 Ivy M. │ 6 Sam T. │ 5 Jo R. │ 4 Lena K. │ 3 ─ ─ ─ │ 2 Maya P. │ 1 Ava Chen  ⟩
+  ╰──────────────────────────────────────────────────────────────────────────────────────────────────╱
 ```
 
-**Roster row**: name, side badge (P, S, P/S, or a scull icon), entry count. Crossed-off state: strikethrough in team color, text in the secondary ink (v0.3: not 55% opacity, which measured 3.7:1 in light mode). Draggable on desktop.
+**Roster row**: name, side badge (P, S, P/S, or a scull icon), entry count. Crossed-off state: strikethrough in team color, text in the secondary ink, not faded, so it keeps 4.5:1. Scratched entries turn grayscale for the same reason. Draggable on desktop.
 
-**Conflict badge**: a small pill with an icon and a count; hover or tap for the finding. Icons: filled circle for error, triangle for warning, circle-i for info. Never color alone.
+**Conflict badge**: a small badge with an icon and a count, at the 6 px control radius, not a pill, because pills mean boats; hover or tap for the finding. Icons: filled circle for error, triangle for warning, circle-i for info. Never color alone.
 
-**Timeline bar**: a rounded bar with a darker race segment; overlaps hatched.
+**Timeline bar**: a rounded bar with a darker race segment; conflicts hatched.
 
-**Trailer end view** (`<TrailerEndView>`): SVG. Draws the trailer's real cross-section for its style (offset post at one third for SRA, center post, or goalpost), rack arms per shelf, the bed compartment below, and boat chips as pills with the shell nickname, class badge, and team color; drop targets per lane, with the inner lane of an outer-first shelf drawn behind the outer; overhang shown as a small arrow with a number on the plan view only.
+**Trailer end view** (`<TrailerEndView>`): SVG. Draws the trailer's real cross-section for its style (offset post at one third for SRA, center post, or goalpost), rack arms per shelf, the bed compartment below, and boat chips as pills with the shell nickname, class badge, and team color. The frame is SVG; chips and drop lanes are HTML laid over it. Widths are to scale and rack spacing is fixed; chips are drawn 1.15 to 1.3 times the hull's beam so names fit. On an outer-first shelf the inner lane is drawn beside the outer one, with "Loads 1st" and "Loads 2nd" per column. Below 480 px, tiers show only their number. Overhang is shown on the plan view only.
 
 **Rule card**: a sentence ("Top rack holds only eights and fours"), a Must/Prefer tag, a toggle, and an edit affordance. Regatta overrides carry a small "This regatta" tag.
 
@@ -385,9 +395,11 @@ Sentence case everywhere. Buttons say what happens: "Add entry", "Auto pack trai
 ### 5.6 Accessibility and quality floor
 
 - All drag-and-drop has a keyboard and click equivalent.
-- Focus visible on everything, 2 px accent ring with 2 px offset.
+- Focus visible on everything, 2 px accent ring with 2 px offset (inset on menu, select, and combobox rows).
+- A dialog opens on its first field and gives focus back to what opened it.
 - Color contrast 4.5:1 for text, 3:1 for UI boundaries, in both themes.
-- Touch targets 44 px on phone.
+- Touch targets 44 px on phone. Small controls (checkboxes, switches, conflict badges) keep their look and gain a 44 px hit area.
+- A table or list that scrolls is a focusable, labelled group while it overflows.
 - Screen reader labels on boat strips read as "Seat 3, empty" or "Seat 3, Lena Kim, starboard".
 - Every list has a loading skeleton, an empty state, and an error state with retry.
 
@@ -421,39 +433,28 @@ Routes are shown with React Router path syntax. Every regatta-scoped page loads 
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- Day at a glance: hovering the miniature (or focusing a bar from the keyboard) shows a card for what is under the pointer. On a bar: the entry, its event and race time, shell, oars, busy window, and its conflicts and hot seats. On a conflict or hot seat: the finding's message and the two crews it joins. The pointer snaps to the nearest bar or mark within a few pixels, since the bars are thin; clicking there opens the entry. Touch skips the card (a tap opens the entry).
+- Day at a glance: hovering the miniature (or focusing a bar from the keyboard) shows a card for what is under the pointer. On a bar: the entry, its event and race time, shell, oars, busy window, and its conflicts and hot seats. On a conflict or hot seat: the finding's message and the two crews it joins. The pointer snaps to the nearest bar or mark within a few pixels, since the bars are thin; clicking there opens the entry. Touch skips the card (a tap opens the entry). The miniature is one tab stop with arrow keys, like the full timeline.
 
 ### 6.3 Schedule `/regattas/:id/schedule`
 
 - Toolbar: day selector, view toggle (List, Timeline), group-by (Shell, Team, Oars), filters, "Add event", "Import events", "Print" (the list as on screen, §4.11).
 - List: a table of events with their entries nested; each entry row has team chip, label, xs boat strip, shell, oars, badges.
 - Timeline: described in §4.5. Time axis with 15-minute gridlines; now-line on race day.
-- Event editing inline (time, name); bulk shift ("everything after 11:00 is 20 minutes late").
+- Event editing inline (time, name); bulk shift ("everything after 11:00 is 20 minutes late") applies as one batch, and a shift past midnight warns but doesn't change the event's day.
+- Toolbar state (day, view, grouping, filters, and `entries=hide|show`) lives in the URL. `?event=<id>` opens a race.
 
 ### 6.4 Lineups `/regattas/:id/lineups/:teamId`
 
-```
-┌ Junior girls · Head of the Lake                                       [By event ▾] [Print] ┐
-│┌ Roster 21 / 23 boated ─────┐ ┌ Event 8 · W Jr 4x · 9:12 ──────────────────────────────┐ │
-││ Search…          [Unboated]│ │ V4x   Shell [Marymoor ▾]  Oars [Concept2 Set B ▾]  ▲ Hot seat│ │
-││ ~~Ava Chen~~        P   2  │ │ ⟨ 1 Ava │ 2 Maya │ 3 Lena │ 4 Zoe ⟩            [⋯]     │ │
-││ ~~Maya Park~~       S   1  │ │ avg 64 kg · notes: bowloader                            │ │
-││ Priya N.            P   0  │ └────────────────────────────────────────────────────────┘ │
-││ ~~Lena Kim~~        P/S 1  │ ┌ Event 14 · W Jr 8+ · 10:20 ────────────────────────────┐ │
-││ Rosa D.             S   0  │ │ V8    Shell [Monahan ▾]      Oars [Croker Sweep 1 ▾]    │ │
-││ …                          │ │ ⟨ 1 Priya │ 2 ─ │ 3 ─ │ 4 Rosa │ … │ ◯ Cox ─ ⟩  ● 2 seats│ │
-││ Unavailable (2)      ▸     │ └────────────────────────────────────────────────────────┘ │
-││ Borrowed (1)         ▸     │ ┌ Unscheduled ────────────────────────────────────────────┐ │
-│└────────────────────────────┘ │ + Add entry                                             │ │
-└──────────────────────────────────────────────────────────────────────────────────────────┘
-```
+- Header: the team and regatta, the view toggle (By event, By athlete), publish status, "Share" (share links scoped to the team), and "Print".
+- The roster panel is sticky. Dragging an athlete over a seat highlights it; over an occupied seat the overlay says "Swap".
+- Entries are vertical cards under their event headings, unscheduled entries last (§4.4).
+- The inspector on the right shows the selected entry's details, comments, and conflicts. The column starts closed when it would squeeze the builder into its narrow layout, without changing the remembered choice; `]` and an entry's details open it, and leaving the page restores it.
+- On a phone, seats are rows, and tapping one opens a bottom sheet of athletes.
+- `?entry=<id>` selects, scrolls to, and highlights an entry, redirecting to the right team if needed, then leaves the URL. Entry links everywhere use this form. `/regattas/:id/lineups` goes to the signed-in coach's default team if it is racing, else the first participating team.
 
-- The roster panel is sticky. Dragging an athlete over a seat highlights it; over an occupied seat shows a swap cursor.
-- The inspector on the right shows the selected entry's details and conflicts.
+### 6.5 Availability `/teams/:id/availability`
 
-### 6.5 Availability `/regattas/:id/availability`
-
-Roster table across all participating teams with a per-athlete toggle (and per-day toggles for multi-day), reason field, and counts. Bulk actions: "Mark all available", "Copy from previous regatta".
+A tab of the team page: the season sheet, athletes by regattas, with a checkbox per cell and a count per regatta. A name opens the athlete's season (available, maybe, unavailable; per-day toggles on multi-day regattas; a reason). A column's menu opens the lineups, runs "Mark all available", or imports the absence form (§4.2). The cells form one keyboard grid: one tab stop, arrow keys between cells, Space to toggle. `/regattas/:id/availability` redirects to the regatta's lineups.
 
 ### 6.6 Trailer `/regattas/:id/trailer` (and `/regattas/:id/trailer/:trailerId`)
 
@@ -472,34 +473,38 @@ Roster table across all participating teams with a per-athlete toggle (and per-d
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- Left: unplaced shells (draggable), then the gear checklist.
-- Center: end view by default, drawn as the real cross-section (post at one third, one lane left, two lanes right, bed compartments below); plan view per level via the toggle. Selecting a cell or chip shows reasons in the inspector. A trailer switcher at the top moves between the boys' and girls' trailers; unplaced boats can be dragged onto either.
+- Left: unplaced shells (draggable), then the gear checklist. "To load" says "No boats yet" when no entry has a shell.
+- Center: end view by default, drawn as the real cross-section (post at one third, one lane left, two lanes right, bed compartments below); plan view per level, and the isometric view, via the toggle. Selecting a cell or chip shows reasons in the inspector; after a move, focus follows the boat. A trailer switcher at the top moves between the boys' and girls' trailers; unplaced boats can be dragged onto either.
 - Right: rules panel, folded under its "Loading rules" heading and closed when the page opens (the heading shows how many rules are this regatta's and "Changed" after an edit). Editing a rule and clicking "Auto pack trailer" re-packs; locked chips stay.
 - Bottom: weight per side, per-tier overhang, warnings.
 
 ### 6.7 Load list `/regattas/:id/load`
 
-Checklist grouped by Shells, Riggers, Oars, Gear, Extras; Loaded and Returned checkboxes; "Add item". Phone-first layout.
+Checklist grouped by Shells, Riggers, Oars, Gear, Extras; Loaded and Returned checkboxes; "Add item"; "Save list". Phone-first layout.
 
 ### 6.8 Fleet `/fleet/shells`, `/fleet/oars`, `/fleet/gear`
 
-Editable tables with filters, bulk import, and a detail drawer per item showing upcoming usage.
+Editable tables with filters, bulk import, and a detail drawer per item showing upcoming usage. Drawers deep-link as `/fleet/shells?shell=<id>` and `/fleet/oars?set=<id>`.
 
 ### 6.9 Trailers admin `/trailers/:id`
 
-Form on the left (frame length, shelves table, compartments), live end-view diagram on the right, default rules editor below.
+Form on the left (frame length, shelves table, compartments with "From front" and "To", warning on overlaps), a live diagram of the unsaved draft on the right (end, plan, or isometric view), default rules editor below. Presets start a new trailer: SRA offset post, 41 ft goalpost, center post. A test pack (a sample load, a regatta's boats, or a load plan) checks the measurements.
 
 ### 6.10 Teams and roster `/teams/:id`
 
-Team settings and the athlete table with inline editing, import, and export.
+Team settings and two tabs. Roster: the athlete table with inline editing, import, and export; when it is grouped by level, the Level column is hidden. Availability: §6.5.
 
 ### 6.11 Settings `/settings`
 
-Club defaults, users and roles, activity log.
+Club defaults, users and roles, preferences, activity log. The open tab is kept in `?tab=`.
 
 ### 6.12 Print views `/print/...`
 
-Server-free print routes with print CSS: `/print/regattas/:id/lineups/:teamId?day=`, `/print/regattas/:id/schedule`, `/print/regattas/:id/load/:trailerId`.
+Server-free print routes with print CSS:
+
+- `/print/regattas/:id/lineups/:teamId|all?day=&source=live&layout=grid&boats=names`
+- `/print/regattas/:id/schedule?view=master|list&day=&team=&source=live`; the list view also takes `class=`, `shell=`, and `entries=hide`, and its toolbar offers the team, the day, and "Show entries". "Back" returns to the schedule with the same day and filters.
+- `/print/regattas/:id/load/:trailerId`
 
 ---
 
@@ -523,14 +528,15 @@ The owner wants to start locally, has no cloud accounts yet, and does not want a
 | Icons | **Lucide** | Consistent line icons. |
 | Visualizations | Hand-written **SVG** components | Boat strips, timeline, trailer views. No charting library. |
 | Backend | **PocketBase** (single binary: SQLite, auth with Google OAuth2, realtime subscriptions, file storage, admin UI, JS hooks and migrations) | The whole backend is one ~30 MB executable and one data folder. `pnpm dev` starts it next to Vite with no accounts or Docker. It serves the built app itself, so production is the same binary on a small VPS. Realtime and Google sign-in are built in. |
-| Server logic | **PocketBase JS hooks** (`pb_hooks/*.pb.js`) | Domain allowlist on sign-in, `updated_by` stamping, activity log, optional stale-write check. Everything else (conflicts, packing, load list) runs in the browser as pure functions. |
+| Server logic | **PocketBase JS hooks** (`pb_hooks/*.pb.js`) | Domain allowlist on sign-in, `updated_by` stamping, activity log, the stale-write check, share-link routes, mentions, and email jobs (§8.3). Everything else (conflicts, packing, load list) runs in the browser as pure functions. |
 | Data access | A thin **`DataStore` interface** with two implementations: `PocketBaseStore` and `MemoryStore` | `MemoryStore` powers unit tests, the component gallery, and **demo mode** (`pnpm demo`: the full app on seed data in the browser, persisted to localStorage, no backend at all). Keeps the app honest about its data needs and makes a later backend swap mechanical. |
 | Hosting | Later. Recommended: a small VPS or Fly.io running PocketBase with the app in `pb_public/`, behind the host's TLS | One process, one volume, nightly SQLite backup to object storage. PocketHost is the zero-ops alternative. Nothing is needed until the club wants to share it. |
+| Published demo | **GitHub Pages** (`pnpm pages:build`) | The demo as a static site on `MemoryStore` under `/<repository>/`, behind one shared password that opens the encrypted junior rosters in the browser (§14). Each visitor's changes stay in their own browser. `.github/workflows/pages.yml` deploys on push to `main`. |
 | PWA | **vite-plugin-pwa** | Installable, asset caching, persisted query cache for offline reads. |
 | Testing | **Vitest**, **React Testing Library**, **Playwright**, PocketBase binary in CI | §13. |
 | Tooling | **pnpm** workspaces, **ESLint**, **Prettier**, **TypeScript strict**, **GitHub Actions** | §11. |
 
-Alternatives set aside: Supabase (Postgres with RLS is excellent, but local development needs Docker and a dozen containers, which is the "huge backend" the owner wants to avoid; the `DataStore` boundary means it could replace PocketBase later if the club outgrows SQLite, which at this data volume it will not). Next.js (no SSR need). Firebase (weaker relational modeling). Convex (good realtime, requires a cloud account from day one). Local-first sync engines (right long-term answer for offline edits; evaluated in Phase 3).
+Alternatives set aside: Supabase (Postgres with RLS is excellent, but local development needs Docker and a dozen containers, which is the "huge backend" the owner wants to avoid; the `DataStore` boundary means it could replace PocketBase later if the club outgrows SQLite, which at this data volume it will not). Next.js (no SSR need). Firebase (weaker relational modeling). Convex (good realtime, requires a cloud account from day one). Local-first sync engines (the right long-term answer if the club wants full offline editing).
 
 ### 7.2 System shape
 
@@ -555,8 +561,9 @@ Alternatives set aside: Supabase (Postgres with RLS is excellent, but local deve
 ### 7.3 Package boundaries
 
 - `packages/domain` has **no React and no PocketBase imports**. It exports types, zod schemas, seat templates, boat class defaults, the conflict engine, the trailer packer, the rule catalog, the load list derivation, the schedule paste parser, and formatting helpers.
-- `apps/web` imports from `packages/domain`. All data access goes through `src/data/store.ts` (`DataStore`) and hooks built on it; components never touch the PocketBase SDK.
-- `backend/` holds PocketBase migrations (`pb_migrations/`, JS), hooks (`pb_hooks/`), a download script for the binary, and the seed script. Generated TypeScript types for collections land in `apps/web/src/data/pb-types.ts` via `pocketbase-typegen` and are committed.
+- `apps/web` imports from `packages/domain`. All data access goes through `src/data/store.ts` (`DataStore`) and hooks built on it; components never touch the PocketBase SDK. Besides list, record, create, update, and delete, the store has `batch(ops)` (atomic), an `expectedUpdated` option on update (the stale-write check, §10.2), `subscribe`, and `uploadFile`, `removeFile`, and `fileUrl` for photos. Errors are `StoreError` with a code and a toast-ready message.
+- `packages/seed` is pure too: it builds the seed world (§14) that both the PocketBase seed script and demo mode load.
+- `backend/` holds PocketBase migrations (`pb_migrations/`, JS), hooks (`pb_hooks/`), a download script for the binary, and the seed loader. Generated TypeScript types for collections land in `apps/web/src/data/pb-types.ts` via `pocketbase-typegen` and are committed.
 
 ---
 
@@ -564,71 +571,82 @@ Alternatives set aside: Supabase (Postgres with RLS is excellent, but local deve
 
 PocketBase collections. Every collection has `id`, `created`, and `updated` automatically. Relations are PocketBase relation fields; multi-value selects are used where Postgres would use arrays. Where noted, `created_by` and `updated_by` relate to `users` and are stamped by hooks. Soft deletes are not used; the activity log preserves history.
 
+Field names are the snake_case forms of the domain names in `packages/domain/src/types.ts`. Relation fields drop the `Id` suffix (`eventId` → `event`); `*_by` fields keep theirs. Calendar days (`start_date`, `end_date`, `day`, `birthdate`) are text constrained to `YYYY-MM-DD`, not date fields, so they never shift across time zones. Collection ids are `srt_<name>`, after the app's first name (§11.2). `backend/README.md` lists the record shapes as the API returns them.
+
 ### 8.1 Collections
 
-**users** (auth collection) — `name`, `email`, `role` select(`admin`,`coach`,`viewer`), `avatar` file, `default_team` relation(teams), `preferences` json. Created automatically on first Google sign-in when the email's domain matches `REGATTA_OPS_ALLOWED_DOMAIN` (hook), with role `coach`.
+**users** (auth collection) — `name`, `email`, `role` select(`admin`,`coach`,`viewer`), `avatar` file, `default_team` relation(teams), `preferences` json (theme, weight unit, `emailDigest` and `emailOnChange`, both on by default). Created automatically on first Google sign-in when the email's domain matches `REGATTA_OPS_ALLOWED_DOMAIN` (hook), with role `coach`.
 
-**teams** — `name`, `short_name`, `program` select(`juniors`,`masters`,`other`), `color_key`, `sort_order` number, `archived` bool.
+**teams** — `name`, `short_name`, `program` select(`juniors`,`masters`,`other`), `color_key` select, `sort_order` number, `archived` bool.
 
-**athletes** — `team` relation, `first_name`, `last_name`, `preferred_name`, `side` select(`port`,`starboard`,`both`,`none`), `can_scull` bool, `can_cox` bool, `birth_year` number, `birthdate` date (optional), `gender`, `grad_year` number, `level` select(`novice`,`experienced`), `status` select(`active`,`inactive`), `notes`. Index on `(team, status)`.
+**athletes** — `team` relation, `first_name`, `last_name`, `preferred_name`, `side` select(`port`,`starboard`,`both`,`none`), `can_scull` bool, `can_cox` bool, `birth_year` number, `birthdate` day (optional), `gender`, `grad_year` number, `level` select(`novice`,`experienced`), `status` select(`active`,`inactive`), `notes`. Index on `(team, status)`.
 
-**regattas** — `name`, `venue`, `city`, `start_date` date, `end_date` date, `timezone`, `format` select(`sprint`,`head`), `notes`, `status` select(`planning`,`final`,`archived`), `settings` json (timing values, §4.1), `created_by` relation.
+**regattas** — `name`, `venue`, `city`, `start_date` day, `end_date` day, `timezone`, `format` select(`sprint`,`head`), `notes`, `status` select(`planning`,`final`,`archived`), `settings` json (timing values, §4.1), `created_by` relation.
 
 **regatta_teams** — `regatta` relation, `team` relation, `notes`, `published_at` date, `published_snapshot` json (entries with seats, shells, oars, and event times as of publish). Unique index `(regatta, team)`.
 
 **availability** — `regatta` relation, `athlete` relation, `status` select(`available`,`unavailable`,`maybe`), `days` json, `reason`, `updated_by` relation. Unique `(regatta, athlete)`. Absence of a record means available.
 
-**events** — `regatta` relation, `kind` select(`race`,`logistics`), `event_number`, `name`, `boat_class` select(`1x`,`2x`,`2-`,`2+`,`4x`,`4x+`,`4+`,`4-`,`8+`), `category`, `day` date, `scheduled_at` date (nullable), `stage` select(`heat`,`semi`,`final`,`time_trial`,`race`), `progression_group`, `team_filter` relation(teams, multi; logistics only), `notes`, `sort_order` number, `source`. Index `(regatta, day, scheduled_at)`.
+**events** — `regatta` relation, `kind` select(`race`,`logistics`), `event_number`, `name`, `boat_class` select(`1x`,`2x`,`2-`,`2+`,`4x`,`4x+`,`4+`,`4-`,`8+`), `category`, `day` day, `scheduled_at` date (nullable), `stage` select(`heat`,`semi`,`final`,`time_trial`,`race`), `progression_group`, `team_filter` relation(teams, multi; logistics only), `notes`, `sort_order` number, `source`. Index `(regatta, day, scheduled_at)`.
 
-**entries** — `regatta` relation, `event` relation (nullable), `team` relation, `label`, `boat_class` select, `shell` relation (nullable), `oar_set` relation (nullable), `status` select(`draft`,`planned`,`confirmed`,`scratched`), `coach` relation(users, nullable), `notes`, `hot_seat_plan`, `hot_seat_ack_by` relation (nullable), `hot_seat_fingerprint`, `seat_sides` json (nullable), `created_by`, `updated_by`. `boat_class` is copied from the event on create and kept in sync by a hook when the entry moves events. Indexes `(regatta, team)`, `(regatta, shell)`, `(regatta, oar_set)`.
+**entries** — `regatta` relation, `event` relation (nullable), `team` relation, `label`, `boat_class` select, `shell` relation (nullable), `oar_set` relation (nullable), `status` select(`draft`,`planned`,`confirmed`,`scratched`), `coach` relation(users, nullable), `notes`, `hot_seat_plan`, `hot_seat_ack_by` relation (nullable), `hot_seat_fingerprint`, `seat_sides` json (nullable), `created_by`, `updated_by`. `boat_class` is copied from the event on create and kept in sync by a hook when the entry moves events or the event's class is edited. `hot_seat_fingerprint` may hold several fingerprints, space-separated (§9.2). `seat_sides` holds bucket rigs, since shells have no rig-pattern field (§15). Indexes `(regatta, team)`, `(regatta, shell)`, `(regatta, oar_set)`.
 
-**entry_seats** — `entry` relation, `seat` select(`1`..`8`,`cox`), `athlete` relation (nullable), `note`. Unique `(entry, seat)`; unique `(entry, athlete)` where athlete is set (SQLite partial index in the migration).
+**entry_seats** — `entry` relation, `seat` select(`1`..`8`,`cox`), `athlete` relation (nullable), `note`. Unique `(entry, seat)`; unique `(entry, athlete)` where athlete is set (SQLite partial index in the migration). An empty seat needs no record: a missing record and a null athlete both mean empty.
 
 **shells** — `name`, `nickname`, `boat_class` select, `compatible_classes` select(multi), `rigging` select(`sweep`,`scull`,`convertible`), `manufacturer`, `model`, `serial`, `year` number, `length_cm`, `beam_cm`, `weight_kg`, `weight_class_label`, `crew_weight_min_kg`, `crew_weight_max_kg`, `stroke_side` select(`port`,`starboard`), `cox_position` select(`stern`,`bow`), `rigger_type` select(`wing`,`side`,`none`), `rigger_count` number, `shoes`, `spread_cm`, `span_cm`, `level` select(`beginner`,`intermediate`,`racer`), `gender_affinity` select(`women`,`men`,`any`), `home_team` relation (nullable), `location`, `status` select(`in_service`,`limited`,`out_of_service`,`retired`), `color`, `is_private` bool, `notes`, `photo` file.
 
 **oar_sets** — `name`, `type` select(`sweep`,`scull`), `color`, `count` number, `blade`, `length_cm`, `inboard_cm`, `grip_mm`, `gender_affinity` select, `home_team` relation (nullable), `status` select(`in_service`,`limited`,`out_of_service`,`retired`), `notes`.
 
-**gear_items** — `category`, `name`, `quantity` number, `default_load` bool, `notes`.
+**gear_items** — `category` select, `name`, `quantity` number, `default_load` bool, `notes`.
 
 **trailers** — `name`, `style` select(`offset_post`,`center_post`,`goalpost`), `frame_length_cm`, `width_cm`, `post_offset_pct` number (offset-post only; 33 for SRA), `bow_forward_default` bool, `notes`, `default_rules` json.
 
 **trailer_shelves** — `trailer` relation, `label`, `tier` number, `column_key` select(`left`,`right`,`full`), `width_cm`, `length_cm`, `front_overhang_max_cm`, `rear_overhang_max_cm`, `allowed_classes` select(multi, optional), `lanes_override` number (optional), `lane_access` select(`any`,`outer_first`), `max_boats` number (optional), `max_weight_kg` number (optional), `access_rank` number, `active` bool, `sort_order` number.
 
-**trailer_compartments** — `trailer` relation, `kind` select(`bed`,`oar_box`,`oar_tube`,`rigger_rack`,`storage`), `label`, `capacity` number, `capacity_unit`, `start_cm` number, `end_cm` number (v0.3: position along the frame from its front; 0 reads blank).
+**trailer_compartments** — `trailer` relation, `kind` select(`bed`,`oar_box`,`oar_tube`,`oar_rack`,`rigger_rack`,`storage`), `label`, `capacity` number, `capacity_unit`, `start_cm` number, `end_cm` number (position along the frame from its front; 0 reads blank).
 
 **load_plans** — `regatta` relation, `trailer` relation, `status` select(`draft`,`final`), `rules` json, `packed_at` date, `notes`. Unique `(regatta, trailer)`.
 
 **load_placements** — `load_plan` relation, `shell` relation, `shelf` relation, `lane` number, `offset_cm` number, `bow_forward` bool, `locked` bool, `reasons` json. Unique `(load_plan, shell)`.
 
-**load_items** — `regatta` relation, `load_plan` relation (nullable; items in a truck bed have none), `kind` select(`shell`,`riggers`,`oar_set`,`gear`,`extra`), `ref_id`, `label`, `quantity` number, `container` (free text such as "Boys trailer bed" or "Truck 1 bed"), `loaded_at` date, `loaded_by` relation, `returned_at` date, `returned_by` relation, `notes`.
+**load_items** — `regatta` relation, `load_plan` relation (nullable; items in a truck bed have none), `kind` select(`shell`,`riggers`,`oar_set`,`gear`,`extra`), `ref_id`, `label`, `quantity` number, `container` (free text such as "Boys trailer bed" or "Truck 1 bed"), `loaded_at` date, `loaded_by` relation, `loaded_by_name`, `returned_at` date, `returned_by` relation, `returned_by_name`, `notes`. The `_name` fields hold what someone typed when ticking through a share link.
 
-**comments** — `target_type`, `target_id`, `author` relation, `body`. Index `(target_type, target_id)`.
+**comments** — `target_type`, `target_id`, `author` relation, `body`, `mentions` relation(users, multi; set by the server from the body). Index `(target_type, target_id)`.
 
-**activity_log** — `regatta` relation (nullable), `actor` relation, `action`, `target_type`, `target_id`, `summary`, `diff` json. Written only by hooks; `summary` is a human sentence ("moved entry Girls V4+ to Event 14") so the UI does not reconstruct it.
+**activity_log** — `regatta` relation (nullable), `team` relation (nullable), `actor` relation, `action`, `target_type`, `target_id`, `summary`, `diff` json. Written only by hooks; `summary` is a human sentence ("moved entry Girls V4+ to Event 14") so the UI does not reconstruct it.
 
-**presence** (Phase 2) — `user` relation, `regatta` relation, `page`, `team` relation, `seen_at` date. Heartbeat every 30 s; rows older than 2 min are ignored and pruned by a cron hook.
+**presence** — `user` relation, `regatta` relation, `page`, `team` relation, `seen_at` date. One row per browser tab. Heartbeat every 30 s; rows older than 2 min are ignored and pruned by a cron hook.
 
-**club_settings** (single record; added in v0.3, §18) — `club_name`, `timezone`, `weight_unit` select(`kg`,`lb`), `week_starts_on` number, `timing_defaults` json (the §4.1 timing values for sprints), `head_race_duration_min` number. Read by everyone, written by admins. Holds the club defaults of §4.12.
+**club_settings** (single record) — `club_name`, `timezone`, `weight_unit` select(`kg`,`lb`), `week_starts_on` number, `timing_defaults` json (the §4.1 timing values for sprints), `head_race_duration_min` number. Read by everyone, written by admins. Holds the club defaults of §4.12.
 
-**share_links** (Phase 3) — `regatta` relation, `team` relation (nullable), `token` (unique), `can_check_load` bool, `revoked_at` date.
+**share_links** — `regatta` relation, `team` relation (nullable), `token` (unique; 40 random characters made by the server), `can_check_load` bool, `revoked_at` date, `created_by` relation.
+
+**notification_log**, **mail_outbox** — server-only bookkeeping for email (§8.3): what is queued and what was sent, and, with `REGATTA_OPS_MAIL_CAPTURE=1`, the emails themselves in place of sending them.
 
 ### 8.2 API rules
 
 PocketBase rules per collection, kept in the migrations:
 
-- **List and view:** `@request.auth.id != ""` on every collection except `share_links` (coaches and admins since v0.3; §18) and `activity_log` (authenticated read).
-- **Create, update, delete:** `@request.auth.role = "coach" || @request.auth.role = "admin"` for regatta data (regattas, regatta_teams, availability, events, entries, entry_seats, load_plans, load_placements, load_items, comments) and fleet (shells, oar_sets, gear_items). Admin only for `users` (except a user's own record: name, avatar, preferences), teams, trailers, trailer_shelves, trailer_compartments. `activity_log` create is locked to hooks.
-- Share-link reads (Phase 3) go through a custom route in a hook that validates the token and returns a read-only projection of the published snapshot.
+- **List and view:** `@request.auth.id != ""` on every collection except `share_links` (coaches and admins) and the server-only `notification_log` and `mail_outbox`.
+- **Create, update, delete:** `@request.auth.role = "coach" || @request.auth.role = "admin"` for regatta data (regattas, regatta_teams, availability, events, entries, entry_seats, load_plans, load_placements, load_items, share_links) and fleet (shells, oar_sets, gear_items); only admins delete share links. Anyone signed in, viewers included, may create comments and presence rows. Admin only for `users` (except a user's own record: name, avatar, preferences, default team), teams, trailers, trailer_shelves, trailer_compartments. `activity_log` create is locked to hooks.
+- A rejected update returns 404, not 403 (PocketBase behavior).
+- The batch API is enabled. Swapping two athletes is a clear-then-set batch because of the unique `(entry, athlete)` index.
+- Share-link reads and check-offs go through two public routes in a hook: `GET /api/regatta-ops/share/{token}` returns the published snapshots, the schedule, and (with `can_check_load`) the load items; `POST /api/regatta-ops/share/{token}/load-items/{id}` ticks loaded or returned. The token is the credential.
 
 ### 8.3 Hooks
 
-`backend/pb_hooks/`:
+`backend/pb_hooks/`; `backend/README.md` documents each hook's contract.
 
-- `auth.pb.js`: on OAuth2 sign-in, reject emails outside `REGATTA_OPS_ALLOWED_DOMAIN`; set `role = coach` on first sign-in.
-- `stamp.pb.js`: set `updated_by` (and `created_by` on create) from the auth record on the collections that carry them.
-- `activity.pb.js`: after create, update, and delete on entries, entry_seats, events, availability, load_placements, load_items, shells, oar_sets, write an `activity_log` record with a sentence built from the record and its relations.
-- `entries.pb.js`: keep `entries.boat_class` in sync with the event on move; clear `hot_seat_ack_by` when shell or event changes and the fingerprint no longer matches.
-- `concurrency.pb.js` (optional, Phase 2): if a request carries `expected_updated` and it does not match the stored `updated`, return 409 so the client refetches.
+- `auth.pb.js`: reject emails outside `REGATTA_OPS_ALLOWED_DOMAIN` on every sign-in; set `role = coach` on first sign-in; only admins change roles.
+- `stamp.pb.js`: set `updated_by` (and `created_by` on create), comment authors, and presence users from the auth record.
+- `activity.pb.js`: after create, update, and delete on teams, athletes, regattas, regatta_teams, entries, entry_seats, events, availability, load_placements, load_items, shells, oar_sets, and share_links, write an `activity_log` record with a sentence built from the record and its relations. Published snapshots and share-link tokens stay out of the diff. Superuser writes are not logged.
+- `entries.pb.js`: keep `entries.boat_class` in sync with the event; clear `hot_seat_ack_by` on any shell or event change (the engine's fingerprint comparison is the finer check).
+- `concurrency.pb.js`: if an update of an event or a load placement carries `expected_updated` and it does not match the stored `updated`, return 409 so the client refetches.
+- `housekeeping.pb.js`: one `club_settings` record; prune stale presence rows.
+- `share.pb.js`: share-link tokens, revocation, and the public routes (§8.2).
+- `comments.pb.js`: resolve `comments.mentions` from the body and email the people mentioned.
+- `notify.pb.js`: change emails and the daily digest, on PocketBase cron jobs.
+- `mail.pb.js`: SMTP settings from the environment, and mail capture. Without SMTP, email goes to the PocketBase log.
 
 ### 8.4 Working-set queries
 
@@ -680,12 +698,12 @@ Compatibility defaults (used when a shell has no explicit `compatible_classes`):
 export interface ConflictInput {
   settings: { launchLeadMin: number; raceDurationMin: number; returnMin: number;
               hotSeatMinGapMin: number; athleteMinGapMin: number; rerigMin: number };
-  timezone: string;            // v0.3: regatta zone, for times in messages
-  seasonYear: number;          // v0.3: for junior age groups
-  events: RegattaEvent[];      // v0.3: named RegattaEvent to avoid the DOM Event type entries: Entry[]; seats: EntrySeat[];
+  timezone: string;            // the regatta's zone, for times in messages
+  seasonYear: number;          // for junior age groups
+  events: RegattaEvent[]; entries: Entry[]; seats: EntrySeat[];
   athletes: Athlete[]; availability: Availability[];
   shells: Shell[]; oarSets: OarSet[]; teams: Team[];
-  loadPlacements?: LoadPlacement[];   // optional: enables "not on trailer" findings
+  loadPlacements?: Pick<LoadPlacement, 'shellId'>[];   // optional: enables "not on trailer" findings
 }
 
 export type Severity = 'error'|'warning'|'info';
@@ -699,14 +717,16 @@ export interface Finding {
   teamIds: string[];
   resource?: { type: 'shell'|'oar_set'|'athlete'; id: string };
   day?: string;
-  gapMin?: number;             // for hot seats
-  acknowledged?: boolean;      // filled in by the UI from entries.hot_seat_ack_by
+  gapMin?: number;             // for hot seats and conflicts
+  acknowledged?: boolean;      // set by the engine when the later entry's acknowledgment still matches
 }
 
 export function findConflicts(input: ConflictInput): Finding[];
-export function unboatedAthletes(input: ConflictInput, teamId: string): Athlete[];
-export function entryStats(entry, seats, athletes): { avgAge?: number; mastersCategory?: string; portCount: number; starboardCount: number };
+export function unboatedAthletes(input: ConflictInput, teamId: string, options?: { anyTeam?: boolean }): Athlete[];
+export function entryStats(entry, seats, athletes, seasonYear?): { avgAge?: number; mastersCategory?: string; ageGroup?: JuniorAgeGroup; portCount: number; starboardCount: number };
 ```
+
+The race type is `RegattaEvent`, since `Event` collides with the DOM. `unboatedAthletes` counts only the team's own entries by default, so an athlete lent to another team still shows as unboated at home; `{ anyTeam: true }` counts every team.
 
 **Busy window.** For an entry with a scheduled event at time `T`:
 
@@ -716,7 +736,7 @@ export function entryStats(entry, seats, athletes): { avgAge?: number; mastersCa
 
 Entries whose event has no time, or whose status is `scratched`, take no part in time-based checks.
 
-**Resource pairs.** For each shell, oar set, and athlete, collect the scheduled entries that use it, sort by `T`, and for each consecutive pair `(a, b)` compute `gap = b.T − a.busyEnd` (minutes from the boat being back on the dock to the next race start). Then:
+**Resource pairs.** For each shell, oar set, and athlete, collect the scheduled entries that use it, sort by `T` within each day, and for each consecutive pair `(a, b)` compute `gap = b.T − a.busyEnd` (minutes from the boat being back on the dock to the next race start). Then:
 
 | Condition | Code | Severity |
 |---|---|---|
@@ -727,7 +747,9 @@ Entries whose event has no time, or whose status is `scratched`, take no part in
 | athlete: `0 ≤ gap < athleteMinGapMin` | `ATHLETE_TIGHT` | warning |
 | athlete: `gap < 0` | `ATHLETE_DOUBLE_BOOKED` | error |
 
-When two consecutive entries on the same convertible shell use different boat classes (Lundberg as a 4+ at 10:00, then as a 4x+ at 11:30), `rerigMin` is added to `a.busyEnd` before computing the gap, and a `RERIG_NEEDED` info finding is emitted regardless of the gap so the loading crew knows to bring the second rigger set.
+When two consecutive entries on the same shell use different boat classes (Lundberg as a 4+ at 10:00, then as a 4x+ at 11:30), convertible or not, `rerigMin` is added to `a.busyEnd` before computing the gap, and a `RERIG_NEEDED` info finding is emitted regardless of the gap so the loading crew knows to bring the second rigger set.
+
+**Oar splits.** Two crews on one oar set only pair as a hot seat or conflict when together they need more oars than the set holds: two fours on a 9-oar sweep set is a split, as the club does it. Three crews sharing one set are not summed (consecutive pairs only).
 
 Non-consecutive pairs never conflict more than consecutive ones do, so checking consecutive pairs is sufficient.
 
@@ -737,24 +759,24 @@ Non-consecutive pairs never conflict more than consecutive ones do, so checking 
 |---|---|---|
 | `CLASS_MISMATCH` | error | shell not compatible with the entry's boat class |
 | `RIGGING_MISMATCH` | error | oar set type ≠ boat class rigging |
-| `OARS_SHORT` | warning | oar set count < `oarsNeeded` |
+| `OARS_SHORT` | warning | oar set count < `oarsNeeded` (not raised when `RIGGING_MISMATCH` already fires) |
 | `SHELL_OUT_OF_SERVICE` | error | shell status `out_of_service` or `retired` |
 | `SHELL_LIMITED` | info | shell status `limited` |
-| `ATHLETE_UNAVAILABLE` | error | seated athlete marked unavailable for the regatta (or for that day) |
+| `ATHLETE_UNAVAILABLE` | error | seated athlete marked unavailable for the regatta (or for that day); `maybe` counts as available |
 | `ATHLETE_BORROWED` | info | seated athlete's home team ≠ entry team |
 | `SEATS_EMPTY` | warning | one or more seats empty (message counts them) |
 | `NO_SHELL` / `NO_OARS` | warning | pickers empty |
-| `SIDE_MISMATCH` | info | sweep seat side ≠ athlete side, when athlete side is port or starboard |
+| `SIDE_MISMATCH` | info | sweep seat side ≠ athlete side, when athlete side is port or starboard. Seat sides come from `entrySeatSides(entry, shell)`: the entry's own sides, else the shell's rig (a starboard-rigged shell flips every seat), else the standard rig. The boat strip uses the same function. |
 | `COX_NOT_COX` | info | cox seat holds an athlete without `can_cox` |
 | `SCULLER_NOT_SCULLER` | info | scull entry holds an athlete without `can_scull` |
 | `UNSCHEDULED` | info | entry has no event or the event has no time |
 | `NOT_ON_TRAILER` | warning | `loadPlacements` given and the shell has none (status not scratched) |
-| `RERIG_NEEDED` | info | consecutive entries on one shell with different rigging or class; the load list needs the second rigger set |
+| `RERIG_NEEDED` | info | consecutive entries on one shell the same day with different classes; the load list needs the second rigger set |
 | `AGE_GROUP` | info | a seated athlete's junior age group is older than the event category implies ("U17 event; Sam is U19") when the category text contains U15, U16, U17, or U19 |
 
 **Messages** are complete sentences with names, never ids: "Monahan is also used by Girls V8 at 10:20; only 12 minutes between the boat landing and the next race." The engine receives display names in its input so it never needs a lookup.
 
-**Determinism and ids.** `Finding.id = hash(code, sorted subject ids)`. The UI stores hot-seat acknowledgments on the later entry (`hot_seat_ack_by`, `hot_seat_plan`), and the engine marks `acknowledged` when both entries of a hot-seat pair are unchanged in shell and time (it compares against a stored fingerprint in the acknowledgment; a change re-opens the warning).
+**Determinism and ids.** `Finding.id = hash(code, sorted subject ids)`. The UI stores hot-seat acknowledgments on the later entry (`hot_seat_ack_by`, `hot_seat_plan`), and the engine marks `acknowledged` when both entries of a hot-seat pair are unchanged in shell and time (it compares against a stored fingerprint in the acknowledgment; a change re-opens the warning). The fingerprint is readable, `shell:<id>|<entryA>@<ISO>|<entryB>@<ISO>`, and the stored field may hold several, space-separated, so one acknowledgment covers a shell and an oar handoff between the same two crews.
 
 **Test cases** (each a Vitest case; the fixture builder in `packages/domain/test/fixtures.ts` makes these one-liners):
 
@@ -783,8 +805,14 @@ export interface TrailerDef {
   id: string; name: string; style: 'offset_post'|'center_post'|'goalpost';
   postOffsetPct?: number;     // offset_post: where the post sits across the width (SRA: 33)
   frameLengthCm: number; widthCm: number;
+  bowForwardDefault?: boolean;
   shelves: ShelfDef[];
-  compartments: { id: string; kind: 'oar_box'|'oar_tube'|'rigger_rack'|'storage'; label: string; capacity: number }[];
+  compartments: CompartmentDef[];
+}
+
+export interface CompartmentDef {
+  id: string; kind: 'bed'|'oar_box'|'oar_tube'|'oar_rack'|'rigger_rack'|'storage'; label: string; capacity: number;
+  startCm?: number; endCm?: number;   // a zone along the frame, cm from the front; both unset = the whole length
 }
 
 export interface ShelfDef {
@@ -820,17 +848,22 @@ export interface PackResult {
 
 export function packTrailer(trailer: TrailerDef, boats: PackBoat[], rules: Rule[], existing: Placement[]): PackResult;
 export function validatePlacement(trailer, boats, rules, placements, candidate: Placement): { ok: boolean; violations: Reason[] };
-export function explain(rule: Rule, trailer: TrailerDef): string;   // the sentence shown on the rule card
+export function dropBoat(trailer, boats, rules, placements, shellId, target: { shelfId: string; lane: number }): DropResult;
+export function explainPlacement(trailer, boats, rules, placements, shellId): Reason[];   // "Why here?"
+export function layoutReport(trailer, boats, rules, placements): Pick<PackResult, 'metrics'|'warnings'>;
+export function explain(rule: Rule, trailer: TrailerDef, context?: ExplainContext): string;   // the sentence shown on the rule card
 ```
+
+`balancePct` is |L − R| / (L + R) × 100. `explain` takes optional shell and team names for pin and team sentences. Drag and drop uses `dropBoat`, which finds the offset the packer would use, instead of calling `validatePlacement` with a literal offset.
 
 #### 9.3.2 Geometry
 
 - A shelf is a rectangle `widthCm × lengthCm` seen from above, plus overhang zones at each end. Boats are placed lengthwise.
-- **Lanes.** If `lanesOverride` is set, the shelf has that many lanes of equal width. Otherwise lanes are computed greedily per shelf from the beams of the boats placed there: a boat fits if the sum of `(beamCm + clearanceCm)` of boats already in the shelf's widest row plus the new boat's `(beamCm + clearanceCm)` ≤ `widthCm + clearanceCm`. `clearanceCm` defaults to 20 and is a parameter of the built-in `length-and-width-fit` rule. In practice this yields 3 lanes for fours and eights on a 240 cm goalpost shelf and 1 lane per side on a center-post trailer, which matches how manufacturers rate capacity (§16).
+- **Lanes.** If `lanesOverride` is set, the shelf has that many lanes of equal width. Otherwise lanes are computed greedily per shelf from the beams of the boats placed there: a boat fits if the sum of `(beamCm + clearanceCm)` of boats already in the shelf's widest row plus the new boat's `(beamCm + clearanceCm)` ≤ `widthCm + clearanceCm`. `clearanceCm` defaults to 20 and is a parameter of the built-in `fit` rule. In practice this yields 3 lanes for fours and eights on a 240 cm goalpost shelf and 1 lane per side on a center-post trailer, which matches how manufacturers rate capacity (§16).
 - **End to end.** Boats in the same lane are placed end to end with `gapCm` (default 30) between them. Their total length must fit in `lengthCm + frontOverhangMaxCm + rearOverhangMaxCm`. Placement order in a lane: the packer places the longer boat first and fills with shorter ones; `offsetCm` records each boat's start relative to the front of the frame.
 - **Overhang.** For each lane, front overhang = `max(0, −minOffset)`, rear overhang = `max(0, maxEnd − lengthCm)`. Overhang limits are per shelf because they differ by tier: a 19.9 m eight on a 12.5 m frame needs about 7.5 m of overhang, which only the tiers above the tow vehicle can provide. This is why manufacturers rate a 5-tier trailer as nine eights (three tiers) plus six fours (two tiers), and the seeded trailer encodes it (§14). The packer prefers front overhang up to the shelf maximum before using rear overhang when the `forward-bias` rule is on (it is on by default; §16 explains why).
 - **Lane access.** On an `outer_first` shelf (the two-wide side of SRA's trailers), lane 0 is against the post and lane 1 is outside it. A boat in lane 0 cannot come off until lane 1 is empty, so the `unload-order` rule treats lane 1 as more accessible and the plan view draws the loading order. Nothing else about fit changes.
-- **Orientation.** `bowForward` defaults to true: SRA loads bows forward, over the tow vehicle (owner, v0.3; §18). A trailer-level setting (`bowForwardDefault`) flips the default. Orientation does not affect fit in v1, and a single boat can't be turned on the trailer page yet.
+- **Orientation.** `bowForward` defaults to true: SRA loads bows forward, over the tow vehicle. A trailer-level setting (`bowForwardDefault`) flips the default. Orientation does not affect fit in v1, and a single boat can't be turned on the trailer page yet.
 
 #### 9.3.3 Rule catalog
 
@@ -845,7 +878,7 @@ Rules are JSON objects `{ id, type, hard, weight, enabled, origin: 'trailer'|'re
 | `overhang` | hard | `tiers[]`, `frontMaxCm`, `rearMaxCm` | "Top rack may stick out 300 cm in front and 120 cm behind" | Overrides shelf overhang limits. |
 | `max-boats` | hard | `shelfId`, `max` | "Bottom rack, curb side holds at most 2 boats" | Count limit. |
 | `pin` | hard | `shellId`, `shelfId`, `lane?` | "Monahan goes on the top rack, driver side" | Forces placement; equivalent to a locked placement. |
-| `class-tier` | soft | `classes[]`, `tiers[]` | "Prefer eights on the top rack" | +10 × weight when satisfied. |
+| `class-tier` | soft | `classes[]`, `tiers[]` | "Prefer eights on the top rack" | +10 × weight when satisfied. With `hard: true` it is a Must: "Eights must go on the top rack". |
 | `heavy-low` | soft | none | "Keep heavier boats low" | −(weightKg / 10) × (tier − 1) × weight. |
 | `forward-bias` | soft | none | "Put overhang in front, over the truck, rather than behind" | −(rearOverhangCm / 50) × weight per lane. |
 | `side-balance` | soft | `tolerancePct` (default 10) | "Balance weight between the two sides" | Global: −(|L − R| / (L + R)) × 100 × weight. Ignored on `full` shelves; uses lane position (left third, right third) there instead. |
@@ -853,7 +886,9 @@ Rules are JSON objects `{ id, type, hard, weight, enabled, origin: 'trailer'|'re
 | `team-together` | soft | `teamIds?` | "Keep each team's boats together" | +3 × weight for each same-team neighbor (same shelf, adjacent lane, or same tier adjacent shelf). |
 | `fragile-inside` | soft | none | "Keep fragile boats in inside lanes" | +8 × weight for a `fragile` boat in a non-outer lane. |
 
-Default rule set for SRA's trailers (seeded in §14, JSON in §17.2): `fit`; `class-tier` (8+ on levels 5 and 4, High); `class-tier` (4+, 4-, 4x, 4x+ on levels 3 and 2, Medium); `heavy-low` (Low, so it breaks ties without fighting the eights-on-top convention); `forward-bias` (Medium); `side-balance` (Low since v0.3, comparing the one-wide side against the two-wide side by weight; §18); `unload-order` (Low); `team-together` (Low). No hard `shelf-classes` rule by default: the girls' 2026 layout put an eight on level 2 between two fours, so the convention is a preference.
+Default rule set for SRA's trailers (seeded in §14, JSON in §17.2): `fit`; `class-tier` (8+ on levels 5 and 4, High); `class-tier` (4+, 4-, 4x, 4x+ on levels 3 and 2, Medium); `heavy-low` (Low, so it breaks ties without fighting the eights-on-top convention); `forward-bias` (Medium); `side-balance` (Low, comparing the one-wide side against the two-wide side by weight; at Medium it pulls a four down to level 1 against the coaches' own layout); `unload-order` (Low); `team-together` (Low). No hard `shelf-classes` rule by default: the girls' 2026 layout put an eight on level 4 between two fours, so the convention is a preference.
+
+The built-in fit rule's id is `fit`. A shelf's own limits (allowed classes, lane override, maximum boats and weight) report under rule ids `shelf:<id>:<key>`.
 
 #### 9.3.4 Algorithm
 
@@ -864,10 +899,10 @@ Small inputs (at most ~40 boats, ~15 shelves) mean clarity beats cleverness. The
 3. **Candidates.** For each boat, enumerate `(shelf, lane, endPosition)` where `endPosition` is "front of lane" or "after the last boat in the lane". Reject candidates that violate any hard rule, recording the rejecting rule per candidate.
 4. **Score.** Sum soft-rule scores for the candidate, computed against the partial layout so far. Add a small deterministic tiebreaker: prefer lower `accessRank`, then lower lane index, then front position.
 5. **Place** the best candidate, attaching `reasons` (each hard rule that applied and each soft rule with nonzero score). If no candidate survives, add the boat to `unplaced` with the aggregated rejection reasons ("Every active shelf rejected this boat: 3 by 'Top rack holds only 8+ and 4+', 9 by 'must physically fit'").
-6. **Improve.** Up to 200 iterations: pick the pair swap (two unlocked placements, or one placement and one empty candidate) that most improves the global score (side balance, unload order, team together); stop when no swap improves by more than 0.5. Swaps must keep all hard rules satisfied.
+6. **Improve.** Up to 200 iterations: pick the pair swap (two unlocked placements, or one placement and one empty candidate) that most improves the global score (side balance, unload order, team together); stop when no swap improves by more than 0.5. Swaps must keep all hard rules satisfied. Reasons are recomputed afterwards so they describe where each boat ended up, and boats left unplaced get one more try.
 7. **Report** metrics and warnings (side imbalance beyond tolerance, rear overhang beyond a flag threshold, shelves over their weight limit, unplaced boats).
 
-`validatePlacement` runs steps 3's hard checks for a single candidate against the current layout and returns violations, for drag-and-drop feedback.
+`validatePlacement` runs step 3's hard checks for a single candidate against the current layout and returns violations. `dropBoat` does the same for a drop into a cell, finding the offset first; a drop that breaks a hard rule is still returned, with `ok: false`, so the UI can refuse it or accept it flagged (§4.10).
 
 #### 9.3.5 Test cases
 
@@ -888,18 +923,19 @@ Small inputs (at most ~40 boats, ~15 shelves) mean clarity beats cleverness. The
 ### 9.4 Load list derivation
 
 ```ts
-export function deriveLoadList(regatta: { entries, shells, oarSets, gear, extras }): LoadItem[];
+export function deriveLoadList(input: { entries, shells, oarSets, gear, extras? }): DerivedLoadItem[];
+export function mergeLoadItems(derived: DerivedLoadItem[], stored: LoadItem[]): MergedLoadList;
 ```
 
-Shells from non-scratched entries (deduplicated), one `riggers` item per shell with quantity from `rigger_count` (skipped when `rigger_type = 'none'`), oar sets from entries (deduplicated), gear with `default_load`, then extras. The function is pure; the UI merges the result with stored `load_items` by `(kind, ref_id)` to preserve checkbox state, adding new rows and flagging orphaned ones.
+Shells from non-scratched entries (deduplicated), one `riggers` item per shell with quantity from `rigger_count` (skipped when `rigger_type = 'none'`), oar sets from entries (deduplicated; the quantity is the number of oars), gear with `default_load`, then extras. Both functions are pure; `mergeLoadItems` matches the result against stored `load_items` by `(kind, ref_id)` to preserve checkbox state, adding new rows and flagging orphaned ones.
 
 ### 9.5 Event schedule paste parser
 
 ```ts
-export function parseSchedulePaste(text: string): { rows: ParsedEvent[]; columns: ColumnGuess[]; confidence: number };
+export function parseSchedulePaste(text: string, options?: { year?: number; days?: string[] }): { rows: ParsedEvent[]; columns: ColumnGuess[]; confidence: number; raw: string[][] };
 ```
 
-Splits on newlines, then tabs or commas (auto-detected), guesses columns by content (a token matching `^\d{1,3}[A-Z]?$` is an event number; `^\d{1,2}:\d{2}` is a time; a boat class regex finds `8+`, `4x+`, `2-`, `1x`, and words like "Eight", "Coxed Four", "Quad", "Double", "Single", "Pair"), and returns per-column guesses for the mapping step. Tested against samples from RegattaCentral, a PDF copy-paste, and a Google Sheet.
+Splits on newlines, then tabs or commas (auto-detected), guesses columns by content (a token matching `^\d{1,3}[A-Z]?$` is an event number; `^\d{1,2}:\d{2}` is a time; a boat class regex finds `8+`, `4x+`, `2-`, `1x`, and words like "Eight", "Coxed Four", "Quad", "Double", "Single", "Pair"), and returns per-column guesses for the mapping step. A time from 1:00 to 5:59 without AM or PM reads as afternoon (§15). Tested against samples from RegattaCentral, a PDF copy-paste, and a Google Sheet.
 
 ---
 
@@ -913,17 +949,23 @@ One React Router loader per regatta route prefetches the working set through Tan
 
 - Mutations are record-level and small: set a seat, change a shell, move an entry, toggle availability, move a placement.
 - Optimistic updates through TanStack Query with rollback on error.
-- Concurrency is last-write-wins at record granularity. Two coaches editing different entries never collide because seats are separate records. Two coaches editing the same seat within seconds resolve to the last write, and the realtime event refreshes the loser's screen with a toast "Updated by Sarah just now". The optional Phase 2 hook adds a 409 on stale writes for the few fields where it matters (event times, placements).
+- Concurrency is last-write-wins at record granularity. Two coaches editing different entries never collide because seats are separate records. Two coaches editing the same seat within seconds resolve to the last write, and the loser's screen refreshes with a toast "Updated by Sarah W. just now".
+- Those toasts are driven by `activity_log` rows (seats, events, placements, and load items carry no `updated_by`), coalesced within 2 s, and never shown for your own writes.
+- Event times and load placements carry a stale-write check (`useGuardedUpdate`): the write sends the `updated` stamp the coach was looking at, and the server answers 409 if the record has changed since. The app rolls the change back, refetches, and says so. A coach's own rapid writes to one record queue instead of conflicting.
 
 ### 10.3 Realtime
 
 - The `DataStore` exposes `subscribe(collection, handler)`. `PocketBaseStore` uses PocketBase realtime (server-sent events) and filters events to the open regatta client-side; `MemoryStore` emits the same events locally. On any change the store invalidates the affected query key; the working set refetches in the background and findings recompute.
-- Presence (Phase 2): a `presence` collection with a 30 s heartbeat renders avatars and "editing Girls lineups".
+- While a mutation is in flight, realtime refetches wait (up to 10 s), so the echo of your own write can't flicker the optimistic state.
+- Presence: a `presence` collection with a 30 s heartbeat, one row per browser tab, renders avatars and "editing Girls lineups". Presence changes patch the cache instead of refetching.
 
 ### 10.4 Offline
 
-- Phase 2: the PWA caches the app shell; TanStack Query persists its cache to IndexedDB, so a regatta opened recently is readable without a connection: schedule, lineups, load plan, load list. An offline banner disables editing controls.
-- Phase 3 evaluation: queued mutations for the load checklist (the one thing people edit at a trailer with no signal), or a local-first sync layer if the club wants full offline editing.
+- The PWA caches the app shell, and TanStack Query persists its cache to IndexedDB for 7 days, so a regatta opened recently is readable without a connection: schedule, lineups, load plan, load list.
+- The saved copy is discarded when the app version or schema changes, skips presence, is restored only for the signed-in user, and is deleted on sign-out. Restored data is refetched in the background right after it loads, so a reload never shows a stale lineup for long.
+- Offline, a banner shows and every action is disabled, comments included. A mutation refuses with one toast; writes never queue.
+- The one exception is the share-link checklist (§4.8): ticks made offline queue in local storage on the phone and replay in order as desired states, so replaying is idempotent.
+- Server-mode queries use `networkMode: 'online'` with a reachability probe; demo mode uses `'always'`. The service worker is off in `vite dev` unless `REGATTA_OPS_PWA_DEV=1`.
 
 ---
 
@@ -934,20 +976,22 @@ One React Router loader per regatta route prefetches the working set through Tan
 ```
 regatta-ops/
 ├── PLAN.md                      # this document
-├── CLAUDE.md                    # short conventions summary for agents (first task)
+├── CLAUDE.md                    # conventions and commands
 ├── package.json                 # pnpm workspace root
 ├── pnpm-workspace.yaml
-├── .github/workflows/ci.yml
+├── .github/workflows/           # ci.yml, pages.yml
 ├── apps/
 │   └── web/
 │       ├── index.html
 │       ├── vite.config.ts
+│       ├── scripts/             # icons, local rosters, the Pages build, roster sealing
 │       ├── src/
 │       │   ├── main.tsx
-│       │   ├── app/             # router, providers, layout shell, theme
-│       │   ├── components/      # shared UI: BoatStrip, ConflictBadge, TeamChip, ui/ (shadcn)
+│       │   ├── app/             # router, providers, layout shell, theme, sign-in, the demo's unlock page
+│       │   ├── components/      # shared UI: BoatStrip, ConflictBadge, chips, trailer/, ui/ (shadcn)
 │       │   ├── features/
 │       │   │   ├── regattas/
+│       │   │   ├── events/
 │       │   │   ├── schedule/
 │       │   │   ├── lineups/
 │       │   │   ├── availability/
@@ -957,190 +1001,121 @@ regatta-ops/
 │       │   │   ├── teams/
 │       │   │   ├── trailers-admin/
 │       │   │   ├── settings/
+│       │   │   ├── share/
 │       │   │   └── print/
 │       │   ├── data/            # DataStore interface, PocketBaseStore, MemoryStore, hooks, pb-types.ts
-│       │   ├── lib/             # utilities (dates, formatting, hashing)
-│       │   └── styles/          # tokens.css, globals.css
+│       │   ├── lib/             # utilities (dates, formatting, motion)
+│       │   ├── pwa/             # offline banner, update prompt
+│       │   └── styles/          # tokens.css, globals.css, print.css
 │       └── e2e/                 # Playwright
 ├── backend/
 │   ├── pb_migrations/           # PocketBase JS migrations (collections, rules, indexes)
-│   ├── pb_hooks/                # auth allowlist, stamping, activity log, entries sync
-│   ├── seed/                    # seed script (reads data/reference/*.csv, invents athletes)
-│   ├── scripts/download.sh      # fetches the pinned PocketBase binary into backend/bin/ (git-ignored)
+│   ├── pb_hooks/                # sign-in allowlist, stamping, activity log, entries sync, share links, email
+│   ├── seed/                    # loads the seed world into PocketBase
+│   ├── scripts/                 # download.sh fetches the pinned binary into backend/bin/ (git-ignored)
+│   ├── test/                    # rule and hook tests against a real PocketBase
 │   └── pb_data/                 # local database (git-ignored)
 ├── data/
 │   ├── reference/               # sanitized extracts used by seed and tests (committed)
 │   └── *.xlsx                   # club workbooks; the ones with athlete names are git-ignored
 ├── packages/
-│   └── domain/
-│       ├── src/
-│       │   ├── boat-classes.ts
-│       │   ├── conflicts/
-│       │   ├── trailer/         # types, rules, packer, explain
-│       │   ├── load-list.ts
-│       │   ├── schedule-paste.ts
-│       │   ├── schemas/         # zod
-│       │   └── index.ts
-│       └── test/
-│   └── seed/                    # pure TS: builds the seed World from data/reference (v0.3, §18)
+│   ├── domain/                  # pure TS (§7.3, §9)
+│   │   ├── src/
+│   │   │   ├── boat-classes.ts
+│   │   │   ├── conflicts/
+│   │   │   ├── trailer/         # types, rules, packer, explain
+│   │   │   ├── load-list.ts
+│   │   │   ├── schedule-paste.ts
+│   │   │   ├── publish.ts
+│   │   │   ├── schemas/         # zod
+│   │   │   └── index.ts
+│   │   └── test/
+│   └── seed/                    # pure TS: builds the seed world from data/reference (§14)
 └── .gitignore                   # excludes roster and lineup workbooks, pb_data, bin
 ```
 
 ### 11.2 Conventions
 
-- **TypeScript strict** everywhere; no `any` without a comment explaining why.
-- **Feature folders** own their components, hooks, and stores. Shared components go in `components/` only when used by two or more features.
-- **Data hooks** are the only place the `DataStore` is called from the app: `useRegattaWorkingSet(id)`, `useSetSeat()`, `useMovePlacement()`. Hooks return typed data from `packages/domain` types, mapping PocketBase records at the boundary. Components never import the PocketBase SDK.
-- **Domain package** has no React, no PocketBase, no `Date.now()`.
-- **Athlete names from the club's workbooks never enter the repository**: not in seed, tests, fixtures, screenshots, or docs. Seed athletes are invented. Equipment names are fine.
-- **Naming in the UI** follows the glossary (§3) exactly.
-- **Styling:** Tailwind utility classes with tokens; no inline hex colors; no component-level CSS files except for print styles.
-- **Commits:** Conventional Commits (`feat(lineups): drag athlete into seat`). One work package per branch, named `wp/<letter>-<slug>`. PRs include: what changed, how it was tested, screenshots for UI, and any amendment to this document.
-- **Dependencies:** adding one requires a line in the PR description saying why an existing dependency cannot do it.
-- **Migrations:** one PocketBase JS migration per change, never edited after merge; `pnpm pb:types` regenerates `pb-types.ts` and the diff is committed.
-- **Accessibility and responsiveness** are part of done, not a later pass (§5.6).
-- **Scripts** at the root: `pnpm dev` (PocketBase and Vite together, via `concurrently`), `pnpm demo` (Vite with `MemoryStore` and seed data, no backend), `pnpm test`, `pnpm test:e2e`, `pnpm lint`, `pnpm typecheck`, `pnpm build` (outputs into `backend/pb_public/`), `pnpm pb:download`, `pnpm pb:migrate`, `pnpm pb:seed`, `pnpm pb:reset`, `pnpm pb:types`.
+`CLAUDE.md` holds the conventions and is the only copy: code style, package boundaries, data access, the rule that athlete names never enter the repository in plain text, UI wording, styling, accessibility, dependencies, migrations, commits, and the commands.
+
+One naming note belongs here. The app was first named SRT (Sammamish Regatta Tool) and is now Regatta Ops, written in full in the UI, docs, and emails; identifiers use `regatta-ops` and environment variables `REGATTA_OPS_*`. Three things keep the old name on purpose: the migration files, which are never edited after merge; the collection ids (`srt_<name>`), which are stored in the database; and the seed's random prefix (`srt-seed:`), so the seed world stays the same.
 
 ### 11.3 CI
 
-GitHub Actions on every PR: install, typecheck, lint, unit tests with coverage (domain package threshold 90% lines), build. The Playwright smoke suite downloads the pinned PocketBase binary, migrates and seeds a temporary data folder, serves the built app from it, and runs the phase-demo flows. API rules are tested against that same instance.
+GitHub Actions on every pull request and on pushes to `main` and `dev`, in three jobs:
+
+- **check:** typecheck, lint, the Prettier check, the domain package's coverage (threshold 90% of lines), unit tests, build.
+- **backend:** the rule and hook tests against the pinned PocketBase binary.
+- **e2e:** Playwright, after the other two: the phase demos on a demo-mode build, then a smoke suite on a real PocketBase migrated and seeded into a temporary data folder.
+
+A second workflow, `pages.yml`, deploys the published demo (§7.1).
 
 ---
 
-## 12. Build plan and work packages
+## 12. Phase demos
 
-### 12.1 Phases
+The app was built in four phases, each ending in a demo. The demos are the app's acceptance flows: `apps/web/e2e/phase0.spec.ts` to `phase3.spec.ts` run them (§13).
 
-| Phase | Goal | Demo at the end |
+### 12.1 Demos
+
+| Phase | Scope | Demo |
 |---|---|---|
-| **0. Foundations** | Repo, CI, design tokens, `DataStore` with both implementations, PocketBase collections and hooks, seed data from `data/reference`, app shell, local sign-in | `pnpm dev` starts everything locally; sign in with a seeded account; see the navigation with seeded regattas; switch themes. `pnpm demo` shows the same app with no backend. |
-| **1. Lineups (MVP)** | Regattas, teams, rosters, availability, events, lineup builder, conflict engine, schedule, fleet inventory, print lineup sheet, realtime | Two coaches build boys' and girls' lineups for a seeded regatta, pick the same shell, see the hot seat, acknowledge it, print both sheets. |
+| **0. Foundations** | Repo, CI, design tokens, `DataStore` with both implementations, PocketBase collections and hooks, seed data, app shell, local sign-in | `pnpm dev` starts everything locally; sign in with a seeded account; see the navigation with seeded regattas; switch themes. `pnpm demo` shows the same app with no backend. |
+| **1. Lineups** | Regattas, teams, rosters, availability, events, lineup builder, conflict engine, schedule, fleet inventory, print lineup sheet, realtime | Two coaches build boys' and girls' lineups for a seeded regatta, pick the same shell, see the hot seat, acknowledge it, print both sheets. |
 | **2. Trailer** | Trailer admin, load list, packer, rules editor, interactive layout, load sheet, offline reads | Pack the trailer for that regatta, toggle a rule, drag a boat, read "Why here?", print the load sheet, open the load list on a phone in airplane mode. |
-| **3. Reach and polish** | Share links, comments with mentions and email, CSV imports for everything, athlete matrix view, notifications digest, isometric trailer view, offline checklist edits, photos | Parents open a share link on race day; the loading crew ticks the checklist on phones. |
-
-### 12.2 Work packages
-
-Each work package (WP) is sized for one agent working a branch to a mergeable PR. Dependencies are listed; independent WPs run in parallel. "Reads" points to the sections of this document that are the spec. Acceptance criteria are the definition of done.
-
-**WP-A — Domain: boat classes, seat templates, conflict engine** (Phase 1, no deps)
-Reads §3, §9.1, §9.2, §16. Deliver `packages/domain` with types, zod schemas, `seatsFor`, `seatSide`, `isCompatible`, `findConflicts`, `unboatedAthletes`, `entryStats`, fixtures, and all 13 test cases in §9.2 passing. Messages match the style in §9.2.
-
-**WP-B — Domain: trailer model, rules, packer, explain** (Phase 2, no deps; can start in Phase 1)
-Reads §4.9, §4.10, §9.3, §16, §17. Deliver `packTrailer`, `validatePlacement`, `explain`, the rule catalog with zod schemas, the two seeded trailer definitions, and all 11 test cases in §9.3.5.
-
-**WP-C — Backend: PocketBase collections, rules, hooks, seed, generated types** (Phase 0, no deps)
-Reads §2, §8, §14, `data/reference/`. Deliver the download script with a pinned PocketBase version, JS migrations for every collection, index, and API rule in §8, the hooks in §8.3, the seed script per §14 (fleet from the reference CSVs, invented athletes), `pnpm pb:*` scripts, `pocketbase-typegen` output, and rule tests against a local instance (a coach can update entries; a viewer cannot; an unauthenticated request sees nothing; an email outside the allowed domain cannot sign in).
-
-**WP-D — App shell, DataStore, auth, design system** (Phase 0, depends on C for auth wiring only)
-Reads §5, §6 layout, §7, §11. Deliver the Vite app with router, providers, the `DataStore` interface with `PocketBaseStore` and `MemoryStore` (localStorage-persisted for demo mode), email and password sign-in for local development plus the Google OAuth2 button wired to PocketBase (works once a Google client id is configured), the three-column layout with responsive behavior, tokens and dark mode, fonts, shadcn/ui setup, `BoatStrip`, `TeamChip`, `ConflictBadge`, `EmptyState`, skeletons, toasts, and a Storybook-free component gallery route `/dev/components` (dev only) showing every shared component in both themes.
-
-**WP-E — Teams and roster** (Phase 1, depends on C, D)
-Reads §4.2, §6.10. Team settings, athlete table with inline editing, CSV import with mapping, export.
-
-**WP-F — Regattas, events, availability** (Phase 1, depends on C, D)
-Reads §4.1, §4.3, §6.1, §6.2, §6.5, §9.5. Regatta list and create, overview page (activity and counts; timeline miniature can stub until WP-H), settings, event CRUD and paste import, availability page.
-
-**WP-G — Lineup builder** (Phase 1, depends on A, D, E, F)
-Reads §4.4, §5.4, §6.4. Roster panel with cross-off, entries by event, boat strip editing with drag and drop and keyboard, shell and oar pickers with live conflict hints, entry details in the inspector, copy and move, by-athlete matrix view (can be Phase 3 if time is short).
-
-**WP-H — Schedule, timeline, conflicts panel** (Phase 1, depends on A, D, F)
-Reads §4.5, §6.3. List and timeline views, grouping, conflicts panel with navigation and hot-seat acknowledgment, bulk time shift.
-
-**WP-I — Fleet inventory** (Phase 1, depends on C, D)
-Reads §4.7, §6.8. Shells, oars, gear tables with defaults from boat class, import and export, usage drawer.
-
-**WP-J — Realtime and presence** (Phase 1, depends on C, D, and at least one of G/H)
-Reads §10. Change subscriptions with query invalidation, presence avatars, the "updated by X, refreshed" path, activity feed component.
-
-**WP-K — Print views and publishing** (Phase 1, depends on G, H)
-Reads §4.1 (publishing), §4.11, §6.12. Publish lineups (snapshot on `regatta_teams`), lineup sheet, lineup grid, day schedule with logistics items, master schedule, load sheet (load sheet lands in Phase 2 after WP-M).
-
-**WP-L — Trailers admin** (Phase 2, depends on B, D)
-Reads §4.9, §6.9. Trailer form with shelves and compartments, live end-view diagram, default rules editor.
-
-**WP-M — Load list and load plan UI** (Phase 2, depends on B, L, G)
-Reads §4.8, §4.9, §4.10, §5.4, §6.6, §6.7. Load list derivation and checklist with free-text containers for truck beds, `TrailerEndView` drawing the offset-post cross-section (and the other two styles) and plan view with drag and drop and validation, trailer switcher, "Why here?", rules panel with overrides, pack animation, metrics footer.
-
-**WP-N — PWA and offline reads** (Phase 2, depends on D, J)
-Reads §10.4. Service worker, persisted query cache, offline banner and disabled editing.
-
-**WP-O — End-to-end tests and QA pass** (each phase end, depends on the phase's WPs)
-Reads §13. Playwright flows per phase demo, accessibility audit with axe, phone-width review with screenshots, dark mode review.
-
-**WP-P — Phase 3 packages** (share links, comments and mentions, email digests via edge function, imports, isometric view, offline checklist edits) are specified in §4 and get their own PRs once Phases 1 and 2 are demoed.
-
-### 12.3 Suggested sequencing
-
-```
-Phase 0:  C ──┐
-          D ──┴─▶ (gallery review)
-Phase 1:  A ─┐   E ─┐
-             ├──▶ G ─┤
-          F ─┘   H ─┼──▶ J ──▶ K ──▶ O
-          I ────────┘
-Phase 2:  B ──▶ L ──▶ M ──▶ K(load sheet) ──▶ O
-          N (parallel)
-```
-
-A and B are pure logic and can start on day one alongside C and D.
+| **3. Reach and polish** | Share links, comments with mentions and email, CSV imports, athlete matrix view, notifications digest, isometric trailer view, offline checklist edits, photos | Parents open a share link on race day; the loading crew ticks the checklist on phones. |
 
 ---
 
 ## 13. Testing and quality
 
-- **Unit (Vitest):** everything in `packages/domain` (target 90% lines, 100% of the rule catalog and finding codes). App-side utilities and data mappers.
+- **Unit (Vitest):** everything in `packages/domain` (90% of lines, every rule type and finding code). App-side utilities and data mappers.
 - **Component (React Testing Library):** `BoatStrip` renders every class with correct seats and cox position; roster cross-off; pickers filter correctly; rule card sentences; trailer end view renders shelves and chips from a `PackResult`.
-- **Integration (PocketBase local):** API rules per role; the domain allowlist hook; activity log hooks write the expected summaries; the entries sync hook; the optional 409 on stale writes.
-- **End to end (Playwright):** the phase demos in §12.1 as scripted flows, run against a preview deploy with the seed data. Include one phone-viewport flow per phase.
-- **Accessibility:** axe checks in component tests and in Playwright on each main page; manual keyboard walk-through of the lineup builder and trailer page at the end of Phases 1 and 2.
-- **Visual review:** every UI PR includes light and dark screenshots at 1280 px and 390 px widths.
+- **Integration (PocketBase local):** API rules per role; the domain allowlist hook; activity log hooks write the expected summaries; the entries sync hook; the 409 on stale writes; share links; mentions and email.
+- **End to end (Playwright):** the phase demos in §12.1 as scripted flows on a demo-mode build (`pnpm test:e2e`), with a phone-viewport flow per phase, and a smoke suite on a real PocketBase migrated and seeded into a temporary data folder (`pnpm test:e2e:pb`). Both use invented athletes.
+- **Accessibility:** Playwright runs axe (WCAG 2.1 A and AA, plus landmark and heading rules) on every main page in both themes and on a phone, checks reduced motion, checks for sideways scroll at 390 and 820 px and for 44 px targets on touch, and walks the keyboard paths of the lineup builder, dialogs, menus, schedule edits, and the trailer (`e2e/a11y.spec.ts`, `e2e/responsive.spec.ts`, `e2e/keyboard.spec.ts`).
+- **Visual review:** UI changes are checked in light and dark at 1280 px and 390 px.
 - **Performance budget:** regatta working set for 4 teams, 120 athletes, 60 events, 40 entries loads in under 1.5 s on a mid-range phone over 4G; findings recompute in under 50 ms; packing 40 boats in under 100 ms.
 
 ---
 
 ## 14. Seed data
 
-`backend/seed/` builds a realistic development world so every screen has content on day one. The fleet is real (equipment names are not personal data); athletes are invented and must stay invented.
+`packages/seed` builds a realistic development world, pure and deterministic, so every screen has content. `backend/seed/` loads it into PocketBase and demo mode loads it into `MemoryStore`. The fleet is real (equipment names are not personal data). The seed exports its stable ids (`SEED_REGATTA_IDS`, `SEED_TEAM_IDS`, `SHELF_IDS`, `seedShellId`, and so on) for tests.
 
 - **Club settings:** timezone America/Los_Angeles, weight unit lb, defaults: launch lead 40, race duration 10 (sprint) or 20 (head), return 15, hot seat min gap 15, athlete min gap 30, re-rig 30.
 - **Users:** one admin, four coaches (one per team), one viewer, all email and password for local use.
 - **Teams:** Junior boys (navy), Junior girls (raspberry), 5am masters (green), Evening masters (violet).
-- **Athletes:** invented names. The junior teams have the shape of the club's fall 2026 rosters (v0.3, §18): 78 junior boys (9 coxswains) and 57 junior girls (8 coxswains) with the rosters' birth years (U15 to U19), novice and experienced levels, and the girls' grades, all active; sides and a few scullers are assigned since the rosters do not record them. `pnpm pb:seed`, `pb:reset`, and `pnpm demo` replace them with the real juniors from the ignored roster workbooks in `data/` when present, in the local database and the local demo only; the tests and CI stay invented. 14 5am masters and 12 evening masters with ages spanning categories B to F.
-- **Shells:** all rows of `data/reference/shells.csv` (about 90 shells: eights, fours, quads, pairs, doubles, singles, and the recreational fleet), with nicknames, weight classes, stroke sides, locations, and the two boats the sheet marks unusable set to `out_of_service`. Home team defaults from gender affinity (women's to Junior girls, men's to Junior boys) and can be corrected in the UI.
-- **Oar sets:** all rows of `data/reference/oar-sets.csv` (17 men's and 15 women's sweep sets, 11 scull sets) with color codes, blades, lengths, inboards, grips.
+- **Athletes:** invented names. The junior teams have the shape of the club's fall 2026 rosters: 78 junior boys (9 coxswains) and 57 junior girls (8 coxswains) with the rosters' birth years (U15 to U19), novice and experienced levels, and the girls' grades, all active. Sides and a few scullers are assigned, since the rosters do not record them. 14 5am masters and 12 evening masters with ages spanning categories B to F; the one inactive athlete is on the evening masters.
+- **Real junior rosters, locally:** `pnpm pb:seed`, `pb:reset`, and `pnpm demo` read the roster workbooks in `data/` (ignored by git; `@regatta-ops/seed/local-rosters`, a Node-only entry) and seed the real junior boys and girls, with the lineups and load plans built on them, in the local database and the local demo only; the production build carries none. A team without a workbook stays invented. `REGATTA_OPS_SEED_INVENTED=1` (set for the Playwright demo suite, and for any screenshot), the unit tests, CI, and the PocketBase e2e suite use the invented athletes. Roster athletes' ids come from their names, so they keep them as the roster changes. The boys' workbook marks new rowers in bold; they are seeded as novices. Names are never printed.
+- **Published demo rosters:** `pnpm pages:seal` keeps first names and the fewest last-name letters that tell same-first-name teammates apart ("Avery R.", or "Avery Ro." and "Avery Ru."), and encrypts them with a password (PBKDF2-SHA256, 600,000 rounds, AES-256-GCM) into `data/reference/junior-rosters.sealed.json`, which is committed. The Pages build (§7.1) carries that file and opens on a password page in place of sign-in: the right password opens the rosters in the browser, the device remembers the key, and the app signs in as the admin. Sealing again with a new password makes every device ask again. The protection is light by design (the owner's call: one shared password, enough to keep strangers out). The site asks search engines not to index it.
+- **Shells:** all 80 rows of `data/reference/shells.csv` (eights, fours, quads, pairs, doubles, singles, and the recreational fleet), with nicknames, weight classes, stroke sides, and locations. The two boats the sheet marks unusable are `out_of_service`; Fowler, whose notes say "do not row" though the sheet lists it as available, is `limited` (§15). Home team defaults from gender affinity (women's to Junior girls, men's to Junior boys) and can be corrected in the UI.
+- **Oar sets:** all rows of `data/reference/oar-sets.csv` (16 men's and 15 women's sweep sets, 11 scull sets) with color codes, blades, lengths, inboards, grips.
 - **Gear:** cox boxes (default load), slings (default load), tool kit (default load), tents, chairs, flags, caution tape, measuring tape, parts boxes, aluminum boat rack, straps (default load), from the trailer sheet's item lists.
-- **Trailers:** "Boys trailer" and "Girls trailer", both `offset_post` with `post_offset_pct` 33 and five levels; each level is a `left` shelf (1 lane) and a `right` shelf (2 lanes, `outer_first`). Placeholder dimensions until measured (§15): boys' frame 1220 cm, girls' 1070 cm; left shelf width 75 cm, right shelf width 150 cm; overhang on the top two levels 450 cm front and 300 cm rear so an eight fits, lower levels 250 cm front and 300 cm rear. Compartments: bed (riggers, oars, slings), plus an oar rack. Default rules per §9.3.3.
+- **Trailers:** "Boys trailer" and "Girls trailer", both `offset_post` with `post_offset_pct` 33 and five levels; each level is a `left` shelf (1 lane) and a `right` shelf (2 lanes, `outer_first`). Boats load bows forward. Dimensions are placeholders until measured (§15): boys' frame 1220 cm, girls' 1070 cm; left shelf width 75 cm, right shelf width 150 cm. Overhang is 250 cm front and 300 cm rear on the lower levels; the upper levels allow enough front overhang for a 19.9 m eight: 500 cm front on the boys' levels 3 to 5, and 600 cm front and 350 cm rear on the girls' levels 2 to 5. Bed zones, front to back: boys oars 0 to 610 cm, slings 610 to 760, riggers 760 to 1220; girls oars 0 to 535, slings 535 to 665, riggers 665 to 1070. Default rules per §9.3.3.
 - **Regattas:**
-  - *2025 USRowing Northwest Youth Championships* (Vancouver Lake, three days) from `data/reference/schedule-sample-2025-nw-youth-champs.csv`: 41 race events with time trials on Friday and finals on Saturday and Sunday, plus the logistics items (bus departures, lunch, awards). (v0.3: the CSV actually yields 31 boys' races once A and B crews share an event; §18.) Junior boys entries built for every race using the shells and oar sets the sheet names, with invented crews; junior girls entries for a subset. This produces real hot seats (Live.Laugh.Love races the 2V8 at 8:16 and the Novice 8 A at 9:52) and one re-rig (Lundberg as a 4x+). (v0.3: only with this regatta's launch lead override of 75 minutes, a long row from the launch to the start; on the 40 minute default the LLL gap of 71 minutes is not a finding. §18.) A draft load plan for both trailers mirroring `trailer-layout-2026-regionals.md`.
-  - *Head of the Lake* (Seattle, one day, head format): 22 events, all four teams, 24 entries, availability set for a few athletes.
-  - *Tail of the Lake*, future: events pasted, no entries.
-  - One archived regatta with complete data for "copy lineups from".
+  - *2025 USRowing Northwest Youth Championships* (Vancouver Lake, three days, status final) from `data/reference/schedule-sample-2025-nw-youth-champs.csv`: 44 boys' race rows forming 31 races (A and B crews share an event), with time trials on Friday and finals on Saturday and Sunday, plus the logistics items (bus departures, lunch, awards) and 14 invented girls' races. Junior boys entries are built for every race using the shells and oar sets the sheet names. The regatta carries `settings: { launchLeadMin: 75 }` (Vancouver Lake's long row to the start), which makes Live.Laugh.Love's turnaround from the 2V8 at 8:16 to the Novice 8 A at 9:52 a hot seat (§17.4); Lundberg as a 4x+ is the seeded re-rig. The boys' lineups are published. Draft load plans for both trailers mirror `trailer-layout-2026-regionals.md`, and a load list is seeded.
+  - *Head of the Lake 2026* (Seattle, one day, head format, planning): 22 events, all four teams, 24 entries, availability set for a few athletes, and one cross-team hot seat and one shell conflict seeded on purpose.
+  - *Tail of the Lake 2026*: events pasted, no entries.
+  - *2025 Head of the Lake*, archived, with complete lineups for "copy lineups from".
 
 ---
 
-## 15. Open questions and assumptions
+## 15. Open questions
 
-Answered by the owner on 2026-09-29 and folded into the plan: any coach edits any team; Google Workspace sign-in for everyone; coach-entered availability; two offset-post trailers with five levels, eights on the top two levels, riggers off and in the bed with oars and slings; timing defaults are fine but must be adjustable per regatta (they are); no cloud accounts yet, local development first, small backend.
-
-### Still open (details, none block Phase 0 or 1)
-
-1. **Trailer measurements.** For each trailer: frame length, width of the one-hull side and the two-hull side, and roughly how far an eight hangs over the front and rear on the top level. A tape measure and two photos (end view, side view) settle it. Also: the 2026 layout sheet drew four levels of boats; is the fifth level normally used for boats, or is it effectively the bed?
+1. **Trailer measurements.** For each trailer: frame length, width of the one-hull side and the two-hull side, the bed zones, and roughly how far an eight hangs over the front and rear on the top level. A tape measure and two photos (end view, side view) settle it. Also: the 2026 layout sheet drew four levels of boats; is the fifth level normally used for boats, or is it effectively the bed?
 2. **Google Workspace domain** for the sign-in allowlist, when deployment is near.
 3. **Nicknames.** `data/reference/shells.csv` has an inferred `nickname` column from the lineup and trailer sheets. Two names used in schedules ("RSA", "Adrenaline") are not in the equipment master list; which shells are they?
-4. **Truck loads.** The layout sheet puts slings and sculling riggers in truck beds. Is "container" free text enough (the plan's assumption), or should trucks be first-class like trailers?
-5. **Oar identity.** Sweep sets are named "24-C" in the master list but "yellow-white" at the trailer. The plan shows both on every chip. Preference for which comes first?
-6. **Absence form.** Keep the Google Form and import its CSV per regatta (Phase 3), or retire it once coaches use Regatta Ops?
+4. **Truck loads.** The layout sheet puts slings and sculling riggers in truck beds. Is "container" free text enough, or should trucks be first-class like trailers?
+5. **Oar identity.** Sweep sets are named "24-C" in the master list but "yellow-white" at the trailer. Every chip shows both, name first. Preference for which comes first?
+6. **Absence form.** Keep the Google Form and import its CSV per regatta (§4.2), or retire it once coaches use Regatta Ops? The import does not read checkbox-list questions.
 7. **Girls' team sheet.** The boys' workbook shaped the lineup builder; a look at how the girls' and masters' teams plan today would confirm nothing is missing for them.
-8. **Hosting**, when ready: a $5 to $10 VPS or Fly.io app running PocketBase (recommended, one process, nightly backup), or PocketHost for zero ops. Not needed yet.
+8. **Hosting**, when ready: a $5 to $10 VPS or Fly.io app running PocketBase (recommended, one process, nightly backup), or PocketHost for zero ops.
 9. **Club colors and logo** for the app icon and share pages; the accent stays lake teal until told otherwise.
-
-### Assumptions in force
-
-- `[ASSUMPTION]` Any coach edits any team's data; the activity log is the safety net. (Confirmed.)
-- `[ASSUMPTION]` Coaches enter availability; athletes do not sign in. (Confirmed.)
-- `[ASSUMPTION]` Trailer dimensions in the seed are placeholders; the geometry (offset post, one plus two wide, five levels) is confirmed.
-- `[ASSUMPTION]` Single club, no multi-tenant layer.
-- `[ASSUMPTION]` PocketBase is small enough to count as "not a huge backend"; if even that is more than wanted, demo mode (no backend) is the fallback for solo use.
+10. **Afternoon times.** The paste parser reads 1:00 to 5:59 without AM or PM as afternoon, since club sheets write afternoon times on a 12-hour clock. Is that right for every schedule coaches paste?
+11. **Rig patterns and bow-loaders.** Shells have no rig-pattern field, so bucket rigs are stored per entry as seat sides, and nothing marks a bow-loaded four. Worth two fields on the shell?
+12. **Fowler.** Its notes say "do not row" but the sheet lists it as available; it is seeded `limited`. Is it out of service?
+13. **Lane wording.** The trailer end view says "inner lane" and "outer lane" where pin rule sentences say "inside lane" and "outside lane". Which pair should both use?
 
 ---
 
@@ -1187,7 +1162,7 @@ Sources: [MO Trailer Corp shell trailers](https://www.motrailers.com/shell-trail
 - Put weight forward: overhang over the tow vehicle is preferred to overhang behind the trailer, and tongue weight should be near the maximum allowed for the hitch.
 - Keep heavier boats low when the rack layout allows it.
 - Boats are transported hull up with riggers removed; wing-riggered eights can be awkward on the outside of low tiers.
-- Blunt ends (sterns) toward the tow vehicle is a common convention elsewhere; SRA loads bows forward, over the truck (owner, v0.3), and that is the default.
+- Blunt ends (sterns) toward the tow vehicle is a common convention elsewhere; SRA loads bows forward, over the truck, and that is the default.
 
 Sources: [X-Press Boat Club trailering guide](https://www.xpressbc.org.uk/safety/trailering), [rec.sport.rowing trailer loading thread](https://rec.sport.rowing.narkive.com/KJs7UNNV/trailer-loading), [SRA Rower's Handbook 2019 (trailer loading is a member responsibility; boats labeled by rack spot such as A6)](https://www.sammamishrowing.org/uploads/7/1/9/6/71968221/2019_sra_rowers_handbook.pdf).
 
@@ -1215,8 +1190,6 @@ Sources: [RCW 46.44.034](https://app.leg.wa.gov/RCW/default.aspx?cite=46.44.034)
 
 ### 17.1 Trailer definition (seeded "Boys trailer"; dimensions are placeholders until measured)
 
-> **v0.3 amendment:** with the overhangs below, an eight cannot fit (1220 + 450 + 300 = 1970 cm, shorter than a 1990 cm eight). The seed in `packages/domain/src/trailer/sra.ts` uses 500 cm front on the boys' levels 3 to 5 and 600 cm front and 350 cm rear on the girls' levels 2 to 5. Replace all of these with measurements (§15 Q1).
-
 ```json
 {
   "id": "trl_boys",
@@ -1225,21 +1198,23 @@ Sources: [RCW 46.44.034](https://app.leg.wa.gov/RCW/default.aspx?cite=46.44.034)
   "postOffsetPct": 33,
   "frameLengthCm": 1220,
   "widthCm": 240,
+  "bowForwardDefault": true,
   "shelves": [
     { "id": "l1", "label": "Level 1, narrow side", "tier": 1, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 250, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 1, "active": true },
     { "id": "r1", "label": "Level 1, wide side",   "tier": 1, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 250, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 1, "active": true },
     { "id": "l2", "label": "Level 2, narrow side", "tier": 2, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 250, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 2, "active": true },
     { "id": "r2", "label": "Level 2, wide side",   "tier": 2, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 250, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 2, "active": true },
-    { "id": "l3", "label": "Level 3, narrow side", "tier": 3, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 450, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 3, "active": true },
-    { "id": "r3", "label": "Level 3, wide side",   "tier": 3, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 450, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 3, "active": true },
-    { "id": "l4", "label": "Level 4, narrow side", "tier": 4, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 450, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 4, "active": true },
-    { "id": "r4", "label": "Level 4, wide side",   "tier": 4, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 450, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 4, "active": true },
-    { "id": "l5", "label": "Top level, narrow side", "tier": 5, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 450, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 5, "active": true },
-    { "id": "r5", "label": "Top level, wide side",   "tier": 5, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 450, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 5, "active": true }
+    { "id": "l3", "label": "Level 3, narrow side", "tier": 3, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 500, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 3, "active": true },
+    { "id": "r3", "label": "Level 3, wide side",   "tier": 3, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 500, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 3, "active": true },
+    { "id": "l4", "label": "Level 4, narrow side", "tier": 4, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 500, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 4, "active": true },
+    { "id": "r4", "label": "Level 4, wide side",   "tier": 4, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 500, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 4, "active": true },
+    { "id": "l5", "label": "Top level, narrow side", "tier": 5, "columnKey": "left",  "widthCm": 75,  "lengthCm": 1220, "frontOverhangMaxCm": 500, "rearOverhangMaxCm": 300, "laneAccess": "any",         "accessRank": 5, "active": true },
+    { "id": "r5", "label": "Top level, wide side",   "tier": 5, "columnKey": "right", "widthCm": 150, "lengthCm": 1220, "frontOverhangMaxCm": 500, "rearOverhangMaxCm": 300, "laneAccess": "outer_first", "accessRank": 5, "active": true }
   ],
   "compartments": [
-    { "id": "bed", "kind": "bed", "label": "Trailer bed: riggers, oars, slings", "capacity": 1 },
-    { "id": "oars", "kind": "oar_rack", "label": "Oar rack", "capacity": 64 }
+    { "id": "oars",    "kind": "oar_rack",    "label": "Oars",    "capacity": 64, "startCm": 0,   "endCm": 610 },
+    { "id": "slings",  "kind": "storage",     "label": "Slings",  "capacity": 16, "startCm": 610, "endCm": 760 },
+    { "id": "riggers", "kind": "rigger_rack", "label": "Riggers", "capacity": 96, "startCm": 760, "endCm": 1220 }
   ]
 }
 ```
@@ -1272,9 +1247,9 @@ The last rule is what a coach adds when they say "we can squeeze three fours on 
 ```json
 {
   "placements": [
-    { "shellId": "sh_peggy", "shelfId": "r5", "lane": 1, "offsetCm": -450, "bowForward": true, "locked": false,
+    { "shellId": "sh_peggy", "shelfId": "r5", "lane": 1, "offsetCm": -500, "bowForward": true, "locked": false,
       "reasons": [
-        { "ruleId": "r_fit", "hard": true, "text": "Fits: 19.9 m in 12.2 m plus 4.5 m front and 3.0 m rear overhang" },
+        { "ruleId": "r_fit", "hard": true, "text": "Fits: 19.9 m in 12.2 m plus 5.0 m front and 3.0 m rear overhang" },
         { "ruleId": "r_eights_top", "hard": false, "score": 30, "text": "Prefer eights on levels 5 and 4" },
         { "ruleId": "r_unload", "hard": false, "score": 5, "text": "Boats racing first should be easiest to reach (outer lane)" },
         { "ruleId": "r_forward", "hard": false, "score": -2, "text": "Put overhang in front, over the truck, rather than behind" }
@@ -1306,44 +1281,3 @@ The last rule is what a coach adds when they say "we can squeeze three fours on 
   "acknowledged": false
 }
 ```
-
----
-
-## 18. Amendments during the build
-
-Changes made while building v1, each reflected in the code. Earlier sections carry a "v0.3" note where they changed.
-
-1. **Placeholder trailer overhangs** (§14, §17.1). The plan's numbers made every eight too long for every shelf. The upper levels now allow enough front overhang for a 19.9 m eight (boys: 500 cm front on levels 3 to 5; girls: 600 cm front and 350 cm rear on levels 2 to 5, since the 2026 girls' layout has an eight on level 2). Still placeholders until measured.
-2. **`club_settings` collection** (§8.1). §4.12 names club defaults but §8 had nowhere to keep them. One record, admin-writable.
-3. **`packages/seed`** (§11.1). The seed world is built by a pure package so the PocketBase seed script and demo mode (`MemoryStore`) share one dataset.
-4. **Type names and inputs** (§9.1, §9.2). The race type is `RegattaEvent`. `ConflictInput` carries `timezone` and `seasonYear`. `isCompatible` takes a `convertible` flag. Compartments may also be of kind `oar_rack` and `bed` (§17.1 used both).
-5. **Conflict engine details** (§9.2, from WP-A). `unboatedAthletes` counts only the team's own entries by default, so an athlete lent to another team still shows as unboated at home (`{ anyTeam: true }` counts every team). Availability `maybe` counts as available. `SIDE_MISMATCH` uses `entrySeatSides(entry, shell)`, which flips every seat for a starboard-rigged shell when the entry has no explicit sides; the boat strip uses the same function. `OARS_SHORT` is suppressed when `RIGGING_MISMATCH` already fires on the entry. `RERIG_NEEDED` fires for any same-day class change on one shell, convertible or not. The hot-seat fingerprint is readable (`shell:<id>|<entryA>@<ISO>|<entryB>@<ISO>`) and the stored field may hold several, space-separated, so one acknowledgment covers a shell and an oar handoff between the same two crews. Load-list oar quantity is the number of oars. The paste parser reads 1:00 to 5:59 without AM/PM as afternoon (confirm with the owner).
-6. **Backend storage details** (§8, from WP-C). Relation fields drop the `Id` suffix of the domain name (`eventId` → `event`); `*_by` fields keep theirs. Calendar days (`start_date`, `end_date`, `day`, `birthdate`) are text constrained to `YYYY-MM-DD`, not date fields. Viewers may create comments and presence rows (matching §2, which lets viewers comment). A user may edit their own `default_team`. `color_key` and gear `category` are selects. Writes by the superuser (seed, dashboard) are not logged. Editing an event's boat class propagates to its entries. The entries hook clears `hot_seat_ack_by` on any shell or event change; the engine's fingerprint comparison is the finer check. A rejected update returns 404, not 403 (PocketBase behavior). The batch API is enabled; swapping two athletes is a clear-then-set batch because of the unique `(entry, athlete)` index.
-7. **Packer details** (§9.3, from WP-B). The SRA default `side-balance` weight is Low, not Medium: at Medium the §9.3.3 formula pulls a four down to level 1 to even out the offset-post trailer, which contradicts the coaches' layout (§9.3.5 case 12 passed 14 of 200 weight variations at Medium, 200 of 200 at Low). `explain(rule, trailer, context?)` takes optional shell and team names for pin and team sentences. A `class-tier` rule with `hard: true` acts as a Must ("Eights must go on the top rack"). `balancePct` in metrics is |L − R| / (L + R) × 100. Reasons are recomputed after the improvement pass so they describe where each boat ended up; boats left unplaced get one retry after it. A shelf's own limits report under rule ids `shelf:<id>:<key>`; the built-in fit rule's id is `fit`. Drag and drop uses `dropBoat(...)`, which computes the offset, rather than calling `validatePlacement` with a literal offset.
-8. **Seed world** (§14, from WP-S). The 2025 Northwest Youth Championships regatta carries `settings: { launchLeadMin: 75 }` (Vancouver Lake's long row to the start); that override is what makes the LLL 8:16 → 9:52 pair a hot seat, and §17.4's example assumes it. The schedule CSV has 44 boys' race rows forming 31 races (A and B crews share an event), not 41; 14 girls' races are invented. The fleet CSV has 80 shells (not about 90) and 16 men's sweep sets (not 17). Fowler ("do not row" but not marked unavailable) is seeded `limited`; only the two unavailable boats are `out_of_service`. Reading the girls' 2026 grid from the top, its lone middle eight is on level 4, not level 2 as §9.3.3 says; the long overhang on the girls' level 2 (§18 item 1) is harmless and stays until measured. Empty seats have no `entry_seats` record; the UI and engine treat a missing seat record as empty. Bucket rigs (SPPS/PSSP) are stored on the entry as `seatSides` since shells have no rig-pattern field (open question for the owner). The seed exports its stable ids (`SEED_REGATTA_IDS`, `SEED_TEAM_IDS`, `SHELF_IDS`, `seedShellId`, ...) for tests.
-9. **Oar splits** (§9.2). Two crews on one oar set only pair as a hot seat or conflict when together they need more oars than the set holds; two fours on a 9-oar sweep set is a split, as the club does it. Three crews sharing one set are not summed (consecutive pairs only).
-10. **App foundation** (§5, §7, from WP-D). `DataStore` gained `batch(ops)` (atomic; used for seat swaps) and an `expectedUpdated` option on update (the 409 check). Errors are `StoreError` with a code and a toast-ready message. Tokens gained `--line-strong` (control borders at 3:1 contrast), tint variants, and `--scrim`. The conflict badge uses the 6 px control radius, not a pill, because pills mean boats. Shared primitives: `Combobox` (searchable picker), `Select`, `Tabs`, `DataTable` (TanStack Table), `Inspector` (a portal into the right panel; the last one mounted wins; the default shows conflicts and activity).
-11. **Phase 3 server features** (§4.6, §8, from WP-P backend). New fields: `comments.mentions` (users), `load_items.loaded_by_name` / `returned_by_name` (typed by whoever ticks through a share link), `activity_log.team`, `share_links.created_by`, `users.preferences.emailDigest` / `emailOnChange` (default on). New server-only collections `notification_log` and `mail_outbox` (the latter used when `REGATTA_OPS_MAIL_CAPTURE=1`). `share_links` are readable and creatable by coaches and admins; tokens are 40 random characters made by the server; revoking is permanent. Public routes: `GET /api/regatta-ops/share/{token}` returns the published snapshots, the schedule, and (with `can_check_load`) the load items; `POST /api/regatta-ops/share/{token}/load-items/{id}` ticks loaded or returned. The daily digest and change emails run on PocketBase cron jobs (not an edge function); the digest lists changes and links to the conflicts panel because the conflict engine runs in the browser. Without SMTP, email goes to the PocketBase log.
-12. **Realtime details** (§10.2, §10.3, from WP-J). "Updated by X" toasts are driven by `activity_log` rows (seats, events, placements, and load items carry no `updated_by`), coalesced within 2 s, never for your own writes. The stale-write check (`expected_updated`) covers event times and load placements through `useGuardedUpdate`; a coach's own rapid writes to one record queue rather than conflict. Presence is one row per browser tab; presence changes patch the cache instead of refetching. While a mutation is in flight, realtime refetches wait (up to 10 s) so the echo of your own write can't flicker the optimistic state.
-13. **Fleet details** (§4.7, from WP-I). Drawers deep-link as `/fleet/shells?shell=<id>` and `/fleet/oars?set=<id>` (where "change its status in Fleet" points). CSV export uses the §8.1 snake_case column names; import creates records and skips names already in the fleet, never updating. The class filter also matches compatible classes (filtering 4x+ finds Lundberg). Hull weight stays in kg; the crew weight range follows the viewer's unit. Scratched entries don't count as upcoming use. Entry deep links everywhere use `/regattas/:id/lineups/:teamId?entry=<id>`; events use `/regattas/:id/schedule?event=<id>`.
-14. **Schedule and timeline** (§4.5, §6.3, from WP-H). Overlapping bars take separate lanes within a timeline row; conflict hatching and hot-seat links come from the engine's findings, not from bars overlapping (every hot seat overlaps in its busy window). An acknowledged hot seat is drawn dashed as well as blue so it doesn't rely on color. Acknowledging requires a short plan. Toolbar state (day, view, grouping, filters) lives in the URL. Bulk shift applies as one batch; a shift past midnight warns but doesn't change the event's `day`.
-15. **Regattas, events, availability** (§4.1, §4.3, §6.1, §6.2, §6.5, from WP-F). Load plan status on the overview is per team: the team's shells placed on any of the regatta's load plans. Changing a regatta's timezone keeps clock times. Editing a race's boat class updates its entries in the same batch. Regattas span at most 14 days. Duplicate defaults to 364 days later and swaps the year in the name. Paste import drops punctuation-only lines and puts rows dated outside the regatta on the chosen day. Edits on a final regatta confirm through `useConfirmFinalEdit` ("Don't ask again" lasts until reload). Regatta and participating-team changes are logged too (status, timing, renames, adding or removing a team, publishing lineups); the activity hook list in §8.3 gains `regattas` and `regatta_teams`, and published snapshots are kept out of the diff.
-16. **Offline** (§10.4, from WP-N). The persisted query cache lives in IndexedDB for 7 days (query `gcTime` is 7 days so closed pages stay saved), is discarded when the app version or schema changes, skips presence, is restored only for the signed-in user, and is deleted on sign-out. Offline, every action is disabled (including comments), mutations refuse with one toast, and writes never queue; the share-link checklist is the exception (§18 item 11 and its offline queue). Server-mode queries use `networkMode: 'online'` with a reachability probe; demo mode uses `'always'`. The service worker is off in `vite dev` unless `REGATTA_OPS_PWA_DEV=1`.
-17. **Publishing and print** (§4.1, §4.11, §6.12, from WP-K). `packages/domain/src/publish.ts`: `buildPublishedSnapshot` (non-scratched entries in schedule order, every seat of the class with empty seats as null, display names baked in; a hot-seat pair's plans joined) and `snapshotChanges(published, live, { timeZone, scratchedEntryIds })`, whose sentences drive "3 changes since"; a seat swap counts as one change. The seed builds its snapshots with the same function. Print URLs: `/print/regattas/:id/lineups/:teamId|all?day=&source=live&layout=grid&boats=names`, `/print/regattas/:id/schedule?view=master&day=&team=&source=live`, `/print/regattas/:id/load/:trailerId`. Prints default to the published snapshot and say which version and when; the schedule's published/live choice is per team. Oar color codes come from the live oar set. The load sheet prints rows assigned to that trailer, shells placed on it, and spares on it, and flags rows with no container.
-18. **Share page and comments** (§4.6, §4.8, §4.11, §10.4, from WP-P web). The public share page (`/share/:token`) shows races with a published crew plus logistics lines, refreshes every minute, and keeps a copy on the device for offline reloads. The phone checklist (`/share/:token/load`) queues ticks offline in local storage and replays them in order as desired states (idempotent). `ShareLinksDialog` is on the regatta overview; `CommentsThread` and `CommentCount` exist for entries, events, and load plans; @-mention parsing on the client mirrors the server's.
-19. **Trailer visuals** (§5.4, §6.9, from WP-L). `TrailerEndView` draws all three trailer styles; chips and drop lanes are HTML laid over the SVG so dnd-kit can target them. Rack spacing is fixed rather than to scale, chips are drawn 1.15 to 1.3 times the hull's beam so names fit, the inner lane is drawn beside the outer one with "Loads 1st / 2nd" per column, and below 480 px tiers show only their number. The trailers admin page has presets (SRA offset post, 41 ft goalpost, center post), a live end view of the unsaved draft, and a test pack (sample load, a regatta's boats, or a load plan) for checking measurements. Deleting a trailer deletes its load plans. Open wording question: the end view says "inner/outer lane" where pin rule sentences say "inside/outside lane".
-20. **Teams, roster, settings** (§4.2, §4.12, §6.10, §6.11, from WP-E). Age badges use the current year in the club's timezone as the season year; juniors past U19 show "Open"; masters letters start at 21; on "other" teams the badge follows age. When the roster is grouped by level the Level column is hidden (the heading shows it). Users and roles keep at least one admin; demoting yourself asks first. Settings keeps its tab in `?tab=`. `features/settings/hooks.ts` exposes `useClubSettings` and `useSeasonYear` for other pages. Roster import skips duplicates by first and last name. Athlete and team edits are in the activity log too (added, moved, marked inactive, renamed, archived); §8.3's hook list gains `teams` and `athletes`.
-21. **Lineup builder** (§4.4, §6.4, from WP-G). Keyboard model: focus a seat and type to search, Enter opens the picker, Space picks an athlete up and puts them down (swap), Delete clears, arrow keys move between seats. Cleared seats keep their record with a null athlete; seats that don't exist in a new class are deleted when an entry moves. Equipment pickers group this team, then the club, then other teams, with live hints (hot seat, busy, split oars, re-rig). Crew letters fill from A. Boats too long for the column (eights on narrow screens) show their seats as rows, cox then stroke to bow; `BoatStrip`'s opt-in `fitNames` shortens names by available width (full names stay in the label and tooltip). A final regatta asks once per visit before the first lineup edit. `?entry=<id>` selects, scrolls to, and highlights an entry, redirecting to the right team if needed, then leaves the URL. Publish status and entry comments sit in the header and the entry details.
-22. **Trailer page and load list** (§4.8–§4.10, §6.6, §6.7, from WP-M). A load plan's effective rules are the trailer's current defaults with the plan's overrides merged in (`mergeRules`), so later changes to a trailer's defaults still apply. Drops are checked with `dropBoat` while dragging; a refused drop shows why, and Alt/Option places it anyway, locked and flagged. Hovering a boat over the other trailer's tab switches to it; dropping on a tab places the boat in that trailer's best free spot. Hand moves lock the placement ("Locked by <name>"). "Pack both trailers" sends a team's boats to the trailer that shares a word with the team's name (Junior boys → Boys trailer), other teams whole to the trailer with the most room, overflow into free space on the other; boats already placed stay. Packing a Final plan asks first. The pack animation is done by the page (chips are re-created per lane). A load-list row is stored on its first tick or container change; "Save list" stores every line so share links (which read stored rows) see the whole list. Flags (not on a trailer, spare, no longer needed) are computed, not stored. "Rules changed · Pack trailer to apply" is per browser session.
-23. **Photos, absence import, isometric view** (§4.2, §4.7, §4.10, from WP-P3). `DataStore` gained `uploadFile`, `removeFile`, and `fileUrl(collection, record, field, { thumb })`; photos are downscaled to 1600 px on the long edge in the browser before upload (demo mode keeps a data URL capped at 1.5 MB), and files the browser can't decode (HEIC in Chrome) are refused. Absence-form import on the availability page: the name and regatta columns are guessed (by name, initials like "HOTL", or a grid question's `[…]`), each distinct answer maps to available/unavailable/maybe, the latest response per athlete wins, a blank answer leaves the athlete as is, and "available" deletes the record (the coach can uncheck any change in the preview); checkbox-list questions are not supported (open question for the owner). The isometric trailer view is read-only, heights are not to scale, and it sits beside the end and plan views on the trailers admin and regatta trailer pages.
-24. **End-to-end tests and final-regatta edits** (§4.1, §11.3, §13, from WP-O1). `pnpm test:e2e` runs the Playwright phase demos against a demo-mode build (port 4391); `pnpm test:e2e:pb` runs a smoke suite against a real PocketBase migrated and seeded into a temporary data folder (port 4392); CI runs both. The data restored from the device's saved cache is refetched in the background right after it loads, so a reload never shows a stale lineup for long. A final regatta asks once per visit before the first change to lineups or trailer load plans; load list ticks are exempt. The PocketBase build's auth store is read once per change (the SDK re-reads local storage on every access, which made React loop).
-25. **Quality pass** (§4.6, §5.2 to §5.6, §6.2 to §6.4, §13, from WP-O2). The lineup page starts with the inspector column closed when the column would squeeze the builder into its narrow layout, without changing the remembered choice; `]` and an entry's details open it, and leaving the page restores it. The roster sits beside the entries only when there is also room for the team's longest boat as a strip (960 px of builder for a team racing eights, 712 px for fours), instead of at a fixed 900 px. Crossed-off roster names use the secondary ink instead of 55% opacity, and scratched entries turn grayscale instead of fading, so both keep 4.5:1 text. On touch screens, small controls (checkboxes, switches, conflict badges) keep their look and gain a 44 px hit area (the `touch-hit` utility). Tables and lists that scroll become a focusable, labelled group while they overflow (`ScrollRegion`). Keyboard focus: menu, select, and combobox rows show the 2 px accent ring, inset; a dialog opens on its first field (its close button is last in the tab order) and gives focus back to what opened it; an entry's details take focus into the inspector and Escape brings it back; after a trailer move focus follows the boat; the overview's miniature timeline has one tab stop with arrow keys, like the full one. Race rows on the schedule show their comment count and open the thread; the lineup page has "Share" (share links scoped to its team); the overview and the inspector share one activity feed with links to what changed. Playwright checks all of this: `e2e/a11y.spec.ts` (axe, WCAG 2.1 AA and landmark rules, both themes, phone; reduced motion), `e2e/responsive.spec.ts` (no sideways scroll at 390 and 820 px, 44 px targets on touch), `e2e/keyboard.spec.ts` (the lineup builder's keyboard path, dialogs, menus, schedule edits, the trailer, deep links).
-26. **No athlete weight** (owner request, 2026-09-30). Athletes carry no weight; migration `1790990100_srt_athletes_no_weight.js` drops `athletes.weight_kg` (run `pnpm pb:reset` after pulling). `CREW_WEIGHT` and `avgWeightKg` are removed, and roster import marks a weight column "Not imported". Shells keep their hull weight, weight class, and crew weight range; the weight unit setting now only sets how the fleet drawer shows a shell's crew weight range.
-27. **Schedule entries switch** (owner request). The schedule's list view has a "Show entries" switch (on by default; URL `entries=hide|show`, last choice remembered on the device). On, each race lists its entries with the compact horizontal lineup strips, shells, oars, and badges; off, the schedule is bare: races and logistics lines only.
-28. **Vertical lineups; cox-first strips** (owner request, 2026-09-30; §4.4, §5.1, §5.4, §6.4). `BoatStrip` has two orientations. Vertical (`orientation="vertical"`, the lineup builder and the printed lineup sheet): the hull stands on end with the rounded stern and the cox on top, one seat per row from stroke down to bow, and the pointed bow at the bottom; rigger ticks sit on their real side. Horizontal (the default; schedule, share page): the rounded stern with the cox on the left, bow pointing right, port ticks on top. The cox is always drawn first, including in bow-loaded fours (nothing yet marks a bow-loaded shell; open question). Lineup entries are vertical cards in a grid of equal columns (at least 224 px; three across at 1280 px): label and menu, status and badges, shell, oars, then the boat; rows above the boat have fixed heights so seats line up across cards. The roster sits beside the entries when the builder has 728 px. Keyboard: Up/Down within a boat, Home/End to its top and bottom, Left/Right to the same row of the neighboring card; filling a seat moves focus down.
-29. **Bed zones along the length** (owner request, 2026-09-30; §4.9, §8.1, §9.3.1, §16.4, §17.1). Compartments carry `startCm`/`endCm` from the front of the frame (migration `1791000100_compartment_positions.js`). SRA's default beds, front to back: boys (1220 cm) oars 0–610, slings 610–760, riggers 760–1220; girls (1070 cm) oars 0–535, slings 535–665, riggers 665–1070 — placeholders until measured. The plan view has a "Bed" level (a zone too narrow for its name turns it sideways); the end view shows the riggers across the back with "Slings and oars ahead"; the isometric view draws the bed as a box 61 cm (2 ft) deep, to scale, with the first rack 10 cm (4 in) above its walls and each zone's name on the near wall; the print load sheet lists the zones and what rides in each; the trailers admin edits "From front" and "To" per compartment and warns on overlaps; the load list offers each zone as a place to ride and defaults riggers, oars, and slings to their zone on the right trailer.
-30. **Bows forward** (owner, 2026-09-30; §9.3.2, §16.3). Boats load bows forward, over the truck: the packer's default when a trailer doesn't say, SRA's two trailers, the trailers admin presets, and the seeded load plans. "Bows face forward" on a trailer's page flips it for that trailer.
-31. **Implicit load plans, "Auto pack", schedule print** (owner request, 2026-09-30; §4.9, §4.10, §4.11, §5.5, §6.3, §6.6). There is no "Start a load plan" step: the first change to a trailer at a regatta creates its plan (packing and placing already did; rule edits and the Draft/Final status now do too, and both are available before anything is loaded). The trailer tabs show a boat count, and the overview's per-team status reads "Nothing loaded yet" instead of "No load plan". "Pack trailer" and "Pack both trailers" are now "Auto pack trailer" and "Auto pack both trailers" (the toasts stay "Trailer packed" and "Trailers packed"; sentences say "Auto pack": "Rules changed · Auto pack to apply", "Locked by Sam W. Auto pack keeps it here."). Auto pack with no boats at the regatta opens "No boats to pack yet" with "Go to lineups"; auto packing one trailer when every boat is on or headed for the other opens "No boats for the <trailer>"; neither writes anything. "To load" says "No boats yet" when no entry has a shell. The schedule has "Print" (for everyone; in the phone menu for coaches): `/print/regattas/:id/schedule?view=list&day=&team=&class=&shell=&entries=hide`, the list view's rows from the same `scheduleItems` under the same filters, with live lineups (cox, then stroke to bow), scratched crews marked, conflict badges and entries without an event left off paper. The print toolbar offers the team, day, and "Show entries"; class and shell filters show as text with "Clear"; "Back" returns to the schedule with the same day and filters. From the timeline, Print prints the list of the same day.
-32. **Real junior rosters, locally** (owner request, 2026-09-30; §14). `pnpm pb:seed`, `pb:reset`, and demo mode read the fall 2026 roster workbooks in `data/` (ignored by git; `@regatta-ops/seed/local-rosters`, a Node-only entry, with `exceljs`) and seed the real junior boys and girls, with the lineups and load plans built on them. Demo mode gets them through a Vite virtual module (`apps/web/scripts/local-rosters.ts`, `virtual:regatta-ops-local-rosters`) that is filled only in `--mode demo`, so the production build carries none; a roster change starts the demo over (the seed hash changes). Names never enter the repository (§11.2) and are not printed. A team without a workbook, `REGATTA_OPS_SEED_INVENTED=1` (set for the Playwright demo suite, and for any screenshot), the unit tests, CI, and the PocketBase e2e suite use invented athletes, which follow the same rosters: the same head count and counts by birth year, level, coxswain, and (girls) grade. Roster athletes' ids come from their names, so they keep them as the roster changes. The rosters carry no sides or sculling; the seed assigns them for coaches to correct. The boys' workbook marks new rowers in bold on its age-group sheet; they are seeded as novices. The girls' roster has three rows whose grade does not fit the birth year (born 2008 in 11th, born 2009 in 8th, born 2012 in 11th); the seed keeps them as written. No junior is inactive, since the rosters mark nobody out; the one inactive athlete is on the evening masters.
-33. **Published demo on GitHub Pages** (owner request, 2026-10-01; §7.1, §11.2, §14). Amends 32: the junior rosters may enter the repository encrypted, never in plain text. `pnpm pages:seal` (`apps/web/scripts/seal-rosters.ts`) reads the roster workbooks, keeps first names and the fewest last-name letters that tell same-first-name teammates apart ("Avery R.", or "Avery Ro." and "Avery Ru."; ids still come from the names, so they must stay unique), and encrypts them with a password (PBKDF2-SHA256, 600,000 rounds, AES-256-GCM, Web Crypto) into `data/reference/junior-rosters.sealed.json`, which is committed. It never prints a name; the password comes from a prompt that does not echo or `REGATTA_OPS_DEMO_PASSWORD`. `vite build --mode pages` (`pnpm pages:build`, `apps/web/scripts/pages.ts`) builds the app on MemoryStore under `/<repository>/` (`REGATTA_OPS_PAGES_BASE`, default `/regatta-ops/`; the router basename, the PWA manifest and scope, share link addresses, and the demo's online check follow `BASE_URL`), puts the sealed file in the site through `virtual:regatta-ops-sealed-roster` (the build fails without it), asks search engines not to index the site, and copies `index.html` to `404.html` so GitHub Pages answers deep links with the app. In that build the app opens on a password page (`app/unlock/UnlockPage`, with a note that changes are saved only in this browser) instead of sign-in: the right password opens the rosters in the browser, the device remembers the key (`regatta-ops-pages-key-v1` in localStorage), and the app signs in as the admin; signing out shows the demo accounts, to try other roles. Re-sealing with a new password makes every device ask again. The protection is light by design (owner's call: a shared password, enough to keep strangers out); anyone with the password and the site can read the names. Each visitor's changes stay in their own browser, as in local demo mode. `.github/workflows/pages.yml` deploys on push to `main` and by hand. The demo accounts' note on the sign-in page no longer says the athletes are invented.
-34. **Renamed Regatta Ops** (owner request, 2026-10-01). The app was SRT (Sammamish Regatta Tool); it is now **Regatta Ops**, a name that does not tie it to one club. Scope is unchanged: still a single-club tool for SRA (§2). The name is written in full in the UI, docs, and emails; identifiers use `regatta-ops` (packages `@regatta-ops/*`, the hooks folder `backend/pb_hooks/regatta-ops/`, routes `/api/regatta-ops/...`, localStorage, IndexedDB, and query key prefixes, the seed's `@regatta-ops.local` accounts and `regatta-ops-local-dev` password), `REGATTA_OPS_*` for environment variables (rename the keys in `backend/.env`), and `X-Regatta-Ops-Kind` for the mail header. Migration `1791100000_app_name_regatta_ops.js` sets PocketBase's app name. Three things keep the old name on purpose: the migration files, which are never edited after merge; the collection ids (`srt_<name>`), which are stored in the database; and the seed's random prefix (`srt-seed:`), so the seed world stays the same. The new seed accounts mean a local database needs `pnpm pb:reset`, and browsers start fresh: saved theme, demo data, the offline copy, unsent checklist ticks, and the Pages demo's remembered key do not carry over. The GitHub repository is still `srt`; renaming it moves the Pages demo to `/<new name>/` on its own.

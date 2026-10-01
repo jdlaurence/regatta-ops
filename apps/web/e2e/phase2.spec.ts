@@ -204,7 +204,7 @@ test.describe('desktop', () => {
   });
 
   test('a final regatta asks before the trailer is repacked', async ({ page }) => {
-    // PLAN.md §4.1 and §18: changes to a final regatta's load plans ask first; load list ticks
+    // PLAN.md §4.1: changes to a final regatta's load plans ask first; load list ticks
     // (what happened at the trailer) don't.
     await signInDemo(page);
     await page.goto(regattaUrl(NW_YOUTH, 'trailer'));

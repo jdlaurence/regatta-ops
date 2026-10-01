@@ -23,7 +23,7 @@ instead of invented ones, so real names reach `pb_data` and never the repository
 (`packages/seed/src/local-rosters.ts`). A team without a workbook stays invented, and
 `REGATTA_OPS_SEED_INVENTED=1` keeps both invented. Sides and sculling are not on the rosters; the seed assigns them, so set them in the app.
 Athlete ids come from the name, so after switching between invented and real athletes run
-`pnpm pb:reset`, which clears the old ones. The unit tests and both Playwright suites always use invented athletes. `pnpm demo` reads the same workbooks (PLAN.md §18).
+`pnpm pb:reset`, which clears the old ones. The unit tests and both Playwright suites always use invented athletes. `pnpm demo` reads the same workbooks (PLAN.md §14).
 
 ## Local accounts
 

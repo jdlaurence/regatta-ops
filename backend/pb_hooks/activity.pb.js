@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Activity log (PLAN.md §8.3, §18): after a create, update, or delete on the collections below, write
+// Activity log (PLAN.md §8.3): after a create, update, or delete on the collections below, write
 // an activity_log record with a human sentence and a compact diff. Sentences are built in
 // regatta-ops/activity.js. Superuser writes (seed, dashboard) are not logged. Entry and seat changes are
 // also queued for change emails (regatta-ops/notify.js). Share-link check-offs are logged by regatta-ops/share.js.
