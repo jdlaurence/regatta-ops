@@ -1,4 +1,4 @@
-// Geometry of the isometric trailer view (PLAN.md §4.10, Phase 3). Pure: a trailer, its
+// Geometry of the isometric trailer view (PLAN.md §4.10). Pure: a trailer, its
 // effective shelves, placements, and boats in; polygons and lines in pixels out, in the order
 // they are painted. The component draws what this returns.
 //
@@ -128,7 +128,7 @@ const WIDTH_ANGLE = (32 * Math.PI) / 180;
 const WIDTH_FORESHORTEN = 0.75;
 const BED_Z = 62;
 const BED_DEPTH = 16;
-/** SRA's beds are boxes about 2 ft deep (the owner, 2026-09-30); to scale with the length. */
+/** SRA's beds are boxes about 2 ft deep; to scale with the length. */
 export const BED_WALL_CM = 61;
 /** The first rack sits about 4 in above the top of the bed's walls. */
 export const FIRST_RACK_ABOVE_WALL_CM = 10;

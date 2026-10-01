@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Comment mentions (PLAN.md §4.6, Phase 3). Parsing rules are in regatta-ops/mentions.js.
+// Comment mentions (PLAN.md §4.6). Parsing rules are in regatta-ops/mentions.js.
 //
 // - comments.mentions is recomputed from the body on every write, by any path (API, batch, seed,
 //   dashboard); client-supplied values are ignored. The UI highlights these users.

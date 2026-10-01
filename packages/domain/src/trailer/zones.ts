@@ -201,7 +201,7 @@ export interface ZoneOverlap {
 
 /**
  * Pairs of compartments that share part of the bed, where at least one is placed along the
- * frame (two that both run the whole length share the bed side by side, as they always did).
+ * frame (two that both run the whole length share the bed side by side, which is no overlap).
  */
 export function zoneOverlaps(
   def: Pick<TrailerDef, 'compartments' | 'frameLengthCm'>,

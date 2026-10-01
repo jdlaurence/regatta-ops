@@ -1,4 +1,4 @@
-// Phase 3 pieces for the component gallery (/dev/components): the comments thread on a seeded
+// Sharing pieces for the component gallery (/dev/components): the comments thread on a seeded
 // target, the load checklist row, and the share links dialog on a seeded regatta (in demo
 // mode, the quickest way to make a link and open its page).
 

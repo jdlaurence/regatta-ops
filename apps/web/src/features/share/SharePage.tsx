@@ -1,4 +1,4 @@
-// /share/:token and /share/:token/load (PLAN.md §2 share links, §4.8, §4.11; Phase 3). The page
+// /share/:token and /share/:token/load (PLAN.md §2 share links, §4.8, §4.11). The page
 // athletes and parents open without signing in: a regatta's published lineups and day schedule,
 // and for links that allow it, the load list the loading crew ticks on their phones. Outside the
 // app shell and the sign-in wall; everything comes from useShare(token), never from collections.

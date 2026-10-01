@@ -1,6 +1,6 @@
-// Gallery sections for the trailer visuals (WP-L): the end view in all three styles with the
-// 2026 Regionals layouts from the coaches' sheet, its states, thumbs, and rule cards; and the
-// isometric view (Phase 3) with packed sample loads.
+// Gallery sections for the trailer visuals: the end view in all three styles with the 2026
+// Regionals layouts from the coaches' sheet, its states, thumbs, and rule cards; and the
+// isometric view with packed sample loads.
 
 import { useMemo, useState, type ReactNode } from 'react';
 import {

@@ -1,4 +1,4 @@
-// Share links for a regatta (PLAN.md §2, §4.11; Phase 3): coaches and admins list, create, copy,
+// Share links for a regatta (PLAN.md §2, §4.11): coaches and admins list, create, copy,
 // and revoke the read-only links athletes and parents open without signing in. Revoking is
 // permanent; a new link is the way back.
 //

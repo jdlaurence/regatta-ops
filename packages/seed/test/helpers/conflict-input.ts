@@ -1,4 +1,4 @@
-// Builds the conflict engine's input for one seeded regatta, the way the app will (§9.2).
+// Builds the conflict engine's input for one seeded regatta, the way the app does (§9.2).
 
 import { effectiveSettings, type ConflictInput, type Id, type World } from '@regatta-ops/domain';
 

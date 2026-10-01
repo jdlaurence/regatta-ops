@@ -28,7 +28,7 @@ import { printedText, instantText } from './format';
 import { TickBox, usePrintedAt } from './parts';
 
 /**
- * The trailer end view at print size (WP-M): the plan's boats on the racks, in team colors,
+ * The trailer end view at print size: the plan's boats on the racks, in team colors,
  * above the shelf-by-shelf table. Hidden when the trailer has no load plan.
  */
 export function TrailerDiagramSlot({

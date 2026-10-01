@@ -1,4 +1,4 @@
-// Share links, the public side (PLAN.md §2, §4.8, §4.11; Phase 3). A share link's page is read
+// Share links, the public side (PLAN.md §2, §4.8, §4.11). A share link's page is read
 // without signing in, so it does not use collections: the server answers two public routes
 // (backend/README.md "Share links"). This module is the only place the app knows those URLs.
 //

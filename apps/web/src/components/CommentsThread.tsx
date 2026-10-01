@@ -1,4 +1,4 @@
-// Comments on an entry, an event, or a load plan (PLAN.md §4.6; Phase 3 mentions). Everyone
+// Comments on an entry, an event, or a load plan (PLAN.md §4.6). Everyone
 // signed in can comment, viewers included (§2); authors edit and delete their own comments
 // (admins may delete any). "@" opens a list of people; picking one inserts "@Full Name", and the
 // server (or MemoryStore in demo mode) resolves it into `comment.mentions` and emails them.

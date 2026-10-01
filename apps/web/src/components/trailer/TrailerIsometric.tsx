@@ -1,4 +1,4 @@
-// The isometric trailer view (PLAN.md §4.10, Phase 3): a three-quarter picture of the whole
+// The isometric trailer view (PLAN.md §4.10): a three-quarter picture of the whole
 // trailer, front to the upper right, with the rack levels, the uprights, and every boat as a
 // hull in its team's color at its place along the trailer, so what sticks out past the frame at
 // either end is plain to see, and the bed's compartments as zones along the length (§4.9).

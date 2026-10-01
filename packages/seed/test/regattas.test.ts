@@ -107,7 +107,7 @@ describe('2025 Northwest Youth Championships', () => {
         (r) => `${r.day}|${r.time}|${r.name.replace(/\bMens\b/, "Men's").replace(/\s+[AB]$/, '')}`,
       ),
     );
-    // PLAN.md §14 says 41; the CSV has 44 race rows making 31 races (see the WP-S report).
+    // The CSV's 44 race rows make 31 races: A and B crews share an event.
     expect(csvRaces).toHaveLength(44);
     expect(boysRaces).toHaveLength(distinct.size);
     expect(boysRaces).toHaveLength(31);

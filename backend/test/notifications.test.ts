@@ -1,4 +1,4 @@
-// Comment mentions, change emails, and the daily digest (PLAN.md §4.6, Phase 3), against a real
+// Comment mentions, change emails, and the daily digest (PLAN.md §4.6), against a real
 // PocketBase running with REGATTA_OPS_MAIL_CAPTURE=1, so every email lands in mail_outbox.
 
 import { stableId } from '@regatta-ops/domain';

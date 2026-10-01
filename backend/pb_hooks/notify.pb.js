@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Notification jobs (PLAN.md §4.6, Phase 3). The logic is in regatta-ops/notify.js.
+// Notification jobs (PLAN.md §4.6). The logic is in regatta-ops/notify.js.
 //
 // - regatta_ops_notify_flush, every minute: sends queued change emails that are due.
 // - regatta_ops_daily_digest, every hour on the hour (cron runs in UTC): sends the digest for regattas

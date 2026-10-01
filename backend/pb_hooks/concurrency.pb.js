@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Stale-write check (PLAN.md §8.3, §10.2, Phase 2). For events and load placements, a client may
+// Stale-write check (PLAN.md §8.3, §10.2). For events and load placements, a client may
 // send `expected_updated` (the record's `updated` value as it last saw it) with an update. If the
 // stored record has changed since, the write is refused with 409 and the client refetches.
 // Without `expected_updated` the write is last-write-wins, as everywhere else.

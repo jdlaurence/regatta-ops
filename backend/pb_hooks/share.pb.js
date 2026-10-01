@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Share links (PLAN.md §2, §4.8, §8.2; Phase 3). Projection and check-off logic: regatta-ops/share.js.
+// Share links (PLAN.md §2, §4.8, §8.2). Projection and check-off logic: regatta-ops/share.js.
 //
 // Records (coaches and admins, through the normal collection API):
 // - create: the server generates the token (40 random letters and digits) and sets created_by;

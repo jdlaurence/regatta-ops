@@ -145,7 +145,7 @@ export interface IdbPersisterOptions {
 
 /**
  * Saves the query cache to IndexedDB, throttled. Null where IndexedDB is missing (some private
- * modes, tests without fake-indexeddb): the app then works online only, as before.
+ * modes, tests without fake-indexeddb): the app then works online only.
  */
 export function createIdbPersister({
   storage,

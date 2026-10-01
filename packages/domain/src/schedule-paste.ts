@@ -128,7 +128,7 @@ export function parseEventNumber(cell: string): string | undefined {
 /**
  * '8:00' → '08:00', '1:04 PM' → '13:04', '12:30 am' → '00:30'. TBD, TBA, and dashes → null.
  * Not a time → undefined. Without AM/PM, 1:00–5:59 read as afternoon: regattas do not race
- * before 6 am, and club sheets write afternoon times on a 12-hour clock ([ASSUMPTION]).
+ * before 6 am, and club sheets write afternoon times on a 12-hour clock.
  */
 export function parseClockTime(cell: string): string | null | undefined {
   const t = cell.trim();

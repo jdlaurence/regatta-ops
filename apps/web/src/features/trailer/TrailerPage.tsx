@@ -6,11 +6,10 @@
 // sheet on phones). There is no step to start a load plan: the first change to a trailer (a
 // pack, a boat placed, a rule, the status) creates its plan.
 //
-// Choices (see the WP-M report): a manual move locks the boat ("Locked by Sam"); a drop that
-// breaks a hard rule is refused unless Alt (Option) is held, and then it is kept, locked, and
-// flagged. "Auto pack both trailers" packs each trailer with its boats plus the boats headed
-// for it (team to trailer by name, others where there is room), then fits overflow onto the
-// other.
+// A manual move locks the boat ("Locked by Sam"); a drop that breaks a hard rule is refused
+// unless Alt (Option) is held, and then it is kept, locked, and flagged. "Auto pack both
+// trailers" packs each trailer with its boats plus the boats headed for it (team to trailer by
+// name, others where there is room), then fits overflow onto the other.
 
 import {
   useCallback,

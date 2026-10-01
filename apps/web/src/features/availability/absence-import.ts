@@ -1,4 +1,4 @@
-// Import from the absence form (PLAN.md §4.2, Phase 3). The boys' team collects absences with a
+// Import from the absence form (PLAN.md §4.2). The boys' team collects absences with a
 // Google Form; its response sheet has a timestamp, the athlete's name, and one column per
 // regatta ("Yes, I can attend", "No", "Not sure", or blank). This module is the pure part:
 // guess the name and regatta columns, read each answer as a status, match names to the roster

@@ -1,4 +1,4 @@
-// "Import from absence form" (PLAN.md §4.2, Phase 3): paste or upload the Google Form's
+// "Import from absence form" (PLAN.md §4.2): paste or upload the Google Form's
 // responses, check which columns hold the name and this regatta's answers and what each answer
 // means, match the names to the roster, then review the changes and import them as one batch.
 // The logic lives in absence-import.ts; every guess here can be corrected.

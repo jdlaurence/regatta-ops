@@ -109,7 +109,7 @@ export function ShellsTab({ nav }: { nav: ReactNode }) {
     toast.success(`${rows.length} ${rows.length === 1 ? 'shell' : 'shells'} exported`);
   };
 
-  // The photo column shows once any shell has a photo (PLAN.md §4.7, Phase 3).
+  // The photo column shows once any shell has a photo (PLAN.md §4.7).
   const withPhotos = useMemo(() => all.some((s) => !!s.photoUrl), [all]);
   const columns = useShellColumns({
     canEdit,

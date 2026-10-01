@@ -35,7 +35,7 @@
 }
 
 /*
- * Print views (WP-K, features/print). Each .print-sheet is one printed page or run of pages:
+ * Print views (features/print). Each .print-sheet is one printed page or run of pages:
  * no card chrome on paper and a page break after it. Landscape sheets (the lineup grid, the day
  * schedule) use a named page, so the browser rotates just those pages on A4 or Letter.
  */

@@ -109,7 +109,7 @@ function spreadAndSpan(
  * The sheet's "unavailable" column marks two boats out of service (PLAN.md §14). A "do not row"
  * note on a boat the column still lists as available (Fowler: "Serious hull damage do not row.")
  * becomes 'limited', so it is flagged without reading as an error on the 2025 schedule that raced
- * it; the owner should confirm whether it is out of service now.
+ * it.
  */
 function statusFor(row: Pick<ShellRow, 'name' | 'notes' | 'unavailable'>): EquipmentStatus {
   if (row.unavailable === 'True') return 'out_of_service';

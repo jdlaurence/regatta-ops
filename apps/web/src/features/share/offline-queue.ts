@@ -1,4 +1,4 @@
-// Offline checklist edits (PLAN.md §10.4, Phase 3). A tick that cannot reach the server waits
+// Offline checklist edits (PLAN.md §10.4). A tick that cannot reach the server waits
 // in a queue saved on the device (localStorage, one queue per share link) and is sent again, in
 // order, when the connection comes back. Each entry is the state wanted, not a toggle ("Cox
 // boxes: loaded = true"), and the server keeps the first time and name when a line is already

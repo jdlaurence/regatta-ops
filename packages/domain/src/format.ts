@@ -27,7 +27,7 @@ export function shellFullLabel(s: Pick<Shell, 'name' | 'nickname'>): string {
   return nick && nick !== s.name ? `${s.name} (${nick})` : s.name;
 }
 
-/** "24-C · yellow-white" (§15 Q5: both shown; name first until the owner says otherwise). */
+/** "24-C · yellow-white": the name, then the color code. */
 export function oarSetLabel(o: Pick<OarSet, 'name' | 'color'>): string {
   return o.color ? `${o.name} · ${o.color}` : o.name;
 }

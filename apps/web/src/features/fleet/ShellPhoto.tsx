@@ -1,4 +1,4 @@
-// A shell's photo (PLAN.md §4.7, Phase 3): shown in the drawer, and for coaches a slot to drop
+// A shell's photo (PLAN.md §4.7): shown in the drawer, and for coaches a slot to drop
 // or pick a photo, replace it, or remove it. The store downscales the photo before keeping it;
 // while it saves, the picked file shows as a preview. Also the small thumbnail for the table.
 

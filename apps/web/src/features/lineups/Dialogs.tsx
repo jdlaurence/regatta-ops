@@ -1,5 +1,5 @@
 // The builder's dialogs: add an entry, copy or move one to another event, delete one, confirm
-// the first edit of a final regatta, and acknowledge a hot seat (WP-H's dialog).
+// the first edit of a final regatta, and acknowledge a hot seat.
 
 import { useId, useMemo, useState } from 'react';
 import {

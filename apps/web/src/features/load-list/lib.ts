@@ -147,7 +147,7 @@ export const homeKey = (kind: LoadItemKind, refId: string) => `${kind}:${refId}`
  *
  * - a shell placed on a trailer rides on it;
  * - its riggers ride in that trailer's rigger zone ("Boys trailer · Riggers (back of bed)"), or
- *   "Boys trailer bed" on a trailer without one (as before bed zones);
+ *   "Boys trailer bed" on a trailer without one;
  * - an oar set rides in the oar zone of the trailer carrying the shell of its first crew (the
  *   first non-scratched entry using the set whose shell is on a trailer);
  * - slings (gear in the slings category) ride in the sling zone of the trailer carrying the

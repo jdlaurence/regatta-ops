@@ -1,4 +1,4 @@
-// Email notifications (PLAN.md §4.6, Phase 3). Scheduled by notify.pb.js.
+// Email notifications (PLAN.md §4.6). Scheduled by notify.pb.js.
 //
 // Change emails. When a signed-in user changes an entry or one of its seats and that user is not a
 // coach of the entry's team, the team's coaches hear about it. "Coach of a team" means a user with

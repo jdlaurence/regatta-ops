@@ -57,7 +57,7 @@ export function buildRoutes({ queryClient, store }: RouterDeps): RouteObject[] {
     { path: 'schedule', lazy: page(() => import('@/features/schedule/SchedulePage')) },
     { path: 'lineups', lazy: page(() => import('@/features/lineups/LineupsRedirect')) },
     { path: 'lineups/:teamId', lazy: page(() => import('@/features/lineups/LineupsPage')) },
-    // Availability moved to each team's page (PLAN.md §18); old links land on the lineups.
+    // Availability lives on each team's page; old links land on the lineups.
     { path: 'availability', element: <Navigate to="../lineups" relative="path" replace /> },
     { path: 'trailer', lazy: page(() => import('@/features/trailer/TrailerPage')) },
     { path: 'trailer/:trailerId', lazy: page(() => import('@/features/trailer/TrailerPage')) },
