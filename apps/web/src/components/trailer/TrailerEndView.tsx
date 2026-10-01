@@ -1,29 +1,11 @@
-// The trailer end view (PLAN.md §5.1, §5.4, §4.10): the trailer's real cross-section seen from
-// the back, with uprights, rack arms per tier, the bed (the zone at its back end, with the zones
-// ahead of it named), and the boats as pills resting on the arms, sized by beam and colored by
-// team. It is the second signature visual of the app and the page's one bold element wherever
-// it appears.
+// The trailer end view: the trailer's real cross-section seen from the back, with uprights, rack
+// arms per tier, the bed (the zone at its back end, with the zones ahead of it named), and the
+// boats as pills resting on the arms, sized by beam and colored by team.
 //
 // The frame is SVG; the chips, lane targets, and words are HTML laid over it at the same pixel
 // coordinates (geometry.ts), so text truncates, chips are real buttons, and dnd-kit works on
-// ordinary elements. The component knows nothing about drag and drop. The trailer page adds
-// it with the render props (sketch; see the WP-L report):
-//
-//   <TrailerEndView trailer={def} rules={rules} placements={placements} boats={boats}
-//     selectedShellId={selected} highlightCell={overCell} invalidCell={refused}
-//     onChipClick={(id) => select(id)} onLaneClick={(cell) => moveSelectedTo(cell)}
-//     renderLane={(lane) => <DroppableLane key={laneKey(lane)} lane={lane} />}
-//     renderChip={(chip, props) => <DraggableChip key={chip.shellId} chip={chip} {...props} />} />
-//
-//   function DroppableLane({ lane }: { lane: EndViewLane }) {
-//     const { setNodeRef } = useDroppable({ id: laneKey(lane), data: lane });
-//     return <div ref={setNodeRef} className="absolute" style={rectStyle(lane.rect)} />;
-//   }
-//   function DraggableChip({ chip, ...props }: TrailerChipProps & { chip: EndViewChip }) {
-//     const { setNodeRef, listeners, attributes, transform } = useDraggable({ id: chip.shellId });
-//     return <TrailerChip {...props} {...attributes} {...listeners} ref={setNodeRef}
-//       style={{ ...props.style, transform: CSS.Translate.toString(transform) }} />;
-//   }
+// ordinary elements. The component knows nothing about drag and drop: the trailer page adds it
+// through `renderLane` and `renderChip` (features/trailer/EndViewBoard.tsx).
 
 import {
   Fragment,

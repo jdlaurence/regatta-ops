@@ -1,7 +1,7 @@
-// The boat strip (PLAN.md §5.1, §5.4): an entry drawn as a hull seen from above. Seats read the
-// way the club's sheets do: the cox first, then stroke down to bow. The stern is rounded and
-// carries the cox as a small circle; the bow is the pointed end. Names sit inside seats; empty
-// seats are dashed with their number; sweep seats carry a tick on their rigger side.
+// The boat strip: an entry drawn as a hull seen from above. Seats read the way the club's sheets
+// do: the cox first, then stroke down to bow. The stern is rounded and carries the cox as a small
+// circle; the bow is the pointed end. Names sit inside seats; empty seats are dashed with their
+// number; sweep seats carry a tick on their rigger side.
 //
 // Two orientations:
 //   horizontal (default)  stern and cox on the left, bow on the right. Port is the top edge,
@@ -13,17 +13,8 @@
 //                         width, one seat per row, so names read across. Port is the right edge,
 //                         starboard the left.
 //
-// The same component serves the lineup builder (md, vertical), the schedule (sm), table cells
-// (xs), and print. It knows nothing about drag and drop: pass onSeatClick / onSeatKeyDown for
-// click and keyboard editing, or renderSeat to wrap each seat (dnd-kit's useDroppable, say):
-//
-//   <BoatStrip boatClass="4+" seats={...}
-//     renderSeat={(seat, props) => <DroppableSeat key={seat.seat} seat={seat} {...props} />} />
-//
-//   function DroppableSeat({ seat, ...props }: BoatSeatProps) {
-//     const { setNodeRef, isOver } = useDroppable({ id: seat.seat });
-//     return <BoatSeat {...props} seat={seat} ref={setNodeRef} highlighted={isOver} />;
-//   }
+// It knows nothing about drag and drop: pass onSeatClick / onSeatKeyDown for click and keyboard
+// editing, or renderSeat to wrap each seat (features/lineups/Seats.tsx).
 
 import type {
   CSSProperties,

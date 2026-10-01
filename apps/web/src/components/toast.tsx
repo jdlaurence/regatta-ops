@@ -1,10 +1,6 @@
-// Toasts (sonner), styled with the tokens. Copy rules (PLAN.md §5.5): the toast repeats the
-// button's verb in the past tense ("Auto pack trailer" → "Trailer packed"); errors say what went
-// wrong and what to do; no exclamation points, no apologies.
-//
-//   import { toast } from '@/components/toast';
-//   toast.success('Trailer packed');
-//   toast.error('This shell is out of service. Pick another or change its status in Fleet.');
+// Toasts (sonner), styled with the tokens. The toast repeats the button's verb in the past tense
+// ("Auto pack trailer" → "Trailer packed"); errors say what went wrong and what to do; no
+// exclamation points, no apologies.
 
 import { Toaster as Sonner } from 'sonner';
 import { useTheme } from '@/app/theme';

@@ -1,20 +1,15 @@
-// The day timeline (PLAN.md §4.5, §6.3, §5.4 "Timeline bar"): hand-written SVG, no chart
-// library. A time axis with 15-minute gridlines; rows grouped by shell, team, or oar set; each
-// entry a rounded bar spanning its busy window with the race as a darker segment in the team
-// color. Conflicts are a hatched intersection across both bars; hot seats are a link from the
-// earlier boat landing to the next race start (amber, dashed blue once acknowledged). A
-// now-line shows on race day.
+// The day timeline: hand-written SVG, no chart library. A time axis with 15-minute gridlines;
+// rows grouped by shell, team, or oar set; each entry a rounded bar spanning its busy window with
+// the race as a darker segment in the team color. Conflicts are a hatched intersection across
+// both bars; hot seats are a link from the earlier boat landing to the next race start (amber,
+// dashed blue once acknowledged). A now-line shows on race day.
 //
 // Two modes:
 // - full (the schedule page): chips as row labels, labels on bars, a legend, horizontal scroll
 //   inside its own box on narrow screens. Bars are one tab stop; arrow keys move between them.
-// - mini (the regatta overview's "Day at a glance", §6.2): thin bars that fit the width, hour
-//   labels only, no scroll. A hover card (and keyboard focus) names what is under the pointer:
-//   the entry and its shell, oars, and busy window, or a conflict or hot seat.
-//
-//   const { input, findings } = useFindings(regattaId);
-//   {input && <DayTimeline input={input} findings={findings} day="2026-11-01" mini
-//     onBarClick={(entryId, bar) => navigate(lineupEntryPath(regattaId, bar.teamId, entryId))} />}
+// - mini (the regatta overview's "Day at a glance"): thin bars that fit the width, hour labels
+//   only, no scroll. A hover card (and keyboard focus) names what is under the pointer: the
+//   entry and its shell, oars, and busy window, or a conflict or hot seat.
 //
 // Layout math lives in timeline-lib.ts (pure, tested).
 

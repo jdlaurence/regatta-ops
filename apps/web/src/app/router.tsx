@@ -1,25 +1,5 @@
-// Every route in the app (PLAN.md §6). Pages load lazily from their feature folders; each page
-// file default-exports its component, so a feature agent replaces a placeholder by rewriting
-// the file and keeping the export.
-//
-//   /                                   features/regattas/RegattasListPage
-//   /regattas/:id                       features/regattas/RegattaOverviewPage
-//   /regattas/:id/schedule              features/schedule/SchedulePage
-//   /regattas/:id/lineups               features/lineups/LineupsRedirect (default or first team)
-//   /regattas/:id/lineups/:teamId       features/lineups/LineupsPage
-//   /regattas/:id/availability          redirects to lineups (availability lives on the team page)
-//   /regattas/:id/trailer[/:trailerId]  features/trailer/TrailerPage
-//   /regattas/:id/load                  features/load-list/LoadListPage
-//   /fleet/:tab (shells|oars|gear)      features/fleet/FleetPage
-//   /trailers, /trailers/:id            features/trailers-admin/TrailersListPage, TrailerEditPage
-//   /teams, /teams/:id[/availability]   features/teams/TeamsListPage, TeamPage
-//   /settings                           features/settings/SettingsPage
-//   /print/regattas/:id/lineups/:teamId features/print/PrintLineupsPage (no shell)
-//   /print/regattas/:id/schedule        features/print/PrintSchedulePage (no shell)
-//   /print/regattas/:id/load/:trailerId features/print/PrintLoadPage (no shell)
-//   /sign-in                            app/auth/SignInPage
-//   /share/:token[/load]                features/share/SharePage (public: no sign-in, no shell)
-//   /dev/components                     app/dev/ComponentGallery (dev and demo only)
+// Every route in the app. Pages load lazily from their feature folders; each page file
+// default-exports its component.
 
 import type { ComponentType } from 'react';
 import {

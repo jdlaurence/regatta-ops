@@ -1,14 +1,6 @@
-// CSV import with a column-mapping step (PLAN.md §4.2, §4.7): paste or upload, match the
-// file's columns to fields (guessed from the headers), preview every row with its problems,
-// then create the good rows. The feature supplies the fields, the row check, and the write.
-//
-//   <CsvImportDialog
-//     open={open} onOpenChange={setOpen}
-//     title="Import shells" noun={['shell', 'shells']}
-//     fields={SHELL_CSV_FIELDS} previewFields={['name', 'boatClass']}
-//     check={(rows) => rows.map(checkShellRow)}
-//     onImport={(records) => createAll(records)}
-//   />
+// CSV import with a column-mapping step: paste or upload, match the file's columns to fields
+// (guessed from the headers), preview every row with its problems, then create the good rows.
+// The feature supplies the fields, the row check, and the write.
 
 import { useId, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { CircleAlert, CircleCheck, TriangleAlert, Upload } from 'lucide-react';
