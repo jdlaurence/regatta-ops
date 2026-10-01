@@ -382,7 +382,7 @@ Phone (< 768 px): bottom tab bar within a regatta (Schedule, Lineups, Trailer, L
 
 **Timeline bar**: a rounded bar with a darker race segment; conflicts hatched.
 
-**Trailer end view** (`<TrailerEndView>`): SVG. Draws the trailer's real cross-section for its style (offset post at one third for SRA, center post, or goalpost), rack arms per shelf, the bed compartment below, and boat chips as pills with the shell nickname, class badge, and team color. The frame is SVG; chips and drop lanes are HTML laid over it. Widths are to scale and rack spacing is fixed; chips are drawn 1.15 to 1.3 times the hull's beam so names fit. On an outer-first shelf the inner lane is drawn beside the outer one, with "Loads 1st" and "Loads 2nd" per column. Below 480 px, tiers show only their number. Overhang is shown on the plan view only.
+**Trailer end view** (`<TrailerEndView>`): draws the trailer's real cross-section for its style (offset post at one third for SRA, center post, or goalpost), rack arms per shelf, the bed compartment below, and boat chips as pills with the shell nickname, class badge, and team color. The frame is SVG; chips and drop lanes are HTML laid over it. Widths are to scale and rack spacing is fixed; chips are drawn 1.15 to 1.3 times the hull's beam so names fit. On an outer-first shelf the inner lane is drawn beside the outer one, with "Loads 1st" and "Loads 2nd" per column. Below 480 px, tiers show only their number. Overhang is shown on the plan view only.
 
 **Rule card**: a sentence ("Top rack holds only eights and fours"), a Must/Prefer tag, a toggle, and an edit affordance. Regatta overrides carry a small "This regatta" tag.
 
