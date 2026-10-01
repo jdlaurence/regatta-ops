@@ -152,6 +152,7 @@ test.describe('phone', () => {
       'regatta overview',
       'schedule, list',
       'lineups, by event',
+      'lineups, planning regatta',
       'availability',
       'fleet, shells',
       'team page',

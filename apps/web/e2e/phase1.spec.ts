@@ -160,21 +160,11 @@ test.describe('desktop', () => {
     await test.step('marking a seated athlete unavailable makes it an error', async () => {
       const name = crew.keyboard[2]!;
       const card = entryCard(eventSection(page, "Men's Youth 8+"), boysLabel);
+      const roster = page.getByRole('complementary', { name: 'Roster' });
       await expect(card.getByRole('button', { name: /error/ })).toHaveCount(0);
 
-      await page
-        .getByRole('navigation', { name: 'Regatta sections' })
-        .getByRole('link', { name: 'Availability' })
-        .click();
-      await expect(pageHeading(page, 'Availability')).toBeVisible();
-      const toggle = page.getByRole('radiogroup', { name: `Availability for ${name}` });
-      await toggle.getByRole('radio', { name: 'Unavailable' }).click();
-      await expect(toggle.getByRole('radio', { name: 'Unavailable' })).toBeChecked();
-      await page.getByRole('textbox', { name: `Reason for ${name}` }).fill('Family trip');
-      await page.getByRole('textbox', { name: `Reason for ${name}` }).press('Enter');
-
-      await page.goto(lineupsUrl(TOTL, BOYS));
-      await expect(pageHeading(page, 'Junior boys lineups')).toBeVisible();
+      // The roster's one-click toggle, for the whole regatta.
+      await roster.getByRole('button', { name: `Mark ${name} unavailable` }).click();
       await expect(seat(card, '6')).toHaveAccessibleName(
         new RegExp(`^Seat 6, ${name}.*, has an error$`),
       );
@@ -185,22 +175,10 @@ test.describe('desktop', () => {
       await page.keyboard.press('Escape');
       // Unavailable athletes leave the roster count and sit in their own group.
       await expectBoated(page, 4, crew.total - 1);
-      await expect(
-        page
-          .getByRole('complementary', { name: 'Roster' })
-          .getByRole('button', { name: /^Unavailable/ }),
-      ).toBeVisible();
+      await expect(roster.getByRole('button', { name: /^Unavailable/ })).toBeVisible();
 
       // Back to available: the error goes.
-      await page
-        .getByRole('navigation', { name: 'Regatta sections' })
-        .getByRole('link', { name: 'Availability' })
-        .click();
-      await page
-        .getByRole('radiogroup', { name: `Availability for ${name}` })
-        .getByRole('radio', { name: 'Available', exact: true })
-        .click();
-      await page.goto(lineupsUrl(TOTL, BOYS));
+      await roster.getByRole('button', { name: `Mark ${name} available` }).click();
       await expect(seat(card, '6')).not.toHaveAccessibleName(/has an error/);
       await expect(card.getByRole('button', { name: /error/ })).toHaveCount(0);
       await expectBoated(page, 5, crew.total);
