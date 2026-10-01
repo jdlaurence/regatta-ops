@@ -59,8 +59,6 @@ export interface PageCase {
   prepare?: (page: Page) => Promise<void>;
   /** The page shows loading skeletons on purpose (the component gallery). */
   skeletons?: boolean;
-  /** Pages still being built elsewhere: listed so they are not forgotten. */
-  fixme?: string;
 }
 
 export const PAGES: PageCase[] = [

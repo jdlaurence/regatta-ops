@@ -46,7 +46,6 @@ for (const width of [390, 820]) {
     test.use({ viewport: { width, height: 844 } });
     for (const c of PAGES) {
       test(c.name, async ({ page }) => {
-        test.fixme(!!c.fixme, c.fixme);
         await openPage(page, c);
         expect(await sidewaysScroll(page, width)).toBeNull();
       });
@@ -119,7 +118,6 @@ test.describe('390 px touch targets', () => {
 
   const phonePages = PAGES.filter(
     (c) =>
-      !c.fixme &&
       !c.name.startsWith('print') &&
       !['component gallery', 'trailers admin, edit', 'fleet, shell drawer'].includes(c.name),
   );

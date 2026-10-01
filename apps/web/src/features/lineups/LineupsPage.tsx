@@ -18,6 +18,7 @@ import { BoatStripSkeleton } from '@/components/BoatStrip';
 import { TeamDot } from '@/components/chips';
 import { Inspector, useInspector, useInspectorStore } from '@/components/Inspector';
 import { PageHeader } from '@/components/PageHeader';
+import { PublishStatus } from '@/components/PublishStatus';
 import { ShareLinksDialog } from '@/components/ShareLinksDialog';
 import { EmptyState, ErrorState, Skeleton } from '@/components/states';
 import { Button } from '@/components/ui/button';
@@ -41,7 +42,6 @@ import { EntryDetails } from './EntryDetails';
 import { LineupDnd } from './LineupDnd';
 import { CARD_MIN, ROSTER_COLUMN, useMediaQuery, useWidth, WIDE_MIN } from './layout';
 import { buildIndex } from './lib';
-import { PublishSlot } from './PublishSlot';
 import { RosterColumn, RosterDrawer } from './RosterPanel';
 import { SEAT_HELP_ID } from './Seats';
 import { SeatSheet } from './SeatSheet';
@@ -260,7 +260,7 @@ function Builder({ regattaId }: { regattaId: string }) {
         title={<TeamTitle team={team} teams={racing} regattaId={regattaId} />}
         actions={
           <>
-            <PublishSlot regattaId={regattaId} teamId={team.id} />
+            <PublishStatus regattaId={regattaId} teamId={team.id} />
             {canEdit && (
               <Button size="sm" onClick={() => setShareOpen(true)}>
                 <Share2 aria-hidden />

@@ -52,7 +52,6 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
     for (const c of PAGES) {
       test(c.name, async ({ page }) => {
-        test.fixme(!!c.fixme, c.fixme);
         await openPage(page, c);
         expect(await shownTheme(page)).toBe(colorScheme);
         await expectNoViolations(page);
