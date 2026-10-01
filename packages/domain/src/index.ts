@@ -12,4 +12,5 @@ export * from './trailer';
 export * from './load-list';
 export * from './schedule-paste';
 export * from './publish';
+export * from './run-of-show';
 export * from './schemas';

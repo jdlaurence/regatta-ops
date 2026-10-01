@@ -40,7 +40,7 @@ export function PrintFrame({
   controls?: ReactNode;
   /** A short on-screen note next to the options ("1 change since publishing"). */
   status?: ReactNode;
-  /** Buttons beside Print ("Export entries"). */
+  /** Buttons beside Print ("Export to Excel"). */
   actions?: ReactNode;
   state?: PrintFrameState;
   children?: ReactNode;

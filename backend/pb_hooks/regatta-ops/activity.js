@@ -161,6 +161,15 @@ function changedKeys(before, after, collection) {
   return Object.keys(diff);
 }
 
+const RUN_OF_SHOW_FIELDS = [
+  'bow_number',
+  'clams',
+  'oar_carriers',
+  'warm_up_before_race_min',
+  'boat_meeting_before_race_min',
+  'launch_before_race_min',
+];
+
 function editedClause(noun, fields) {
   return 'edited ' + noun + ' (' + fields.map(words).join(', ') + ')';
 }
@@ -238,6 +247,11 @@ function entries(find, action, before, after) {
   if (has('hot_seat_plan') && handled.indexOf('hot_seat_plan') === -1) {
     clauses.push('edited the hot seat plan for ' + name);
     handled.push('hot_seat_plan');
+  }
+  const runOfShow = RUN_OF_SHOW_FIELDS.filter(has);
+  if (runOfShow.length) {
+    clauses.push('edited the run of show for ' + name);
+    Array.prototype.push.apply(handled, runOfShow);
   }
   const rest = changed.filter((k) => handled.indexOf(k) === -1);
   if (rest.length) clauses.push(editedClause('entry ' + name, rest));

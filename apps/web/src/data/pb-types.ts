@@ -250,6 +250,9 @@ export const EntriesStatusOptions = {
 export type EntriesStatusOptions = typeof EntriesStatusOptions[keyof typeof EntriesStatusOptions]
 export type EntriesRecord<Tseat_sides = unknown> = {
 	boat_class: EntriesBoatClassOptions
+	boat_meeting_before_race_min?: number
+	bow_number?: string
+	clams?: string
 	coach?: RecordIdString
 	created: IsoAutoDateString
 	created_by?: RecordIdString
@@ -259,7 +262,9 @@ export type EntriesRecord<Tseat_sides = unknown> = {
 	hot_seat_plan?: string
 	id: string
 	label?: string
+	launch_before_race_min?: number
 	notes?: string
+	oar_carriers?: string
 	oar_set?: RecordIdString
 	regatta: RecordIdString
 	seat_sides?: null | Tseat_sides
@@ -268,6 +273,7 @@ export type EntriesRecord<Tseat_sides = unknown> = {
 	team: RecordIdString
 	updated: IsoAutoDateString
 	updated_by?: RecordIdString
+	warm_up_before_race_min?: number
 }
 
 export const EntrySeatsSeatOptions = {

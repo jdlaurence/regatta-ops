@@ -13,15 +13,17 @@ import {
   loadSheet,
   masterScheduleRows,
   regattaDays,
+  runOfShowRows,
   scheduleDays,
   teamLineups,
   unboatedFor,
+  withLiveTimes,
   type GridContext,
   type ListScheduleRow,
   type ScheduleRow,
 } from './derive';
 import { NO_FILTERS } from '@/features/schedule/lib';
-import { oarText, paperSeatOrder, shortName } from './format';
+import { coxText, oarText, paperSeatOrder, rigText, shortName } from './format';
 import { loadWorkingSet, seedStore } from './test-helpers';
 
 const NW = SEED_REGATTA_IDS.nwYouth2025;
@@ -255,6 +257,59 @@ describe('day and master schedules', () => {
     expect(rows.map((r) => r.source)).toContain('published');
     const times = rows.map((r) => r.entry.scheduledAt!);
     expect([...times].sort()).toEqual(times);
+  });
+});
+
+describe('run of show', () => {
+  const at = (hhmm: string) => zonedToInstant('2026-11-01', hhmm, 'America/Los_Angeles');
+
+  it('lists each crew with its rig and the times suggested back from the race', async () => {
+    const ws = await loadWorkingSet(fixtureStore(), IDS.regatta);
+    const [row, ...rest] = runOfShowRows(ws, lineupsFor(ws, IDS.boys, 'live'), '2026-11-01');
+    expect(rest).toHaveLength(0);
+    expect(row).toMatchObject({ rig: 'port', sculling: false });
+    expect(rigText(row!.rig, row!.sculling)).toBe('Port stroke');
+    expect(coxText(row!.entry)).toBe('empty');
+    // The regatta's 45 minute launch lead, then the club's boat meeting and warm-up leads.
+    expect(row!.times).toEqual({
+      launch: { at: at('08:55'), typed: false },
+      boatMeeting: { at: at('08:40'), typed: false },
+      warmUp: { at: at('08:10'), typed: false },
+    });
+  });
+
+  it('reads race times and typed values live, so a late race moves its crew', async () => {
+    const store = fixtureStore();
+    await store.update('entries', IDS.entry1, { launchBeforeRaceMin: 60, bowNumber: '7' });
+    await store.update('events', IDS.event1, { scheduledAt: at('10:00') });
+    await store.update('regatta_teams', 'rtboys000000001', {
+      publishedAt: at('06:00'),
+      publishedSnapshot: {
+        publishedAt: at('06:00'),
+        entries: [
+          {
+            entryId: IDS.entry1,
+            label: 'V4+',
+            boatClass: '4+',
+            status: 'planned',
+            eventId: IDS.event1,
+            day: '2026-11-01',
+            scheduledAt: at('09:40'),
+            shellId: IDS.shell,
+            oarSetId: IDS.oars,
+            seats: [],
+          },
+        ],
+      },
+    });
+    const ws = await loadWorkingSet(store, IDS.regatta);
+    const published = lineupsFor(ws, IDS.boys, 'published');
+    expect(published[0]!.entries[0]!.scheduledAt).toBe(at('09:40'));
+    const [row] = runOfShowRows(ws, withLiveTimes(ws, published), '2026-11-01');
+    expect(row!.entry.scheduledAt).toBe(at('10:00'));
+    expect(row!.live?.bowNumber).toBe('7');
+    expect(row!.times!.launch).toEqual({ at: at('09:00'), typed: true });
+    expect(row!.times!.boatMeeting.at).toBe(at('08:45'));
   });
 });
 

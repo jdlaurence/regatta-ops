@@ -1,7 +1,7 @@
 // Smoke tests for the print routes on the seed world (MemoryStore), through the real router.
 
 import { describe, expect, it } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
 import { zonedToInstant } from '@regatta-ops/domain';
@@ -56,6 +56,9 @@ describe('print routes', () => {
     ).toBe('/print/regattas/r/schedule?view=list&day=d&class=8%2B&shell=s&entries=hide');
     expect(printSchedulePath('r', { view: 'list', entries: true })).toBe(
       '/print/regattas/r/schedule?view=list',
+    );
+    expect(printSchedulePath('r', { view: 'run', team: 't', version: 'coaches' })).toBe(
+      '/print/regattas/r/schedule?view=run&team=t&for=coaches',
     );
     expect(printLoadPath('r', 'x')).toBe('/print/regattas/r/load/x');
   });
@@ -219,6 +222,95 @@ describe('print routes', () => {
     expect(body[0]).toHaveTextContent(/^8:00 AMBoysV8Peggy24-C · yellow-white/);
     expect(body[1]).toHaveTextContent(/^8:08 AMGirlsV8/);
     expect(within(sheet).getByText('Published lineups:')).toBeInTheDocument();
+  });
+
+  it('prints the run of show and saves what coaches type into it', async () => {
+    const user = userEvent.setup();
+    const store = fixtureStore();
+    renderAt(printSchedulePath(IDS.regatta, { view: 'run', team: IDS.boys }), store);
+    const sheet = await screen.findByRole(
+      'region',
+      { name: 'Junior boys run of show, Sun, Nov 1' },
+      SLOW,
+    );
+    expect(
+      within(sheet)
+        .getAllByRole('columnheader')
+        .map((h) => h.textContent),
+    ).toEqual([
+      'Event #',
+      'Cox',
+      'Event',
+      'Crew',
+      'Bow #',
+      'Shell',
+      'Rig',
+      'Oars',
+      'Clams',
+      'Oar carriers',
+      'Warm-up',
+      'Boat meeting',
+      'Launch',
+      'Race',
+    ]);
+    const row = () => sheet.querySelector('tr[data-row="crew"]')!;
+    expect(row()).toHaveTextContent(
+      /^12emptyMen's Junior 4\+V4\+–SpencerPort stroke24-C · yellow-white––8:10 AM8:40 AM8:55 AM9:40 AM$/,
+    );
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute(
+      'href',
+      `/regattas/${IDS.regatta}/lineups/${IDS.boys}`,
+    );
+
+    await user.click(
+      within(sheet).getByRole('button', {
+        name: "blank, change bow number of Men's Junior 4+ V4+",
+      }),
+    );
+    await user.keyboard('212{Enter}');
+    await waitFor(async () =>
+      expect((await store.get('entries', IDS.entry1))?.bowNumber).toBe('212'),
+    );
+
+    await user.click(
+      within(sheet).getByRole('button', {
+        name: "8:55 AM, suggested, change launch time of Men's Junior 4+ V4+",
+      }),
+    );
+    const launch = within(sheet).getByLabelText("Launch time of Men's Junior 4+ V4+");
+    fireEvent.change(launch, { target: { value: '08:30' } });
+    fireEvent.keyDown(launch, { key: 'Enter' });
+    await waitFor(async () =>
+      expect((await store.get('entries', IDS.entry1))?.launchBeforeRaceMin).toBe(70),
+    );
+    // The typed launch moves the suggested boat meeting and warm-up with it.
+    await waitFor(() => expect(row()).toHaveTextContent(/7:45 AM8:15 AM8:30 AM9:40 AM$/));
+    expect(
+      within(sheet).getByRole('button', { name: /^8:30 AM, change launch time/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('prints the coaches run of show, read only for a viewer', async () => {
+    const store = fixtureStore({ signedIn: IDS.viewer });
+    await store.update('entries', IDS.entry1, { bowNumber: '212', clams: '1' });
+    renderAt(
+      printSchedulePath(IDS.regatta, { view: 'run', team: IDS.boys, version: 'coaches' }),
+      store,
+    );
+    const sheet = await screen.findByRole(
+      'region',
+      { name: 'Junior boys run of show, Sun, Nov 1' },
+      SLOW,
+    );
+    expect(
+      within(sheet)
+        .getAllByRole('columnheader')
+        .map((h) => h.textContent),
+    ).toEqual(['Crew', 'Boat meeting', 'Launch', 'Race', 'Shell', 'Oars', 'Bow #']);
+    expect(sheet.querySelector('tr[data-row="crew"]')).toHaveTextContent(
+      /^Men's Junior 4\+ V4\+8:40 AM8:55 AM9:40 AMSpencer24-C · yellow-whiteClams: 1212$/,
+    );
+    expect(within(sheet).queryByRole('button')).toBeNull();
   });
 
   it('prints the load sheet shelf by shelf with the checklist', async () => {

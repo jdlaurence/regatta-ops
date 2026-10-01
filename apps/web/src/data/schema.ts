@@ -141,6 +141,7 @@ export const NULLABLE_SELECTS: Partial<Record<CollectionName, string[]>> = {
  */
 export const NULLABLE_NUMBERS: Partial<Record<CollectionName, string[]>> = {
   athletes: ['birthYear', 'gradYear'],
+  entries: ['warmUpBeforeRaceMin', 'boatMeetingBeforeRaceMin', 'launchBeforeRaceMin'],
   shells: [
     'year',
     'lengthCm',

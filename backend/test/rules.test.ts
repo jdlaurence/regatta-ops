@@ -421,6 +421,17 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
       );
     });
 
+    it('logs run of show edits as one clause', async () => {
+      const entry = await coach.collection('entries').update(IDS.entry, {
+        bow_number: '12',
+        launch_before_race_min: 50,
+      });
+      expect(entry.launch_before_race_min).toBe(50);
+      expect((await latestActivity(IDS.entry))?.summary).toBe(
+        'edited the run of show for Boys V4+',
+      );
+    });
+
     it('follows the event when the event’s boat class is edited', async () => {
       await coach.collection('events').update(IDS.eventQuad, { boat_class: '4x+' });
       expect((await coach.collection('entries').getOne(IDS.entry)).boat_class).toBe('4x+');

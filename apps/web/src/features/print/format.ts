@@ -3,6 +3,7 @@
 
 import {
   clockAt,
+  isCoxed,
   instantToZoned,
   oarSetLabel,
   seatsFor,
@@ -11,6 +12,7 @@ import {
   type OarSet,
   type PublishedEntry,
   type Seat,
+  type Side,
 } from '@regatta-ops/domain';
 import { formatDay, formatWeekday } from '@/lib/dates';
 
@@ -98,4 +100,19 @@ export function shortName(full: string): string {
   const parts = full.trim().split(/\s+/);
   if (parts.length < 2) return full.trim();
   return `${parts.slice(0, -1).join(' ')} ${parts[parts.length - 1]![0]}.`;
+}
+
+/** The cox's name, "empty" for an open cox seat, or '' for a coxless boat. */
+export function coxText(entry: Pick<PublishedEntry, 'boatClass' | 'seats'>): string {
+  if (!isCoxed(entry.boatClass)) return '';
+  const cox = entry.seats.find((s) => s.seat === 'cox' && s.athleteId);
+  return cox ? (cox.athleteName ?? 'Unknown athlete') : 'empty';
+}
+
+/** "Port stroke", "Starboard stroke", "Sculling", or '' when there is no shell yet. */
+export function rigText(rig: Side | null, sculling: boolean): string {
+  if (sculling) return 'Sculling';
+  if (rig === 'port') return 'Port stroke';
+  if (rig === 'starboard') return 'Starboard stroke';
+  return '';
 }

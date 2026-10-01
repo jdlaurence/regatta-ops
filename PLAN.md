@@ -116,6 +116,8 @@ Rowing terms as used in this document and the UI. The UI uses these exact words.
 | **Overhang** | How far a boat sticks out past the trailer frame at the front (over the tow vehicle) or the rear. |
 | **Load plan** | The set of placements of shells on trailer shelves for a regatta, plus the checklist of oars and gear. |
 | **Loading rule** | A constraint or preference the auto-layout follows, editable by coaches in plain language. |
+| **Run of show** | A team's race-day sheet: one row per crew with event, cox, bow number, shell, rig, oars, clams, oar carriers, and the warm-up, boat meeting, launch, and race times. Athletes get the long version, coaches a short one. |
+| **Bow number** | The number a regatta assigns a crew for its bow marker. |
 | **Nickname** | The short name coaches actually use for a shell: "Peggy" for Peggy's Delight, "LLL" for Live.Laugh.Love. Shown everywhere the full name would not fit. |
 | **Re-rig** | Converting a shell between sweep and sculling (or 4+ and 4-). Takes time and a rigger set, so it matters for turnaround. |
 | **Publish** | Freezing a team's lineups for a regatta into the version athletes and parents see. Coaches keep editing the draft; the published copy changes only when they publish again. |
@@ -131,6 +133,8 @@ Rowing terms as used in this document and the UI. The UI uses these exact words.
 - Any coach or admin creates a regatta: name, venue, city, start date, end date (multi-day allowed), timezone (default America/Los_Angeles), notes.
 - Regatta settings, with club-wide defaults editable by admins and per-regatta overrides:
   - `launchLeadMin` (default 40): minutes before race time a crew needs its shell.
+  - `boatMeetingLeadMin` (default 15): minutes before launch the crew meets at its shell; suggests run of show times.
+  - `warmUpLeadMin` (default 30): minutes before the boat meeting the crew starts warming up; suggests run of show times.
   - `raceDurationMin` (default 10 for sprints, 20 for head races; the regatta picks a format).
   - `returnMin` (default 15): minutes from finish until the shell is back on the dock or in slings.
   - `hotSeatMinGapMin` (default 15): the smallest dock-to-race-start gap that a hot seat can survive.
@@ -259,9 +263,10 @@ Admins define trailers in the Trailers admin page with a live diagram that updat
 - **Day schedule**, also as published today: per day, one row per race with time, stage, cox, shell, oars, and the lineup as a name list, with logistics items (bus departures, lunch, awards) in order between them.
 - **Master schedule** for the regatta: all teams, time order, with shells and oars. Coaches tape this to the trailer.
 - **Schedule list**: the schedule page's list as it stands (its day, filters, and "Show entries" switch), with live lineups. The schedule's "Print" button opens it, for everyone; scratched crews are marked, and conflict badges and entries without an event stay off paper.
+- **Run of show** per team per day (`view=run` of the schedule print, opened from the Lineups page header): one row per crew in race order. The athletes' version (landscape) has event number, cox, event, crew, bow number, shell, rig (the stroke seat's side: "Port stroke", "Starboard stroke", or "Sculling"), oars, clams, oar carriers, warm-up, boat meeting, launch, and race; the coaches' version (portrait) has crew, boat meeting, launch, race, shell, oars with clams, and bow number. Shell, oars, and cox follow the published or live choice; race times come from the live schedule, and the race-day values from the live entry (they are not part of publishing). Coaches type bow number, clams, oar carriers, and the three times into the sheet itself (click a cell; saved to the entry, logged, and asked first on a final regatta). An untyped time is suggested back from the race: launch is the launch lead before it, the boat meeting the boat meeting lead before launch, the warm-up the warm-up lead before the meeting; on screen suggestions are grey, on paper they print as is. A typed time is stored as minutes before the race, so it moves when the race does; clearing it goes back to the suggestion; a time at or after the race is refused.
 - **Load sheet** per trailer: shelf-by-shelf list with the end-view diagram, the bed zones and what rides in each, and the checklist: rows assigned to that trailer, shells placed on it, and spares on it, with rows that have no container flagged.
 - **Share links:** a public page (`/share/:token`) for athletes and parents showing races with a published crew plus logistics lines; it refreshes every minute and keeps a copy on the device for offline reloads. Links with check permission add the phone checklist (`/share/:token/load`).
-- **CSV export** of entries, roster, fleet.
+- **Export to Excel** on the lineup and schedule prints: an `.xlsx` of the view on screen (the same layout, team, days, filters, version, and source), one tab per printed page, a title line, bold headers, and race times as Excel times. Roster and fleet export CSV.
 
 ### 4.12 Admin and settings
 
@@ -503,7 +508,7 @@ Club defaults, users and roles, preferences, activity log. The open tab is kept 
 Server-free print routes with print CSS:
 
 - `/print/regattas/:id/lineups/:teamId|all?day=&source=live&layout=grid&boats=names`
-- `/print/regattas/:id/schedule?view=master|list&day=&team=&source=live`; the list view also takes `class=`, `shell=`, and `entries=hide`, and its toolbar offers the team, the day, and "Show entries". "Back" returns to the schedule with the same day and filters.
+- `/print/regattas/:id/schedule?view=master|list|run&day=&team=&source=live`; the list view also takes `class=`, `shell=`, and `entries=hide`, and its toolbar offers the team, the day, and "Show entries". The run of show takes `for=coaches` for the short version. "Back" returns to the schedule with the same day and filters, or, from one team's run of show, to that team's lineups.
 - `/print/regattas/:id/load/:trailerId`
 
 ---
@@ -589,7 +594,7 @@ Field names are the snake_case forms of the domain names in `packages/domain/src
 
 **events** — `regatta` relation, `kind` select(`race`,`logistics`), `event_number`, `name`, `boat_class` select(`1x`,`2x`,`2-`,`2+`,`4x`,`4x+`,`4+`,`4-`,`8+`), `category`, `day` day, `scheduled_at` date (nullable), `stage` select(`heat`,`semi`,`final`,`time_trial`,`race`), `progression_group`, `team_filter` relation(teams, multi; logistics only), `notes`, `sort_order` number, `source`. Index `(regatta, day, scheduled_at)`.
 
-**entries** — `regatta` relation, `event` relation (nullable), `team` relation, `label`, `boat_class` select, `shell` relation (nullable), `oar_set` relation (nullable), `status` select(`draft`,`planned`,`confirmed`,`scratched`), `coach` relation(users, nullable), `notes`, `hot_seat_plan`, `hot_seat_ack_by` relation (nullable), `hot_seat_fingerprint`, `seat_sides` json (nullable), `created_by`, `updated_by`. `boat_class` is copied from the event on create and kept in sync by a hook when the entry moves events or the event's class is edited. `hot_seat_fingerprint` may hold several fingerprints, space-separated (§9.2). `seat_sides` holds bucket rigs, since shells have no rig-pattern field (§15). Indexes `(regatta, team)`, `(regatta, shell)`, `(regatta, oar_set)`.
+**entries** — `regatta` relation, `event` relation (nullable), `team` relation, `label`, `boat_class` select, `shell` relation (nullable), `oar_set` relation (nullable), `status` select(`draft`,`planned`,`confirmed`,`scratched`), `coach` relation(users, nullable), `notes`, `hot_seat_plan`, `hot_seat_ack_by` relation (nullable), `hot_seat_fingerprint`, `seat_sides` json (nullable), `bow_number`, `clams`, `oar_carriers` (run of show text), `warm_up_before_race_min`, `boat_meeting_before_race_min`, `launch_before_race_min` (run of show times typed for the crew, whole minutes before its race; 0 means not typed, so the time is suggested from the timing settings), `created_by`, `updated_by`. `boat_class` is copied from the event on create and kept in sync by a hook when the entry moves events or the event's class is edited. `hot_seat_fingerprint` may hold several fingerprints, space-separated (§9.2). `seat_sides` holds bucket rigs, since shells have no rig-pattern field (§15). Indexes `(regatta, team)`, `(regatta, shell)`, `(regatta, oar_set)`.
 
 **entry_seats** — `entry` relation, `seat` select(`1`..`8`,`cox`), `athlete` relation (nullable), `note`. Unique `(entry, seat)`; unique `(entry, athlete)` where athlete is set (SQLite partial index in the migration). An empty seat needs no record: a missing record and a null athlete both mean empty.
 

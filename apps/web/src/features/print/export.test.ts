@@ -2,135 +2,224 @@ import { createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { parseCsvObjects } from '@regatta-ops/domain';
+import ExcelJS from 'exceljs';
 import { SEED_REGATTA_IDS, SEED_TEAM_IDS } from '@regatta-ops/seed';
+import { NO_FILTERS } from '@/features/schedule/lib';
 import { fixtureStore, IDS } from '@/test/fixtures';
-import { dataWrapper } from '@/test/render';
-import { ExportEntriesButton } from './ExportEntriesButton';
-import { ENTRY_CSV_HEADER, downloadText, entriesCsv, entriesCsvFileName } from './export';
+import {
+  dayScheduleRows,
+  lineupGrids,
+  lineupSheetPages,
+  lineupsFor,
+  listScheduleRows,
+  masterScheduleRows,
+  runOfShowRows,
+} from './derive';
+import { ExportButton } from './ExportButton';
+import {
+  dayScheduleExport,
+  exportFileName,
+  lineupGridExport,
+  lineupSheetExport,
+  masterScheduleExport,
+  runOfShowExport,
+  scheduleListExport,
+  type ExportSheet,
+} from './export';
+import { oarText } from './format';
 import { loadWorkingSet, seedStore } from './test-helpers';
+import { buildWorkbook, tabName } from './xlsx';
 
-describe('entries CSV', () => {
-  it('writes one row per entry with seats by name', async () => {
-    const ws = await loadWorkingSet(fixtureStore(), IDS.regatta);
-    const csv = entriesCsv(ws);
-    const [header] = csv.split('\n');
-    expect(header).toBe(ENTRY_CSV_HEADER.join(','));
-    expect(ENTRY_CSV_HEADER).toEqual([
-      'Team',
-      'Event number',
-      'Event',
-      'Day',
-      'Time',
-      'Label',
-      'Class',
+const DAY = '2026-11-01';
+
+async function fixture() {
+  const store = fixtureStore();
+  await store.update('entries', IDS.entry1, { bowNumber: '212', clams: '1' });
+  const ws = await loadWorkingSet(store, IDS.regatta);
+  const boys = ws.byId.teams.get(IDS.boys)!;
+  return { ws, boys, lineups: lineupsFor(ws, IDS.boys, 'live') };
+}
+
+describe('export to Excel', () => {
+  it('exports the run of show as printed, in either version', async () => {
+    const { ws, boys, lineups } = await fixture();
+    const rows = runOfShowRows(ws, lineups, DAY);
+    const athletes = runOfShowExport(ws, DAY, rows, { team: boys, version: 'athletes' });
+    expect(athletes).toMatchObject({
+      name: 'Sun, Nov 1',
+      title: 'Junior boys run of show · Head of the Lake · Sun, Nov 1',
+    });
+    expect(athletes.tables[0]!.rows).toEqual([
+      [
+        '12',
+        'empty',
+        "Men's Junior 4+",
+        'V4+',
+        '212',
+        'Spencer',
+        'Port stroke',
+        '24-C · yellow-white',
+        '1',
+        '',
+        { time: '08:10' },
+        { time: '08:40' },
+        { time: '08:55' },
+        { time: '09:40' },
+      ],
+    ]);
+    const coaches = runOfShowExport(ws, DAY, rows, { team: boys, version: 'coaches' });
+    expect(coaches.tables[0]!.columns).toEqual([
+      'Crew',
+      'Boat meeting',
+      'Launch',
+      'Race',
       'Shell',
       'Oars',
-      'Seat 1',
-      'Seat 2',
-      'Seat 3',
-      'Seat 4',
-      'Seat 5',
-      'Seat 6',
-      'Seat 7',
-      'Seat 8',
-      'Cox',
-      'Status',
-    ]);
-    expect(parseCsvObjects(csv)).toEqual([
-      {
-        Team: 'Junior boys',
-        'Event number': '12',
-        Event: "Men's Junior 4+",
-        Day: '2026-11-01',
-        Time: '09:40',
-        Label: 'V4+',
-        Class: '4+',
-        Shell: 'Spencer',
-        Oars: '24-C · yellow-white',
-        'Seat 1': 'Rowan Test',
-        'Seat 2': 'Jules Fixture',
-        'Seat 3': '',
-        'Seat 4': '',
-        'Seat 5': '',
-        'Seat 6': '',
-        'Seat 7': '',
-        'Seat 8': '',
-        Cox: '',
-        Status: 'Planned',
-      },
+      'Clams',
+      'Bow #',
     ]);
   });
 
-  it('keeps scratched and unscheduled entries, in schedule order, and filters by team', async () => {
-    const store = fixtureStore();
-    await store.create('entries', {
-      regattaId: IDS.regatta,
-      teamId: IDS.girls,
-      label: 'W8',
-      boatClass: '8+',
-      eventId: IDS.event2,
-      status: 'scratched',
+  it('exports the schedules with the rows their sheets show', async () => {
+    const { ws, boys, lineups } = await fixture();
+    const list = scheduleListExport(ws, DAY, listScheduleRows(ws, lineups, DAY, NO_FILTERS), {
+      showEntries: true,
+      team: null,
+      filterText: null,
     });
-    await store.create('entries', {
-      regattaId: IDS.regatta,
-      teamId: IDS.boys,
-      label: 'Spare 1x',
-      boatClass: '1x',
-      status: 'draft',
-    });
-    const ws = await loadWorkingSet(store, IDS.regatta);
-    const rows = parseCsvObjects(entriesCsv(ws));
-    expect(rows.map((r) => [r.Team, r.Label, r.Time, r.Status])).toEqual([
-      ['Junior boys', 'V4+', '09:40', 'Planned'],
-      ['Junior girls', 'W8', '10:20', 'Scratched'],
-      ['Junior boys', 'Spare 1x', '', 'Draft'],
+    expect(list.tables[0]!.rows.slice(0, 2)).toEqual([
+      [{ time: '09:40' }, "Event 12 · Men's Junior 4+ · 4+"],
+      [
+        '',
+        '',
+        'Boys V4+',
+        'Spencer',
+        '24-C · yellow-white',
+        expect.stringMatching(/^Cox empty, 4 /),
+      ],
     ]);
-    const girls = parseCsvObjects(entriesCsv(ws, { teamId: IDS.girls }));
-    expect(girls.map((r) => r.Label)).toEqual(['W8']);
-    expect(entriesCsvFileName(ws)).toBe('head-of-the-lake-entries.csv');
-    expect(entriesCsvFileName(ws, IDS.girls)).toBe('head-of-the-lake-junior-girls-entries.csv');
+
+    const day = dayScheduleExport(ws, DAY, dayScheduleRows(ws, lineups, DAY, IDS.boys), boys);
+    expect(day.tables[0]!.columns).not.toContain('Team');
+    expect(day.tables[0]!.rows[0]!.slice(0, 5)).toEqual([
+      { time: '09:40' },
+      'Race',
+      "Event 12 Men's Junior 4+",
+      'V4+',
+      'empty',
+    ]);
+
+    const master = masterScheduleExport(ws, DAY, masterScheduleRows(ws, lineups, DAY));
+    expect(master.title).toBe('Master schedule · Head of the Lake · Sun, Nov 1');
+    expect(master.tables[0]!.rows[0]!.slice(0, 3)).toEqual([{ time: '09:40' }, 'Boys', 'V4+']);
   });
 
-  it('exports the seed regatta with every team and quotes names with commas', async () => {
+  it('exports the lineup sheet with a column per seat, and the grid as printed', async () => {
     const ws = await loadWorkingSet(seedStore(), SEED_REGATTA_IDS.nwYouth2025);
-    const rows = parseCsvObjects(entriesCsv(ws));
-    expect(rows).toHaveLength(ws.entries.length);
-    expect(new Set(rows.map((r) => r.Team))).toEqual(new Set(['Junior boys', 'Junior girls']));
-    const boys = parseCsvObjects(entriesCsv(ws, { teamId: SEED_TEAM_IDS.boys }));
-    expect(boys[0]).toMatchObject({
-      Label: 'V8',
-      Day: '2025-05-16',
-      Time: '08:00',
-      Shell: 'Peggy',
+    const lineups = lineupsFor(ws, SEED_TEAM_IDS.boys, 'published');
+    const [page] = lineupSheetPages(lineups, '2025-05-16');
+    const sheet = lineupSheetExport(ws, page!, []);
+    expect(sheet.name).toBe('Boys Fri, May 16');
+    const [table] = sheet.tables;
+    expect(table!.columns.slice(0, 7)).toEqual([
+      'Time',
+      'Crew',
+      'Event',
+      'Stage',
+      'Shell',
+      'Oars',
+      'Cox',
+    ]);
+    expect(table!.columns.at(-1)).toBe('Hot seat');
+    expect(table!.rows[0]!.slice(0, 2)).toEqual([{ time: '08:00' }, 'V8']);
+    expect(table!.rows).toHaveLength(page!.entries.length);
+
+    const grids = lineupGrids(lineups[0]!.entries, {
+      timeZone: ws.regatta.timezone,
+      withDay: true,
+      groupOf: (id) => (id ? ws.byId.events.get(id)?.progressionGroup : undefined) || undefined,
+      oarText: (e) => oarText(e, ws.byId.oarSets),
     });
-    expect(boys[0]!['Seat 8']).not.toBe('');
+    const grid = lineupGridExport(ws, lineups[0]!, grids, 'All days');
+    expect(grid.tables.map((t) => t.heading)).toEqual(['Eights', 'Fours and smaller boats']);
+    expect(grid.tables[0]!.rows.map((r) => r[0])).toEqual([
+      'Event',
+      'Time trial',
+      'Final',
+      'Cox',
+      '8',
+      '7',
+      '6',
+      '5',
+      '4',
+      '3',
+      '2',
+      '1',
+      'Shell',
+      'Oars',
+    ]);
   });
 
-  it('exports from a button any page can place', async () => {
+  it('names files after the regatta, team, view, and day', async () => {
+    const { ws, boys } = await fixture();
+    expect(exportFileName(ws, 'run-of-show', { team: boys, day: DAY })).toBe(
+      'head-of-the-lake-junior-boys-run-of-show-2026-11-01.xlsx',
+    );
+    expect(exportFileName(ws, 'master-schedule')).toBe('head-of-the-lake-master-schedule.xlsx');
+  });
+
+  it('writes a workbook Excel reads back: one tab per sheet, times as times', async () => {
+    const sheets: ExportSheet[] = [
+      {
+        name: 'Sun, Nov 1',
+        title: 'Run of show',
+        tables: [
+          {
+            columns: ['Crew', 'Race'],
+            rows: [
+              ['V4+', { time: '09:40' }],
+              ['V8', 'TBD'],
+            ],
+          },
+        ],
+      },
+      { name: 'Sun, Nov 1', title: 'Again', tables: [] },
+    ];
+    const written = await buildWorkbook(ExcelJS, sheets).xlsx.writeBuffer();
+    const book = new ExcelJS.Workbook();
+    await book.xlsx.load(written);
+    expect(book.worksheets.map((w) => w.name)).toEqual(['Sun, Nov 1', 'Sun, Nov 1 (2)']);
+    const ws = book.worksheets[0]!;
+    expect(ws.getCell('A1').value).toBe('Run of show');
+    expect(ws.getRow(3).values).toEqual([undefined, 'Crew', 'Race']);
+    // Formatted as a time, it reads back as one: 9:40 on Excel's day zero.
+    expect(ws.getCell('B4').value).toEqual(new Date('1899-12-30T09:40:00.000Z'));
+    expect(ws.getCell('B4').numFmt).toBe('h:mm AM/PM');
+    expect(ws.getCell('B5').value).toBe('TBD');
+    expect(ws.views[0]).toMatchObject({ state: 'frozen', ySplit: 3 });
+  });
+
+  it('keeps tab names within what Excel allows', () => {
+    const used = new Set<string>();
+    expect(tabName('Lineups: [boys] / girls?', used)).toBe('Lineups   boys    girls');
+    expect(tabName('x'.repeat(40), used)).toHaveLength(31);
+    expect(tabName('X'.repeat(40), used)).toBe(`${'X'.repeat(27)} (2)`);
+  });
+
+  it('downloads from the button with the sheets of the view', async () => {
     const user = userEvent.setup();
-    const create = vi.fn((_blob: Blob) => 'blob:csv');
+    const create = vi.fn((_blob: Blob) => 'blob:xlsx');
     Object.assign(URL, { createObjectURL: create, revokeObjectURL: vi.fn() });
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    render(createElement(ExportEntriesButton, { regattaId: IDS.regatta, teamId: IDS.boys }), {
-      wrapper: dataWrapper(fixtureStore()),
-    });
-    const button = screen.getByRole('button', { name: 'Export entries' });
-    await waitFor(() => expect(button).toBeEnabled());
-    await user.click(button);
-    expect(create).toHaveBeenCalledOnce();
-    const text = await create.mock.calls[0]![0].text();
-    expect(text).toContain('Junior boys,12,');
-  });
-
-  it('hands the text to the browser as a download', () => {
-    const create = vi.fn(() => 'blob:csv');
-    const revoke = vi.fn();
-    Object.assign(URL, { createObjectURL: create, revokeObjectURL: revoke });
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    downloadText('entries.csv', 'a,b\n');
-    expect(create).toHaveBeenCalledOnce();
-    expect(click).toHaveBeenCalledOnce();
-    expect(document.querySelector('a[download]')).toBeNull();
+    const sheets = vi.fn((): ExportSheet[] => [
+      { name: 'Sheet', title: 'Title', tables: [{ columns: ['A'], rows: [['1']] }] },
+    ]);
+    render(createElement(ExportButton, { fileName: 'view.xlsx', sheets }));
+    await user.click(screen.getByRole('button', { name: 'Export to Excel' }));
+    await waitFor(() => expect(create).toHaveBeenCalledOnce());
+    expect(sheets).toHaveBeenCalledOnce();
+    expect(create.mock.calls[0]![0].type).toBe(
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
   });
 });
