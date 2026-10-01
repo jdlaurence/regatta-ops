@@ -9,7 +9,7 @@ import {
   type Placement,
   type TeamColorKey,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { EndViewBoat } from './TrailerEndView';
 
 export interface SampleBoat {

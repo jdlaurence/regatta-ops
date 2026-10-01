@@ -12,7 +12,7 @@ import {
   shellLabel,
   trailerDefFromRecords,
   type LoadPlacement,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useRegattaWorkingSet, type RegattaWorkingSet } from '@/data';
 import { TrailerEndView, type EndViewBoat } from '@/components/trailer';
 import { effectiveRules } from '@/features/trailer/lib';

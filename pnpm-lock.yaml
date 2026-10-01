@@ -53,10 +53,10 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(ajv@8.20.0)(react-hook-form@7.89.0(@types/react@19.3.0)(react@19.3.0))(zod@4.6.5)
-      '@srt/domain':
+      '@regatta-ops/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@srt/seed':
+      '@regatta-ops/seed':
         specifier: workspace:*
         version: link:../../packages/seed
       '@tanstack/react-query':
@@ -174,10 +174,10 @@ importers:
 
   backend:
     devDependencies:
-      '@srt/domain':
+      '@regatta-ops/domain':
         specifier: workspace:*
         version: link:../packages/domain
-      '@srt/seed':
+      '@regatta-ops/seed':
         specifier: workspace:*
         version: link:../packages/seed
       pocketbase:
@@ -205,7 +205,7 @@ importers:
 
   packages/seed:
     dependencies:
-      '@srt/domain':
+      '@regatta-ops/domain':
         specifier: workspace:*
         version: link:../domain
       exceljs:

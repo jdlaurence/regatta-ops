@@ -11,7 +11,7 @@ import {
   type Entry,
   type EntryStatus,
   type Finding,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { relativeTime } from '@/lib/relative-time';
 import { CommentsThread } from '@/components/CommentsThread';
 import { ConflictIcon } from '@/components/ConflictBadge';

@@ -2,7 +2,7 @@
 // and restored on the next load, so a regatta opened in the last week renders with no
 // connection: schedule, lineups, trailer, load list. Writes still need the server (online.ts).
 //
-// What is saved: successful ['srt', ...] queries (every DataStore list and record) fetched in
+// What is saved: successful ['regatta-ops', ...] queries (every DataStore list and record) fetched in
 // the last CACHE_MAX_AGE, except presence and lists too long to be worth it. Older versions of
 // the working set's id-keyed lists are dropped (dropSupersededLists). Mutations are never
 // saved: there is no offline write queue in v1.
@@ -37,7 +37,7 @@ const MAX_PERSISTED_ROWS = 5_000;
 /** Whether a query is saved on the device. */
 export function shouldPersistQuery(query: Query, now = Date.now()): boolean {
   const [root, collection] = query.queryKey;
-  if (root !== 'srt' || typeof collection !== 'string' || NOT_PERSISTED.has(collection)) {
+  if (root !== 'regatta-ops' || typeof collection !== 'string' || NOT_PERSISTED.has(collection)) {
     return false;
   }
   // Keep the last good data even if a later refetch failed; skip anything never loaded.
@@ -63,7 +63,7 @@ const VERSIONED_IN_FIELDS: Readonly<Record<string, string>> = {
 
 function versionedList(key: readonly unknown[]): { group: string; ids: unknown[] } | null {
   const [root, collection, kind, query] = key;
-  if (root !== 'srt' || kind !== 'list' || typeof collection !== 'string') return null;
+  if (root !== 'regatta-ops' || kind !== 'list' || typeof collection !== 'string') return null;
   const field = VERSIONED_IN_FIELDS[collection];
   const q = query as NormalizedQuery | undefined;
   const ids = field ? q?.in?.[field] : undefined;
@@ -129,7 +129,7 @@ export interface DevicePersister extends Persister {
 const STORAGE_KEY = 'query-cache';
 
 function idbStorage(): DeviceStorage {
-  const store = createStore('srt', 'offline');
+  const store = createStore('regatta-ops', 'offline');
   return {
     get: (key) => get(key, store),
     set: (key, value) => set(key, value, store),
@@ -165,7 +165,7 @@ export function createIdbPersister({
       await db.set(STORAGE_KEY, compactForDevice(client));
     } catch (err) {
       // Full disk or a blocked database: keep working online; the last good save stays.
-      console.warn('SRT could not save data for offline use.', err);
+      console.warn('Regatta Ops could not save data for offline use.', err);
     }
   };
   const writeNow = () => {

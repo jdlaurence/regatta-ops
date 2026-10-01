@@ -4,7 +4,7 @@
 // against a real PocketBase serving the production build.
 
 import { expect, type Locator, type Page } from '@playwright/test';
-import { athleteName, type Athlete, type World } from '@srt/domain';
+import { athleteName, type Athlete, type World } from '@regatta-ops/domain';
 import {
   buildSeedWorld,
   SEED_EMAILS,
@@ -12,7 +12,7 @@ import {
   SEED_REGATTA_IDS,
   SEED_TEAM_IDS,
   SEED_TRAILER_IDS,
-} from '@srt/seed';
+} from '@regatta-ops/seed';
 
 export { SEED_EMAILS, SEED_PASSWORD, SEED_REGATTA_IDS, SEED_TEAM_IDS, SEED_TRAILER_IDS };
 
@@ -158,7 +158,7 @@ export async function waitForOfflineReady(page: Page) {
 export async function savedQueryKeys(page: Page): Promise<unknown[][]> {
   return page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open('srt');
+      const req = indexedDB.open('regatta-ops');
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });

@@ -12,7 +12,7 @@ onRecordCreate((e) => {
   e.next();
 }, 'club_settings');
 
-cronAdd('srt_presence_prune', '* * * * *', () => {
+cronAdd('regatta_ops_presence_prune', '* * * * *', () => {
   const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString().replace('T', ' ');
   const stale = $app.findRecordsByFilter(
     'presence',
@@ -26,7 +26,7 @@ cronAdd('srt_presence_prune', '* * * * *', () => {
     try {
       $app.delete(record);
     } catch (err) {
-      $app.logger().warn('SRT: presence prune failed', 'error', String(err));
+      $app.logger().warn('Regatta Ops: presence prune failed', 'error', String(err));
     }
   }
 });

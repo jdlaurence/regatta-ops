@@ -1,17 +1,17 @@
 /// <reference path="../pb_data/types.d.ts" />
 // Sign-in and roles (PLAN.md §2, §8.3).
 //
-// - Google OAuth2 is configured at startup from SRT_GOOGLE_CLIENT_ID and
-//   SRT_GOOGLE_CLIENT_SECRET. Without them it stays disabled (the migration's default).
-// - SRT_ALLOWED_DOMAIN (comma-separated) restricts who can sign in. It is checked on Google
+// - Google OAuth2 is configured at startup from REGATTA_OPS_GOOGLE_CLIENT_ID and
+//   REGATTA_OPS_GOOGLE_CLIENT_SECRET. Without them it stays disabled (the migration's default).
+// - REGATTA_OPS_ALLOWED_DOMAIN (comma-separated) restricts who can sign in. It is checked on Google
 //   sign-in before any account is created, after every successful sign-in by any method, and
 //   whenever a user is created or their email changes.
 // - New accounts get role coach. Only admins change roles.
 
 onBootstrap((e) => {
   e.next();
-  const clientId = ($os.getenv('SRT_GOOGLE_CLIENT_ID') || '').trim();
-  const clientSecret = ($os.getenv('SRT_GOOGLE_CLIENT_SECRET') || '').trim();
+  const clientId = ($os.getenv('REGATTA_OPS_GOOGLE_CLIENT_ID') || '').trim();
+  const clientSecret = ($os.getenv('REGATTA_OPS_GOOGLE_CLIENT_SECRET') || '').trim();
   if (!clientId) return;
   try {
     const users = e.app.findCollectionByNameOrId('users');
@@ -36,15 +36,15 @@ onBootstrap((e) => {
       users,
     );
     e.app.save(users);
-    e.app.logger().info('SRT: Google sign-in enabled from SRT_GOOGLE_CLIENT_ID');
+    e.app.logger().info('Regatta Ops: Google sign-in enabled from REGATTA_OPS_GOOGLE_CLIENT_ID');
   } catch (err) {
-    e.app.logger().error('SRT: could not configure Google sign-in', 'error', String(err));
+    e.app.logger().error('Regatta Ops: could not configure Google sign-in', 'error', String(err));
   }
 });
 
 // Google sign-in: reject outside domains before an account exists; new accounts are coaches.
 onRecordAuthWithOAuth2Request((e) => {
-  const allowlist = require(`${__hooks}/srt/allowlist.js`);
+  const allowlist = require(`${__hooks}/regatta-ops/allowlist.js`);
   // The Go field OAuth2User is exposed as `oAuth2User` (see pb_data/types.d.ts). This is the
   // email the provider verified; empty when it could not verify one.
   const email = (e.oAuth2User && e.oAuth2User.email) || '';
@@ -60,7 +60,7 @@ onRecordAuthWithOAuth2Request((e) => {
 
 // Every successful sign-in, any method (password, OAuth2, refresh).
 onRecordAuthRequest((e) => {
-  const allowlist = require(`${__hooks}/srt/allowlist.js`);
+  const allowlist = require(`${__hooks}/regatta-ops/allowlist.js`);
   if (!allowlist.isEmailAllowed(e.record.email())) {
     throw new ForbiddenError(allowlist.REJECTED_MESSAGE);
   }
@@ -76,7 +76,7 @@ onRecordCreate((e) => {
 // User creation through the API (admins in Settings, and Google's internal create request).
 onRecordCreateRequest((e) => {
   if (e.hasSuperuserAuth()) return e.next();
-  const allowlist = require(`${__hooks}/srt/allowlist.js`);
+  const allowlist = require(`${__hooks}/regatta-ops/allowlist.js`);
   if (!allowlist.isEmailAllowed(e.record.email())) {
     throw new ForbiddenError(allowlist.REJECTED_MESSAGE);
   }
@@ -96,7 +96,7 @@ onRecordUpdateRequest((e) => {
     throw new ForbiddenError('Only an admin can change roles.');
   }
   if (original.email() !== e.record.email()) {
-    const allowlist = require(`${__hooks}/srt/allowlist.js`);
+    const allowlist = require(`${__hooks}/regatta-ops/allowlist.js`);
     if (!allowlist.isEmailAllowed(e.record.email())) {
       throw new ForbiddenError(allowlist.REJECTED_MESSAGE);
     }

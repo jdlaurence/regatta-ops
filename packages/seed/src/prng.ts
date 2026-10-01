@@ -1,7 +1,7 @@
 // Seeded pseudo-random numbers for the seed world. No Math.random, no clock: the same label
 // always yields the same sequence, so the world is identical on every run and in every browser.
 
-import { hash32 } from '@srt/domain';
+import { hash32 } from '@regatta-ops/domain';
 
 export interface Rng {
   /** Uniform in [0, 1). */
@@ -28,6 +28,7 @@ function mulberry32(seed: number): () => number {
 /**
  * A generator seeded from a label. Separate labels give independent streams, so changing how
  * one part of the world draws numbers does not reshuffle every other part.
+ * The `srt-seed:` prefix is from the app's first name; it stays so the seed world stays the same.
  */
 export function rng(label: string): Rng {
   const next = mulberry32(parseInt(hash32(`srt-seed:${label}`), 16));

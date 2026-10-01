@@ -24,7 +24,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Ellipsis, MessageSquare, Pencil, Trash2 } from 'lucide-react';
-import type { Comment, CommentTarget, User } from '@srt/domain';
+import type { Comment, CommentTarget, User } from '@regatta-ops/domain';
 import {
   change,
   findMentions,

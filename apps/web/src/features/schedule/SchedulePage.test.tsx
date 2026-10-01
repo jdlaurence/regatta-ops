@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
-import { clockAt, zonedToInstant, type World } from '@srt/domain';
+import { clockAt, zonedToInstant, type World } from '@regatta-ops/domain';
 import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
 import { MemoryStore } from '@/data/memory-store';
@@ -117,10 +117,10 @@ describe('SchedulePage list', () => {
     expect(toggle()).toBe(before);
     expect(toggle()).toHaveFocus();
     expect(router.state.location.search).toContain('entries=hide');
-    expect(localStorage.getItem('srt-schedule-entries')).toBe('hide');
+    expect(localStorage.getItem('regatta-ops-schedule-entries')).toBe('hide');
     await user.click(toggle());
     await waitFor(() => expect(entryRows().length).toBeGreaterThan(0));
-    expect(localStorage.getItem('srt-schedule-entries')).toBeNull();
+    expect(localStorage.getItem('regatta-ops-schedule-entries')).toBeNull();
   });
 
   it('edits an event time inline, and conflicts follow at once', async () => {

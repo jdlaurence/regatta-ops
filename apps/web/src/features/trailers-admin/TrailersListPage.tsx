@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight, Plus } from 'lucide-react';
-import { meters } from '@srt/domain';
+import { meters } from '@regatta-ops/domain';
 import { useCan } from '@/data';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState, Skeleton } from '@/components/states';

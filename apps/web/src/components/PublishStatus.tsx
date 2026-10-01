@@ -14,7 +14,7 @@ import {
   type PublishedSnapshot,
   type RegattaTeam,
   type SnapshotChange,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import {
   useCan,
   useCurrentUser,

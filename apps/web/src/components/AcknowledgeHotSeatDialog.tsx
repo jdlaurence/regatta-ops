@@ -7,7 +7,7 @@
 // fingerprint, so a later change to either race time or the shell re-opens the warning.
 
 import { useState, type FormEvent } from 'react';
-import { hotSeatAckPatch, type Entry, type Finding } from '@srt/domain';
+import { hotSeatAckPatch, type Entry, type Finding } from '@regatta-ops/domain';
 import { useCan, useCurrentUser, useFindings, useUpdate, type UpdateVars } from '@/data';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';

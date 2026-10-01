@@ -7,7 +7,7 @@ import {
   SRA_DEFAULT_RULES,
   SRA_GIRLS_TRAILER,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { bedPlanGeometry } from './plan';
 import { PlanView, type PlanLevel } from './PlanView';
 

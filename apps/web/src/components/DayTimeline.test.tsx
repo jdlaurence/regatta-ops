@@ -1,8 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { effectiveSettings, findConflicts, zonedToInstant, type ConflictInput } from '@srt/domain';
-import { buildSeedWorld } from '@srt/seed';
+import {
+  effectiveSettings,
+  findConflicts,
+  zonedToInstant,
+  type ConflictInput,
+} from '@regatta-ops/domain';
+import { buildSeedWorld } from '@regatta-ops/seed';
 import { DayTimeline } from './DayTimeline';
 import { axisMinutes, buildTimeline, timeToX } from './timeline-lib';
 

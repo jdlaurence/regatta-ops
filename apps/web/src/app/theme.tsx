@@ -15,7 +15,7 @@ import {
 
 export type ThemeChoice = 'light' | 'dark' | 'system';
 
-export const THEME_STORAGE_KEY = 'srt-theme';
+export const THEME_STORAGE_KEY = 'regatta-ops-theme';
 
 function readStored(): ThemeChoice {
   try {

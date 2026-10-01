@@ -1,5 +1,5 @@
 // Zod schemas: records shaped like the stub seed world parse (built inline; nothing is
-// imported from @srt/seed), bad input is rejected with readable messages, and every
+// imported from @regatta-ops/seed), bad input is rejected with readable messages, and every
 // collection has a schema. Type drift is caught at compile time in schemas/entities.ts.
 
 import { describe, expect, it } from 'vitest';
@@ -166,7 +166,7 @@ describe('seed-shaped records parse', () => {
       userSchema.parse({
         id: id('user:admin'),
         name: 'Alex Admin',
-        email: 'admin@srt.local',
+        email: 'admin@regatta-ops.local',
         role: 'admin',
         preferences: {},
       }).role,

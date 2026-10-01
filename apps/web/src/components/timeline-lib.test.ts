@@ -12,8 +12,8 @@ import {
   type RegattaEvent,
   type Shell,
   type Team,
-} from '@srt/domain';
-import { buildSeedWorld } from '@srt/seed';
+} from '@regatta-ops/domain';
+import { buildSeedWorld } from '@regatta-ops/seed';
 import {
   buildTimeline,
   conflictRegion,

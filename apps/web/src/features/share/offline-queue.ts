@@ -29,7 +29,7 @@ export interface ReplayResult {
   remaining: number;
 }
 
-export const QUEUE_PREFIX = 'srt-share-queue:';
+export const QUEUE_PREFIX = 'regatta-ops-share-queue:';
 
 let seq = 0;
 const nextId = () => `${Date.now().toString(36)}-${(seq++).toString(36)}`;

@@ -10,7 +10,7 @@ import {
   type AthleteLevel,
   type AthleteSide,
   type Program,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { guessMapping, type CsvField, type CsvMapping } from '@/components/CsvImport';
 
 export type AthleteInput = Omit<Athlete, 'id' | 'created' | 'updated'>;

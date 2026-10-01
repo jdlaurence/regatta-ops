@@ -3,7 +3,7 @@
 // is the store-facing part without React or the DOM, so the real-backend test drives it too;
 // data/presence.ts adds the hooks.
 
-import type { Presence, TeamColorKey, User } from '@srt/domain';
+import type { Presence, TeamColorKey, User } from '@regatta-ops/domain';
 import type { DataStore } from './store';
 
 export const PRESENCE_HEARTBEAT_MS = 30_000;
@@ -27,7 +27,7 @@ export interface IdStorage {
   removeItem(key: string): void;
 }
 
-const storageKey = (regattaId: string) => `srt-presence:${regattaId}`;
+const storageKey = (regattaId: string) => `regatta-ops-presence:${regattaId}`;
 
 /**
  * One tab's presence. `beat` creates or refreshes this tab's row for a regatta; `leave` deletes

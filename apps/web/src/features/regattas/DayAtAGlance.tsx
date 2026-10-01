@@ -4,7 +4,7 @@
 
 import { Link, useNavigate } from 'react-router';
 import { CalendarClock, ClipboardPaste, Plus } from 'lucide-react';
-import { clockAt, type Regatta, type RegattaEvent } from '@srt/domain';
+import { clockAt, type Regatta, type RegattaEvent } from '@regatta-ops/domain';
 import { lineupEntryPath, regattaPath } from '@/app/nav-items';
 import { useFindings } from '@/data';
 import { DayTimeline } from '@/components/DayTimeline';

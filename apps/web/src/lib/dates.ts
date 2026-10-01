@@ -1,8 +1,8 @@
 // Display helpers for calendar days ('YYYY-MM-DD'). Days are formatted as UTC noon so no
 // timezone can move them to a neighboring date.
 
-import type { Regatta } from '@srt/domain';
-import { instantToZoned } from '@srt/domain';
+import type { Regatta } from '@regatta-ops/domain';
+import { instantToZoned } from '@regatta-ops/domain';
 
 function asDate(day: string): Date {
   return new Date(`${day}T12:00:00Z`);

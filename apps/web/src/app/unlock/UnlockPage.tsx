@@ -2,7 +2,7 @@
 // in this browser. It stands in for sign-in; the app then opens signed in as the admin.
 
 import { useState, type FormEvent } from 'react';
-import type { RosterAthlete } from '@srt/seed';
+import type { RosterAthlete } from '@regatta-ops/seed';
 import { BoatStrip } from '@/components/BoatStrip';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';

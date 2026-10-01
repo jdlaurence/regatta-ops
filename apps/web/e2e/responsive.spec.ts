@@ -1,7 +1,7 @@
 // Phone and tablet widths (PLAN.md §5.3, §5.6): no page scrolls sideways at 390 px or 820 px,
 // and on a touch screen every control on the first screens of a page is a 44 px target.
 //
-//   pnpm --filter @srt/web exec playwright test e2e/responsive.spec.ts
+//   pnpm --filter @regatta-ops/web exec playwright test e2e/responsive.spec.ts
 
 import { expect, test, type Page } from '@playwright/test';
 import { PHONE, regattaUrl, SEED_TEAM_IDS } from './helpers';

@@ -8,7 +8,7 @@ import {
   type FitRule,
   type Rule,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 
 export interface TrailerCapacity {
   levels: number;

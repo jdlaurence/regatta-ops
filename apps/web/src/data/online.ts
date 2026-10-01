@@ -15,7 +15,7 @@ import { StoreError } from './store';
 export const OFFLINE_EDIT_MESSAGE = "You're offline. Editing is off until you reconnect.";
 
 /** Toast id for the offline refusal, so repeated attempts replace one toast. */
-export const OFFLINE_TOAST_ID = 'srt-offline-refusal';
+export const OFFLINE_TOAST_ID = 'regatta-ops-offline-refusal';
 
 /** A write attempted while offline. Nothing was sent and nothing changed on screen. */
 export class OfflineError extends StoreError {

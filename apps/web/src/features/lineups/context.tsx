@@ -2,7 +2,7 @@
 // entry, permissions, layout, and the write actions. Provided once by LineupsPage.
 
 import { createContext, useContext } from 'react';
-import type { ConflictInput, Finding, Id, Team } from '@srt/domain';
+import type { ConflictInput, Finding, Id, Team } from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 import type { LineupActions } from './actions';
 import type { LineupIndex } from './lib';

@@ -10,7 +10,7 @@ import { parseNameCell, readLocalRosters } from '../src/local-rosters';
 let dir: string;
 
 beforeAll(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'srt-rosters-'));
+  dir = await mkdtemp(join(tmpdir(), 'regatta-ops-rosters-'));
 
   const boys = new ExcelJS.Workbook();
   boys.addWorksheet('Week 2');
@@ -133,13 +133,13 @@ describe('readLocalRosters', () => {
     ]);
   });
 
-  it('is empty with no workbooks or with SRT_SEED_INVENTED', async () => {
+  it('is empty with no workbooks or with REGATTA_OPS_SEED_INVENTED', async () => {
     expect(await readLocalRosters(join(dir, 'missing'))).toEqual([]);
-    process.env.SRT_SEED_INVENTED = '1';
+    process.env.REGATTA_OPS_SEED_INVENTED = '1';
     try {
       expect(await readLocalRosters(dir)).toEqual([]);
     } finally {
-      delete process.env.SRT_SEED_INVENTED;
+      delete process.env.REGATTA_OPS_SEED_INVENTED;
     }
   });
 });

@@ -1,6 +1,11 @@
 // A small, fixed world for web tests. Every name is invented.
 
-import { COLLECTION_NAMES, DEFAULT_CLUB_SETTINGS, zonedToInstant, type World } from '@srt/domain';
+import {
+  COLLECTION_NAMES,
+  DEFAULT_CLUB_SETTINGS,
+  zonedToInstant,
+  type World,
+} from '@regatta-ops/domain';
 import { MemoryStore } from '@/data/memory-store';
 
 export function emptyWorld(): World {
@@ -35,11 +40,17 @@ export function fixtureWorld(): World {
   const w = emptyWorld();
   w.club_settings.push({ id: 'clubsettings001', ...DEFAULT_CLUB_SETTINGS });
   w.users.push(
-    { id: IDS.admin, name: 'Alex Admin', email: 'admin@srt.local', role: 'admin', preferences: {} },
+    {
+      id: IDS.admin,
+      name: 'Alex Admin',
+      email: 'admin@regatta-ops.local',
+      role: 'admin',
+      preferences: {},
+    },
     {
       id: IDS.coach,
       name: 'Casey Coach',
-      email: 'coach.boys@srt.local',
+      email: 'coach.boys@regatta-ops.local',
       role: 'coach',
       defaultTeamId: IDS.girls,
       preferences: {},
@@ -47,7 +58,7 @@ export function fixtureWorld(): World {
     {
       id: IDS.viewer,
       name: 'Vic Viewer',
-      email: 'viewer@srt.local',
+      email: 'viewer@regatta-ops.local',
       role: 'viewer',
       preferences: {},
     },

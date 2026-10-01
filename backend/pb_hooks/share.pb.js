@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Share links (PLAN.md §2, §4.8, §8.2; Phase 3). Projection and check-off logic: srt/share.js.
+// Share links (PLAN.md §2, §4.8, §8.2; Phase 3). Projection and check-off logic: regatta-ops/share.js.
 //
 // Records (coaches and admins, through the normal collection API):
 // - create: the server generates the token (40 random letters and digits) and sets created_by;
@@ -8,14 +8,14 @@
 //   revoked. token, regatta, team, and created_by never change; can_check_load may.
 //
 // Public routes (no sign-in; the token is the credential; revoked or unknown tokens get 404):
-//   GET  /api/srt/share/{token}                     read-only projection (see backend/README.md)
-//   POST /api/srt/share/{token}/load-items/{id}     { loaded?, returned?, by? }, links with
+//   GET  /api/regatta-ops/share/{token}                     read-only projection (see backend/README.md)
+//   POST /api/regatta-ops/share/{token}/load-items/{id}     { loaded?, returned?, by? }, links with
 //                                                   can_check_load only
 // Both are rate-limited per client IP, and the POST body is capped at 4 KB.
 
 onRecordCreateRequest((e) => {
   if (!e.hasSuperuserAuth()) {
-    e.record.set('token', require(`${__hooks}/srt/share.js`).newToken());
+    e.record.set('token', require(`${__hooks}/regatta-ops/share.js`).newToken());
     e.record.set('revoked_at', '');
     e.record.set('created_by', e.auth && e.auth.collection().name === 'users' ? e.auth.id : '');
   }
@@ -25,7 +25,7 @@ onRecordCreateRequest((e) => {
 // Any other path (seed, dashboard) that leaves the token empty still gets one.
 onRecordCreate((e) => {
   if (!e.record.getString('token')) {
-    e.record.set('token', require(`${__hooks}/srt/share.js`).newToken());
+    e.record.set('token', require(`${__hooks}/regatta-ops/share.js`).newToken());
   }
   e.next();
 }, 'share_links');
@@ -44,12 +44,12 @@ onRecordUpdateRequest((e) => {
   e.next();
 }, 'share_links');
 
-cronAdd('srt_share_rate_prune', '* * * * *', () => {
-  require(`${__hooks}/srt/share.js`).prune($app);
+cronAdd('regatta_ops_share_rate_prune', '* * * * *', () => {
+  require(`${__hooks}/regatta-ops/share.js`).prune($app);
 });
 
-routerAdd('GET', '/api/srt/share/{token}', (e) => {
-  const share = require(`${__hooks}/srt/share.js`);
+routerAdd('GET', '/api/regatta-ops/share/{token}', (e) => {
+  const share = require(`${__hooks}/regatta-ops/share.js`);
   share.limit(e.app, e.realIP(), 'read');
   const link = share.resolve(e, e.request.pathValue('token'));
   e.response.header().set('Cache-Control', 'no-store');
@@ -59,9 +59,9 @@ routerAdd('GET', '/api/srt/share/{token}', (e) => {
 
 routerAdd(
   'POST',
-  '/api/srt/share/{token}/load-items/{id}',
+  '/api/regatta-ops/share/{token}/load-items/{id}',
   (e) => {
-    const share = require(`${__hooks}/srt/share.js`);
+    const share = require(`${__hooks}/regatta-ops/share.js`);
     share.limit(e.app, e.realIP(), 'check');
     const link = share.resolve(e, e.request.pathValue('token'));
     const body = e.requestInfo().body || {};

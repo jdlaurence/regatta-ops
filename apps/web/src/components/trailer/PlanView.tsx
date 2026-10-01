@@ -20,7 +20,7 @@ import {
   type Rule,
   type TeamColorKey,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { SegmentedControl } from '@/components/ui/controls';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';

@@ -5,7 +5,12 @@
 // (exact, then close spellings), keep each athlete's latest response, and plan the writes.
 // The dialog (AbsenceImportDialog.tsx) lets the coach correct every guess.
 
-import { athleteName, type Athlete, type Availability, type AvailabilityStatus } from '@srt/domain';
+import {
+  athleteName,
+  type Athlete,
+  type Availability,
+  type AvailabilityStatus,
+} from '@regatta-ops/domain';
 import type { BatchOp } from '@/data';
 import { draftOf, planWrite, type AvailabilityDraft } from './availability-model';
 

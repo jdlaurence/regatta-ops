@@ -80,7 +80,7 @@ function useBackOnlineToast(online: boolean) {
     if (!wasOffline.current) return;
     wasOffline.current = false;
     toast.dismiss(OFFLINE_TOAST_ID);
-    toast.success('Back online. Editing is on.', { id: 'srt-back-online' });
+    toast.success('Back online. Editing is on.', { id: 'regatta-ops-back-online' });
   }, [online]);
 }
 

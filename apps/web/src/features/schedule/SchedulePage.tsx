@@ -7,7 +7,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { CalendarClock, ClipboardPaste, Ellipsis, Plus, Printer } from 'lucide-react';
-import type { Entry, RegattaEvent } from '@srt/domain';
+import type { Entry, RegattaEvent } from '@regatta-ops/domain';
 import { useCan, useFindings } from '@/data';
 import { useRegattaId } from '@/app/params';
 import { lineupEntryPath } from '@/app/nav-items';

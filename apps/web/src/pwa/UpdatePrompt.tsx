@@ -1,6 +1,6 @@
 // Registers the service worker (vite-plugin-pwa, PLAN.md §7.1) and offers new versions with a
 // quiet toast instead of reloading under someone's hands. The service worker precaches the app
-// shell so SRT opens with no connection; data offline comes from the saved query cache
+// shell so Regatta Ops opens with no connection; data offline comes from the saved query cache
 // (data/persist.ts), never from the service worker.
 
 import { useEffect } from 'react';
@@ -26,7 +26,7 @@ export function UpdatePrompt() {
   useEffect(() => {
     if (!needRefresh) return;
     toast('A new version is ready', {
-      id: 'srt-update',
+      id: 'regatta-ops-update',
       duration: Infinity,
       action: { label: 'Reload', onClick: () => void updateServiceWorker(true) },
     });

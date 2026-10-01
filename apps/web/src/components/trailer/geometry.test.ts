@@ -6,7 +6,7 @@ import {
   makeRule,
   type ShelfDef,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { endViewGeometry, laneChips, type EndViewGeometry, type ShelfGeometry } from './geometry';
 import { cellLabel, laneLabel, sideNamesOf, tierLabel } from './labels';
 

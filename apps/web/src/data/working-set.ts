@@ -28,7 +28,7 @@ import {
   type TrailerCompartment,
   type TrailerShelf,
   type User,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { listQueryOptions, recordQueryOptions, useList, useRecord } from './hooks';
 import type { DataStore, ListQuery, RecordOf } from './store';
 

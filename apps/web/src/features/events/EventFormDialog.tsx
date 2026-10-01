@@ -6,7 +6,13 @@ import { useId, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Trash2 } from 'lucide-react';
-import { BOAT_CLASSES, type Entry, type Regatta, type RegattaEvent, type Team } from '@srt/domain';
+import {
+  BOAT_CLASSES,
+  type Entry,
+  type Regatta,
+  type RegattaEvent,
+  type Team,
+} from '@regatta-ops/domain';
 import { batchOp, useBatch, useCreate, useDelete, useList, useRecord, type BatchOp } from '@/data';
 import { formatWeekday } from '@/lib/dates';
 import { TeamDot } from '@/components/chips';

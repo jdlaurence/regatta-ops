@@ -6,7 +6,7 @@ import {
   type Id,
   type LoadPlacement,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import {
   BOYS_SHELF_IDS,
   SEED_REGATTA_IDS,
@@ -14,7 +14,7 @@ import {
   SEED_TRAILER_IDS,
   buildSeedWorld,
   seedShellId,
-} from '@srt/seed';
+} from '@regatta-ops/seed';
 import {
   LOCK_RULE_ID,
   assignTrailers,

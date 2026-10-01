@@ -13,7 +13,7 @@ import {
   TriangleAlert,
   X,
 } from 'lucide-react';
-import type { EquipmentStatus, Team } from '@srt/domain';
+import type { EquipmentStatus, Team } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { formatDayRange, formatWeekday } from '@/lib/dates';
 import { TeamChip } from '@/components/chips';

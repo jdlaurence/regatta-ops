@@ -1,23 +1,23 @@
 // The published demo on GitHub Pages (`vite build --mode pages`, PLAN.md §18). In that mode:
-// `virtual:srt-sealed-roster` is the encrypted junior rosters from `pnpm pages:seal` (and the
+// `virtual:regatta-ops-sealed-roster` is the encrypted junior rosters from `pnpm pages:seal` (and the
 // build stops without them, so the site never goes up without its password); search engines are
 // asked not to index the site; and 404.html is a copy of the app, so GitHub Pages answers deep
 // links with the SPA. In every other mode the sealed roster is null and nothing else changes.
 
 import { copyFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { REPO_DIR } from '@srt/seed/local-rosters';
+import { REPO_DIR } from '@regatta-ops/seed/local-rosters';
 import type { Plugin } from 'vite';
 
 export const SEALED_ROSTER_FILE = 'data/reference/junior-rosters.sealed.json';
 
-const ID = 'virtual:srt-sealed-roster';
+const ID = 'virtual:regatta-ops-sealed-roster';
 const RESOLVED = `\0${ID}`;
 
-/** The site's path on GitHub Pages: /<repository>/ unless SRT_PAGES_BASE says otherwise. */
+/** The site's path on GitHub Pages: /<repository>/ unless REGATTA_OPS_PAGES_BASE says otherwise. */
 export function pagesBase(mode: string): string {
   if (mode !== 'pages') return '/';
-  const base = process.env.SRT_PAGES_BASE ?? '/srt/';
+  const base = process.env.REGATTA_OPS_PAGES_BASE ?? '/regatta-ops/';
   return base.endsWith('/') ? base : `${base}/`;
 }
 
@@ -25,7 +25,7 @@ export function pagesSite(mode: string): Plugin {
   const pages = mode === 'pages';
   let outDir = '';
   return {
-    name: 'srt-pages-site',
+    name: 'regatta-ops-pages-site',
     configResolved(config) {
       outDir = config.build.outDir;
     },

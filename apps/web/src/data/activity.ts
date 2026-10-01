@@ -1,6 +1,6 @@
 // Activity log sentences (PLAN.md §4.6, §8.3). MemoryStore uses this to emulate the server's
 // activity hook; the summaries read as "<actor> <summary>": "Sam moved entry Girls V4+ to
-// Event 14". The server's wording (backend/pb_hooks/srt/activity.js) is the reference and is
+// Event 14". The server's wording (backend/pb_hooks/regatta-ops/activity.js) is the reference and is
 // richer (it joins several changes into one line); this covers the common single changes.
 
 import {
@@ -12,7 +12,7 @@ import {
   type CollectionName,
   type Entry,
   type RegattaEvent,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { RecordOf } from './store';
 
 export type Lookup = <C extends CollectionName>(

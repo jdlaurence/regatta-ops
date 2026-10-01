@@ -12,7 +12,7 @@ import {
   type ClubSettings,
   type Regatta,
   type RegattaEvent,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { batchOp, useBatch, useCan, type BatchOp } from '@/data';
 import { toast } from '@/components/toast';
 import { Button } from '@/components/ui/button';

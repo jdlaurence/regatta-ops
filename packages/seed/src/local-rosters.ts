@@ -1,5 +1,5 @@
 // Real junior rosters for pnpm pb:seed, pb:reset, and demo mode (PLAN.md §14, §18). Node only:
-// `@srt/seed/local-rosters`, never imported by the seed itself, which stays pure. Reads the club's
+// `@regatta-ops/seed/local-rosters`, never imported by the seed itself, which stays pure. Reads the club's
 // roster workbooks in data/, which git ignores, so athletes' names reach the local database and
 // the local demo build and never the repository. Sides and sculling are not on the rosters; the
 // seed assigns them.
@@ -162,11 +162,11 @@ async function findWorkbooks(dir: string): Promise<{ team: 'boys' | 'girls'; fil
 }
 
 /**
- * Reads the junior rosters in data/. Empty when there are none or SRT_SEED_INVENTED is set, and
+ * Reads the junior rosters in data/. Empty when there are none or REGATTA_OPS_SEED_INVENTED is set, and
  * the seed then invents both teams.
  */
 export async function readLocalRosters(dir = DATA_DIR): Promise<LocalRoster[]> {
-  if (process.env.SRT_SEED_INVENTED) return [];
+  if (process.env.REGATTA_OPS_SEED_INVENTED) return [];
   const out: LocalRoster[] = [];
   for (const { team, file } of await findWorkbooks(dir)) {
     const wb = new ExcelJS.Workbook();

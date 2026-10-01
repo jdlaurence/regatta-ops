@@ -5,7 +5,7 @@
 
 import type { ReactNode } from 'react';
 import { Lock, LockOpen, PackagePlus, Undo2 } from 'lucide-react';
-import type { PackBoat, Reason, Team } from '@srt/domain';
+import type { PackBoat, Reason, Team } from '@regatta-ops/domain';
 import { Button } from '@/components/ui/button';
 import { TeamChip } from '@/components/chips';
 import { BoatPill, ReasonList } from './parts';

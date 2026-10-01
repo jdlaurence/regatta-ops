@@ -8,7 +8,7 @@ import {
   type PackBoat,
   type Team,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useBatch, useDelete, useList, useRecord } from '@/data';
 import { toast } from '@/components/toast';
 import { saveOps, type SavedTrailer, type TrailerDraft } from './draft';

@@ -4,7 +4,7 @@
 // presence rows written by one are visible (and live) to the other. Skips without the binary.
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { ActivityEntry, Entry, Presence } from '@srt/domain';
+import type { ActivityEntry, Entry, Presence } from '@regatta-ops/domain';
 import { PocketBaseStore } from '../../apps/web/src/data/pocketbase-store';
 import { StoreError, type ChangeEvent } from '../../apps/web/src/data/store';
 import {

@@ -40,7 +40,7 @@ import {
   type LoadPlacement,
   type PackBoat,
   type TeamColorKey,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { newId, useCan, useRegattaWorkingSet, type RegattaWorkingSet } from '@/data';
 import { useRegattaId, useTrailerIdParam } from '@/app/params';
 import { regattaPath } from '@/app/nav-items';

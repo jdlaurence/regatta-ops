@@ -19,7 +19,7 @@ import {
   type RegattaEvent,
   type Seat,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { assignCrews, type CrewRequest, type Eligibility } from '../crews';
 import { bucketRigSides, type FleetIndex } from '../fleet';
 import { rng } from '../prng';

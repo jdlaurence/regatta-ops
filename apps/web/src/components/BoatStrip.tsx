@@ -42,7 +42,7 @@ import {
   type Severity,
   type Side,
   type TeamColorKey,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { ConflictIcon, SEVERITY_LABELS } from './ConflictBadge';

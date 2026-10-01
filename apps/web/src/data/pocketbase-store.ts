@@ -3,7 +3,7 @@
 // pb-mapper.ts; server-side behavior (stamping, activity log, entry sync) lives in pb_hooks.
 
 import PocketBase, { ClientResponseError, type RecordModel } from 'pocketbase';
-import type { CollectionName, User } from '@srt/domain';
+import type { CollectionName, User } from '@regatta-ops/domain';
 import type { ImageCodec } from '../lib/image';
 import { assertFileField, preparePhoto, SERVER_FILE_MAX_BYTES } from './files';
 import { chunkQuery, fileNameFromUrl, fromPb, toPb, toPbField, toPbListParams } from './pb-mapper';

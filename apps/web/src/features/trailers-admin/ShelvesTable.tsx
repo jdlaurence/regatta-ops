@@ -3,7 +3,7 @@
 
 import { useId } from 'react';
 import { Copy, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
-import { BOAT_CLASSES, type BoatClass, type ColumnKey, type LaneAccess } from '@srt/domain';
+import { BOAT_CLASSES, type BoatClass, type ColumnKey, type LaneAccess } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { Checkbox, Switch } from '@/components/ui/controls';

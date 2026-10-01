@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
       pagesSite(mode),
       // PWA (PLAN.md §7.1, §10.4): installable, and the app shell opens with no connection.
       // The service worker precaches the build and never caches API responses; data offline
-      // comes from the query cache saved in IndexedDB. Off in `vite dev` unless SRT_PWA_DEV=1.
+      // comes from the query cache saved in IndexedDB. Off in `vite dev` unless REGATTA_OPS_PWA_DEV=1.
       VitePWA({
         registerType: 'prompt',
         // src/pwa/UpdatePrompt.tsx registers it and offers updates with a toast.
@@ -53,8 +53,8 @@ export default defineConfig(({ mode }) => {
         includeManifestIcons: false,
         manifest: {
           id: base,
-          name: 'SRT: Sammamish Regatta Tool',
-          short_name: 'SRT',
+          name: 'Regatta Ops',
+          short_name: 'Regatta Ops',
           description:
             'Regatta lineups and trailer loading for Sammamish Rowing Association coaches.',
           lang: 'en',
@@ -89,13 +89,13 @@ export default defineConfig(({ mode }) => {
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
               handler: 'StaleWhileRevalidate',
-              options: { cacheName: 'srt-font-styles' },
+              options: { cacheName: 'regatta-ops-font-styles' },
             },
             {
               urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'srt-fonts',
+                cacheName: 'regatta-ops-fonts',
                 expiration: { maxEntries: 16, maxAgeSeconds: 365 * 24 * 60 * 60 },
                 cacheableResponse: { statuses: [0, 200] },
               },
@@ -103,7 +103,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         devOptions: {
-          enabled: process.env.SRT_PWA_DEV === '1',
+          enabled: process.env.REGATTA_OPS_PWA_DEV === '1',
           type: 'module',
           navigateFallback: 'index.html',
         },

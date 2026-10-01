@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { Id, LoadItem, World } from '@srt/domain';
+import type { Id, LoadItem, World } from '@regatta-ops/domain';
 import {
   SEED_REGATTA_IDS,
   SEED_TRAILER_IDS,
@@ -7,7 +7,7 @@ import {
   buildSeedWorld,
   seedGearId,
   seedShellId,
-} from '@srt/seed';
+} from '@regatta-ops/seed';
 import {
   buildLoadRows,
   containerPicks,

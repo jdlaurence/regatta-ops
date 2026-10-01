@@ -37,7 +37,7 @@ async function addUsers(store: MemoryStore) {
     const u = await store.create('users', {
       id: `userextra00000${i}`,
       name,
-      email: `extra${i}@srt.local`,
+      email: `extra${i}@regatta-ops.local`,
       role: 'coach',
       preferences: {},
     });

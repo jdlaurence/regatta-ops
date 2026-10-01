@@ -10,7 +10,7 @@ import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from
 import { Link } from 'react-router';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronRight, Search, UserCheck, UserX, X } from 'lucide-react';
-import { athleteName, type Athlete } from '@srt/domain';
+import { athleteName, type Athlete } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { TeamChip } from '@/components/chips';

@@ -18,7 +18,7 @@ import {
   type BoatClass,
   type RiggerType,
   type Shell,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useCan, useCreate, useDelete, useRecord, useUpdate } from '@/data';
 import { ClassBadge, ShellChip, TeamChip } from '@/components/chips';
 import { ErrorState, SkeletonRows } from '@/components/states';

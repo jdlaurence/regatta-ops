@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { extendTailwindMerge } from 'tailwind-merge';
 
-// tailwind-merge must know SRT's theme names, or it mistakes `text-md` (a size) for a color and
+// tailwind-merge must know the app's theme names, or it mistakes `text-md` (a size) for a color and
 // drops it when merged with `text-ink`.
 const twMerge = extendTailwindMerge({
   override: {

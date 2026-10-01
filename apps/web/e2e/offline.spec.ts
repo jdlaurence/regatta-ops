@@ -77,7 +77,7 @@ test("saves the regatta's working set on the device", async ({ page }) => {
   const forRegatta = (collection: string) => (keys: unknown[][]) =>
     keys.some(
       (k) =>
-        k[0] === 'srt' &&
+        k[0] === 'regatta-ops' &&
         k[1] === collection &&
         k[2] === 'list' &&
         (k[3] as { where?: { regattaId?: string } } | undefined)?.where?.regattaId === NW_YOUTH,

@@ -13,7 +13,7 @@ import {
   type EquipmentStatus,
   type Shell,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useCan, useList, useUpdate } from '@/data';
 import { ClassBadge, ShellChip, TeamChip } from '@/components/chips';
 import { CsvImportDialog, downloadText } from '@/components/CsvImport';

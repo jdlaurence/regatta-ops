@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import type { AvailabilityStatus } from '@srt/domain';
+import type { AvailabilityStatus } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { formatWeekday } from '@/lib/dates';
 import { SegmentedControl } from '@/components/ui/controls';

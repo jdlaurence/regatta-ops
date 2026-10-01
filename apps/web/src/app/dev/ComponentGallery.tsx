@@ -11,7 +11,7 @@ import {
   type Finding,
   type Seat,
   type TeamColorKey,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { BoatStrip, BoatStripSkeleton, type SeatOccupant } from '@/components/BoatStrip';
 import { ConflictBadge, ConflictBadges, ConflictIcon } from '@/components/ConflictBadge';
 import { ClassBadge, OarChip, ShellChip, SideBadge, TeamChip, TeamDot } from '@/components/chips';

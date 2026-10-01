@@ -2,7 +2,7 @@
 // seats as cells. Athletes racing three or more times are marked, since that is what coaches
 // scan this view for. Clicking a cell opens that entry in the by-event view.
 
-import { athleteName } from '@srt/domain';
+import { athleteName } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { EmptyState } from '@/components/states';

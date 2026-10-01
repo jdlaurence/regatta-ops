@@ -15,7 +15,7 @@ import {
   type TestServer,
 } from './helpers';
 
-const DOMAIN = 'srt.test';
+const DOMAIN = 'regatta-ops.test';
 
 describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
   let server: TestServer;
@@ -26,7 +26,7 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
   let anon: PocketBase;
 
   beforeAll(async () => {
-    server = await startTestServer({ SRT_ALLOWED_DOMAIN: DOMAIN });
+    server = await startTestServer({ REGATTA_OPS_ALLOWED_DOMAIN: DOMAIN });
     const { world, accounts } = testWorld();
     await seed(server, world, accounts);
     admin = await signIn(server.url, EMAILS.admin, PASSWORD);
@@ -223,7 +223,9 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
         404,
       );
       expect(
-        await statusOf(coach.collection('users').update(IDS.coach, { email: 'x@srt.test' })),
+        await statusOf(
+          coach.collection('users').update(IDS.coach, { email: 'x@regatta-ops.test' }),
+        ),
       ).toBe(404);
       expect(await statusOf(coach.collection('users').update(IDS.coach, { verified: false }))).toBe(
         404,
@@ -256,7 +258,7 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
 
     it('a non-admin cannot create accounts', async () => {
       const create = coach.collection('users').create({
-        email: 'friend@srt.test',
+        email: 'friend@regatta-ops.test',
         password: PASSWORD,
         passwordConfirm: PASSWORD,
         role: 'coach',
@@ -266,7 +268,7 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
 
     it('new accounts default to coach', async () => {
       const user = await admin.collection('users').create({
-        email: 'fresh@srt.test',
+        email: 'fresh@regatta-ops.test',
         password: PASSWORD,
         passwordConfirm: PASSWORD,
         name: 'Fresh Face',
@@ -297,7 +299,7 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
       let google: http.Server;
       let googleUrl: string;
       const profiles: Record<string, { email: string; name: string }> = {
-        inside: { email: 'newcoach@srt.test', name: 'New Coach' },
+        inside: { email: 'newcoach@regatta-ops.test', name: 'New Coach' },
         outside: { email: 'stranger@elsewhere.test', name: 'Stranger' },
       };
 
@@ -365,7 +367,7 @@ describe.skipIf(!HAS_BINARY)('PocketBase rules and hooks', () => {
           .collection('users')
           .authWithOAuth2Code('google', 'inside', 'verifier', 'http://127.0.0.1/redirect', {
             role: 'admin',
-            email: 'boss@srt.test',
+            email: 'boss@regatta-ops.test',
           });
         expect(auth.record.email).toBe(profiles.inside!.email);
         expect(auth.record.role).toBe('coach');

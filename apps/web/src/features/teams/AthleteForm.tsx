@@ -11,7 +11,7 @@ import {
   type Athlete,
   type Program,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { Checkbox } from '@/components/ui/controls';
 import { Field, Input, Label, Textarea } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';

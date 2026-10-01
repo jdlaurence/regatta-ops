@@ -9,8 +9,8 @@ import type {
   Shell,
   Team,
   TeamColorKey,
-} from '@srt/domain';
-import { oarSetLabel, shellLabel } from '@srt/domain';
+} from '@regatta-ops/domain';
+import { oarSetLabel, shellLabel } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 

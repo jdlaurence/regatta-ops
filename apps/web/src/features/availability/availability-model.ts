@@ -11,7 +11,7 @@ import {
   type AvailabilityStatus,
   type Entry,
   type RegattaEvent,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { batchOp, type BatchOp } from '@/data';
 
 export interface AvailabilityDraft {

@@ -10,7 +10,7 @@ import {
   type Team,
   type User,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import {
   BOYS_FIRST_NAMES,
   GIRLS_FIRST_NAMES,

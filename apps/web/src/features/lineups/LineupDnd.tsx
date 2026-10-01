@@ -18,7 +18,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { ArrowLeftRight } from 'lucide-react';
-import { athleteName, type Id } from '@srt/domain';
+import { athleteName, type Id } from '@regatta-ops/domain';
 import { teamStyle } from '@/lib/team-colors';
 import { useLineup } from './context';
 import { entryName, occupantOf, type SeatRef } from './lib';

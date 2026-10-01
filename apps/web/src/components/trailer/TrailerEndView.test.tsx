@@ -8,7 +8,7 @@ import {
   packTrailer,
   type PackBoat,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { toEndViewBoats } from './boats';
 import {
   BOYS_2026_LOAD,

@@ -29,7 +29,7 @@ function run(file: string, args: string[]): Promise<string> {
 
 async function main(): Promise<void> {
   requireBinary();
-  const dataDir = await mkdtemp(path.join(tmpdir(), 'srt-typegen-'));
+  const dataDir = await mkdtemp(path.join(tmpdir(), 'regatta-ops-typegen-'));
   try {
     await migrateUp(dataDir);
     await upsertSuperuser(dataDir);

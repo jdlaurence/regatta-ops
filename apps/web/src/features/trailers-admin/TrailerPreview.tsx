@@ -12,7 +12,7 @@ import {
   type Rule,
   type TeamColorKey,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useList } from '@/data';
 import { toEndViewBoats } from '@/components/trailer/boats';
 import { sideNamesOf, tierLabel } from '@/components/trailer/labels';

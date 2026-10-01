@@ -2,7 +2,7 @@
 // team. Admins change roles and default teams; everyone else reads.
 
 import { useState } from 'react';
-import type { Role, User } from '@srt/domain';
+import type { Role, User } from '@regatta-ops/domain';
 import { ROLE_LABELS, useCan, useCurrentUser, useList, useUpdate } from '@/data';
 import { Avatar } from '@/app/shell/UserMenu';
 import { EmptyState, ErrorState, SkeletonRows } from '@/components/states';
@@ -47,7 +47,7 @@ export function UsersSection() {
   const changeRole = (user: User, role: Role) => {
     if (role === user.role) return;
     if (user.role === 'admin' && adminCount <= 1) {
-      toast.error('SRT needs at least one admin. Make someone else an admin first.');
+      toast.error('Regatta Ops needs at least one admin. Make someone else an admin first.');
       return;
     }
     if (user.id === me?.id) {

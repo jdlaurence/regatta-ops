@@ -6,7 +6,7 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { shellLabel } from '@srt/domain';
+import { shellLabel } from '@regatta-ops/domain';
 import { useRegattaWorkingSet } from '@/data';
 import { useRegattaId } from '@/app/params';
 import { regattaPath } from '@/app/nav-items';

@@ -1,4 +1,4 @@
-# SRT: Sammamish Regatta Tool
+# Regatta Ops
 
 Regatta lineup planning and trailer loading for Sammamish Rowing Association coaches.
 **`PLAN.md` is the spec and wins over code until amended** (amend it in the same change that
@@ -11,7 +11,7 @@ pnpm install            # pnpm 10 via corepack (packageManager pins it)
 pnpm dev                # PocketBase + Vite together (needs `pnpm pb:download` once)
 pnpm demo               # the app on seed data in the browser, MemoryStore, no backend
 pnpm test               # all unit tests (Vitest)
-pnpm --filter @srt/domain test      # one package
+pnpm --filter @regatta-ops/domain test  # one package
 pnpm test:e2e           # Playwright phase demos on demo mode (apps/web/e2e)
 pnpm test:e2e:pb        # Playwright smoke suite on a real, seeded PocketBase (e2e/pb)
 pnpm lint && pnpm typecheck
@@ -74,9 +74,9 @@ data/reference/      sanitized club data (fleet, oars, schedule, trailer layout)
   `DataStore` (`apps/web/src/data/store.ts`) via hooks in `apps/web/src/data/`.
 - **Athlete names from the club's workbooks never enter the repository in plain text**: not in
   seed, tests, fixtures, screenshots, or docs. Seed athletes are invented. `pb:seed` and
-  `pnpm demo` read the ignored roster workbooks at run time (`@srt/seed/local-rosters`), so the
-  local database and the local demo show real juniors: never print or log the names, and run the
-  demo with `SRT_SEED_INVENTED=1` for any screenshot or recording. The one exception is
+  `pnpm demo` read the ignored roster workbooks at run time (`@regatta-ops/seed/local-rosters`), so
+  the local database and the local demo show real juniors: never print or log the names, and run the
+  demo with `REGATTA_OPS_SEED_INVENTED=1` for any screenshot or recording. The one exception is
   `data/reference/junior-rosters.sealed.json` from `pnpm pages:seal`: first names and short last
   names, encrypted with the published demo's password (PLAN.md §18). Equipment names are fine.
 - UI words follow the glossary (§3) exactly. Sentence case. Buttons say what happens. No

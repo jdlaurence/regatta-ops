@@ -19,7 +19,7 @@ import {
   type TrailerDef,
   type TrailerShelf,
   type TrailerStyle,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { batchOp, type BatchOp } from '@/data';
 
 /** A number field: null when blank, NaN when not a number. */

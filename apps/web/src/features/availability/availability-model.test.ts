@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Availability, Entry, RegattaEvent } from '@srt/domain';
+import type { Availability, Entry, RegattaEvent } from '@regatta-ops/domain';
 import {
   cellState,
   comingDays,

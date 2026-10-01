@@ -13,5 +13,5 @@ Derived from the club spreadsheets in `data/` on 2026-09-29. These files exist s
 Rules:
 
 - The workbooks with rosters, absences, and lineups contain names of minors. They are ignored by git and must never be copied into code, seed data, tests, screenshots, or documentation. Seed athletes are invented. The one exception is `junior-rosters.sealed.json`, which holds shortened names encrypted with the published demo's password.
-- `pnpm pb:seed`, `pb:reset`, and `pnpm demo` read the roster workbooks at run time (`packages/seed/src/local-rosters.ts`) and put the real junior athletes in the local database and the local demo only. Nothing derived from them is written to the repository. `SRT_SEED_INVENTED=1` keeps the invented athletes, for screenshots.
+- `pnpm pb:seed`, `pb:reset`, and `pnpm demo` read the roster workbooks at run time (`packages/seed/src/local-rosters.ts`) and put the real junior athletes in the local database and the local demo only. Nothing derived from them is written to the repository. `REGATTA_OPS_SEED_INVENTED=1` keeps the invented athletes, for screenshots.
 - Equipment names (shells, oar sets) are fine to use anywhere.

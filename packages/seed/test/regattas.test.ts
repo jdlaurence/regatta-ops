@@ -12,7 +12,7 @@ import {
   type Finding,
   type FindingCode,
   type Id,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import {
   BOYS_SHELF_IDS,
   GIRLS_SHELF_IDS,

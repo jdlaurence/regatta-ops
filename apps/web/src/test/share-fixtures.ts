@@ -2,7 +2,7 @@
 // fields the projection must drop), an unpublished girls draft, logistics lines, a load list,
 // share links, and private notes that must never reach a link. Every name is invented.
 
-import { zonedToInstant, type PublishedSnapshot, type World } from '@srt/domain';
+import { zonedToInstant, type PublishedSnapshot, type World } from '@regatta-ops/domain';
 import { MemoryStore } from '@/data/memory-store';
 import { fixtureWorld, IDS } from '@/test/fixtures';
 
@@ -117,7 +117,7 @@ export function shareWorld(): World {
         ],
         // Not part of a published entry: the projection must drop it.
         notes: 'Snapshot secret',
-        coachEmail: 'coach.boys@srt.local',
+        coachEmail: 'coach.boys@regatta-ops.local',
       },
       {
         entryId: SHARE_IDS.entry8,

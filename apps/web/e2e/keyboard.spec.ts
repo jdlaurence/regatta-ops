@@ -2,7 +2,7 @@
 // path without a mouse, plus the dialogs, menus, pickers, inline edits, and the trailer's
 // select-then-place path. Every step presses keys; nothing is clicked.
 //
-//   pnpm --filter @srt/web exec playwright test e2e/keyboard.spec.ts
+//   pnpm --filter @regatta-ops/web exec playwright test e2e/keyboard.spec.ts
 
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { DESKTOP, regattaUrl, SEED_TEAM_IDS } from './helpers';

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BOAT_CLASSES, isCoxed, rowingSeats, type BoatClass } from '@srt/domain';
+import { BOAT_CLASSES, isCoxed, rowingSeats, type BoatClass } from '@regatta-ops/domain';
 import {
   BoatSeat,
   BoatStrip,

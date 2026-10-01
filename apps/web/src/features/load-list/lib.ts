@@ -36,7 +36,7 @@ import {
   type User,
   zoneContainer,
   zoneName,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 
 export const KIND_TITLES: Record<LoadItemKind, string> = {

@@ -2,7 +2,13 @@
 // the first edit of a final regatta, and acknowledge a hot seat (WP-H's dialog).
 
 import { useId, useMemo, useState } from 'react';
-import { BOAT_CLASSES, seatsFor, type BoatClass, type Entry, type RegattaEvent } from '@srt/domain';
+import {
+  BOAT_CLASSES,
+  seatsFor,
+  type BoatClass,
+  type Entry,
+  type RegattaEvent,
+} from '@regatta-ops/domain';
 import { formatWeekday } from '@/lib/dates';
 import { AcknowledgeHotSeatDialog } from '@/components/AcknowledgeHotSeatDialog';
 import { Button } from '@/components/ui/button';

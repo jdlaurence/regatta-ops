@@ -9,7 +9,7 @@
 
 import { Fragment, type ReactNode } from 'react';
 import { Plus } from 'lucide-react';
-import type { RegattaEvent } from '@srt/domain';
+import type { RegattaEvent } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { formatWeekday } from '@/lib/dates';
 import { ClassBadge } from '@/components/chips';

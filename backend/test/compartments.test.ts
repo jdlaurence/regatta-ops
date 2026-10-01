@@ -1,8 +1,8 @@
 // Bed zones (PLAN.md §4.9, §8.1): trailer_compartments carries start_cm and end_cm, the seed
 // stores SRA's zones along the frame, and a zone reads back the way the app maps it.
 
-import { SRA_BOYS_TRAILER, SRA_GIRLS_TRAILER } from '@srt/domain';
-import { COMPARTMENT_IDS, SEED_TRAILER_IDS, buildSeedWorld } from '@srt/seed';
+import { SRA_BOYS_TRAILER, SRA_GIRLS_TRAILER } from '@regatta-ops/domain';
+import { COMPARTMENT_IDS, SEED_TRAILER_IDS, buildSeedWorld } from '@regatta-ops/seed';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadWorld } from '../seed/load';
 import { HAS_BINARY, startTestServer, type TestServer } from './helpers';

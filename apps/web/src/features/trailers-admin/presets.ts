@@ -9,7 +9,7 @@ import {
   type Rule,
   type ShelfDef,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 
 export type PresetKey = 'offset-post' | 'goalpost' | 'center-post';
 

@@ -1,4 +1,4 @@
-// Entity types for SRT (PLAN.md §8), in camelCase. This file is the contract between
+// Entity types for Regatta Ops (PLAN.md §8), in camelCase. This file is the contract between
 // the domain package, the DataStore implementations, the seed, and the UI.
 //
 // Conventions:

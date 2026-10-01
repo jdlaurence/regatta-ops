@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Plus, Trash2 } from 'lucide-react';
-import type { Regatta, Team } from '@srt/domain';
+import type { Regatta, Team } from '@regatta-ops/domain';
 import { useCan, useCreate, useDelete } from '@/data';
 import { regattaPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';

@@ -12,7 +12,7 @@ import {
   type RegattaEvent,
   type Seat,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { MemoryStore } from '@/data/memory-store';
 import { fixtureWorld, IDS } from '@/test/fixtures';
 import { buildIndex, type LineupData } from './lib';

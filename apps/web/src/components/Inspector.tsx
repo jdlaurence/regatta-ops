@@ -62,7 +62,7 @@ interface InspectorState {
   pop: (id: string) => void;
 }
 
-const OPEN_KEY = 'srt-inspector-open';
+const OPEN_KEY = 'regatta-ops-inspector-open';
 
 function initialOpen(): boolean {
   try {

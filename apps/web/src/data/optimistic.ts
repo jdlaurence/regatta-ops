@@ -3,7 +3,7 @@
 // leave. Lists are re-sorted by their own sort. Snapshots restore the cache on error.
 
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
-import type { CollectionName } from '@srt/domain';
+import type { CollectionName } from '@regatta-ops/domain';
 import { queryKeys, type NormalizedQuery } from './query-keys';
 import { matchesQuery, sortRecords, type ListQuery, type Patch, type RecordOf } from './store';
 
@@ -34,7 +34,9 @@ export type CacheSnapshot = [QueryKey, unknown][];
 
 type Row = { id: string } & Record<string, unknown>;
 
-function isListKey(key: QueryKey): key is readonly ['srt', string, 'list', NormalizedQuery] {
+function isListKey(
+  key: QueryKey,
+): key is readonly ['regatta-ops', string, 'list', NormalizedQuery] {
   return key[2] === 'list';
 }
 

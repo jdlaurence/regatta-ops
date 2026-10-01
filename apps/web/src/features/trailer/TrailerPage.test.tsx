@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
-import type { Id, World } from '@srt/domain';
+import type { Id, World } from '@regatta-ops/domain';
 import {
   SEED_REGATTA_IDS,
   SEED_TEAM_IDS,
@@ -10,7 +10,7 @@ import {
   SEED_USER_IDS,
   buildSeedWorld,
   seedShellId,
-} from '@srt/seed';
+} from '@regatta-ops/seed';
 import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
 import { MemoryStore } from '@/data/memory-store';

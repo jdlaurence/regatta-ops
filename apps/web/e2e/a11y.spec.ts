@@ -2,7 +2,7 @@
 // main page, in the light and the dark theme, plus the landmark and heading rules from axe's
 // best practices. A violation fails the test with the rule, the elements, and what to fix.
 //
-//   pnpm --filter @srt/web exec playwright test e2e/a11y.spec.ts
+//   pnpm --filter @regatta-ops/web exec playwright test e2e/a11y.spec.ts
 
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';

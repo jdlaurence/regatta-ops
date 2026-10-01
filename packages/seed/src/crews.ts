@@ -25,7 +25,7 @@ import {
   type Id,
   type Seat,
   type Side,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { Rng } from './prng';
 
 export interface Eligibility {

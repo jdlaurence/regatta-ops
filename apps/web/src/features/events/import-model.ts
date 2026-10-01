@@ -14,7 +14,7 @@ import {
   type PasteOptions,
   type RegattaEvent,
   type SchedulePaste,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { CreateInput } from '@/data';
 import { formatDay } from '@/lib/dates';
 

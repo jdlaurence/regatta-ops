@@ -1,7 +1,7 @@
 // Role checks (PLAN.md §2, §8.2). The server enforces the same rules; these only decide what
 // the UI offers. Viewers read everything and comment. Offline, every action is off (§10.4).
 
-import type { Role } from '@srt/domain';
+import type { Role } from '@regatta-ops/domain';
 
 export const ACTIONS = {
   /** Regattas, events, entries, seats, publishing (coach and admin). */

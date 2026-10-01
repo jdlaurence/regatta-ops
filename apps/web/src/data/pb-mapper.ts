@@ -15,7 +15,7 @@
 //
 // A field quirk found at merge time is a one-line change to FIELD_OVERRIDES or schema.ts.
 
-import type { CollectionName } from '@srt/domain';
+import type { CollectionName } from '@regatta-ops/domain';
 import {
   DATE_FIELDS,
   JSON_DEFAULTS,

@@ -1,11 +1,11 @@
-// Sign-in domain allowlist (PLAN.md §2). SRT_ALLOWED_DOMAIN holds one domain, or several
+// Sign-in domain allowlist (PLAN.md §2). REGATTA_OPS_ALLOWED_DOMAIN holds one domain, or several
 // separated by commas. Unset means every domain is allowed (local development).
 //
 // Used by auth.pb.js on Google sign-in, on every successful sign-in (any method), and on user
 // creation, so the same check guards all three paths.
 
 function allowedDomains() {
-  const raw = $os.getenv('SRT_ALLOWED_DOMAIN') || '';
+  const raw = $os.getenv('REGATTA_OPS_ALLOWED_DOMAIN') || '';
   return raw
     .split(',')
     .map((d) => d.trim().toLowerCase().replace(/^@/, ''))
@@ -23,6 +23,7 @@ function isEmailAllowed(email) {
   return domains.indexOf(value.slice(at + 1)) !== -1;
 }
 
-const REJECTED_MESSAGE = 'Sign in with your club Google account. Other accounts cannot use SRT.';
+const REJECTED_MESSAGE =
+  'Sign in with your club Google account. Other accounts cannot use Regatta Ops.';
 
 module.exports = { allowedDomains, isEmailAllowed, REJECTED_MESSAGE };

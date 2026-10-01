@@ -2,7 +2,7 @@
 // roster by hand.
 
 import { useId, useState } from 'react';
-import { athleteName, type Team } from '@srt/domain';
+import { athleteName, type Team } from '@regatta-ops/domain';
 import { useCreate } from '@/data';
 import { toast } from '@/components/toast';
 import { Button } from '@/components/ui/button';

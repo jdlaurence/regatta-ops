@@ -12,7 +12,7 @@ import {
   lbToKg,
   trailerDefFromRecords,
   parseCsvObjects,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import {
   BOYS_SHELF_IDS,
   COMPARTMENT_IDS,
@@ -42,12 +42,15 @@ describe('generated reference data', () => {
     ['shells', SHELL_ROWS],
     ['oarSets', OAR_SET_ROWS],
     ['schedule', SCHEDULE_ROWS],
-  ] as const)('%s is up to date with its CSV (run `pnpm --filter @srt/seed gen`)', (key, rows) => {
-    const { file, columns } = REFERENCE_FILES[key];
-    const fromCsv = csv(file);
-    expect(Object.keys(fromCsv[0]!)).toEqual([...columns]);
-    expect(rows).toEqual(fromCsv);
-  });
+  ] as const)(
+    '%s is up to date with its CSV (run `pnpm --filter @regatta-ops/seed gen`)',
+    (key, rows) => {
+      const { file, columns } = REFERENCE_FILES[key];
+      const fromCsv = csv(file);
+      expect(Object.keys(fromCsv[0]!)).toEqual([...columns]);
+      expect(rows).toEqual(fromCsv);
+    },
+  );
 });
 
 describe('shells', () => {

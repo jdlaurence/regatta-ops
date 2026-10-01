@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { zonedToInstant, type Entry, type RegattaEvent, type Team } from '@srt/domain';
+import { zonedToInstant, type Entry, type RegattaEvent, type Team } from '@regatta-ops/domain';
 import {
   defaultDay,
   entriesWithoutEvent,

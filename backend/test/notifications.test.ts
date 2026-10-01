@@ -1,7 +1,7 @@
 // Comment mentions, change emails, and the daily digest (PLAN.md §4.6, Phase 3), against a real
-// PocketBase running with SRT_MAIL_CAPTURE=1, so every email lands in mail_outbox.
+// PocketBase running with REGATTA_OPS_MAIL_CAPTURE=1, so every email lands in mail_outbox.
 
-import { stableId } from '@srt/domain';
+import { stableId } from '@regatta-ops/domain';
 import type PocketBase from 'pocketbase';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { EMAILS, IDS, PASSWORD, testWorld } from './fixtures';
@@ -53,7 +53,7 @@ describe.skipIf(!HAS_BINARY)('mentions and notifications', () => {
   let viewer: PocketBase;
 
   const job = (name: 'notify' | 'digest', body: Record<string, unknown> = {}) =>
-    call(server.url, `/api/srt/jobs/${name}`, {
+    call(server.url, `/api/regatta-ops/jobs/${name}`, {
       method: 'POST',
       body,
       token: server.admin.authStore.token,
@@ -61,9 +61,9 @@ describe.skipIf(!HAS_BINARY)('mentions and notifications', () => {
 
   beforeAll(async () => {
     server = await startTestServer({
-      SRT_MAIL_CAPTURE: '1',
-      SRT_APP_URL: `${APP}/`,
-      SRT_DIGEST_HOUR: String(DIGEST_HOUR),
+      REGATTA_OPS_MAIL_CAPTURE: '1',
+      REGATTA_OPS_APP_URL: `${APP}/`,
+      REGATTA_OPS_DIGEST_HOUR: String(DIGEST_HOUR),
     });
     const { world, accounts } = testWorld();
     await seed(server, world, accounts);
@@ -89,7 +89,7 @@ describe.skipIf(!HAS_BINARY)('mentions and notifications', () => {
       const comment = await viewer.collection('comments').create({
         target_type: 'entry',
         target_id: IDS.entry,
-        body: '@Cam Coach can you check seat 1? cc @coach2, @val.\nOr write to someone@srt.test',
+        body: '@Cam Coach can you check seat 1? cc @coach2, @val.\nOr write to someone@regatta-ops.test',
         mentions: [IDS.admin],
       });
       commentId = comment.id;
@@ -103,9 +103,9 @@ describe.skipIf(!HAS_BINARY)('mentions and notifications', () => {
         'Val Viewer mentioned you in a comment on the entry Boys V4+ (Event 14) at Test regatta:',
       );
       expect(first!.text).toContain('> @Cam Coach can you check seat 1? cc @coach2, @val.');
-      expect(first!.text).toContain('> Or write to someone@srt.test');
+      expect(first!.text).toContain('> Or write to someone@regatta-ops.test');
       expect(first!.text).toContain(
-        `Open it in SRT: ${APP}/regattas/${IDS.regatta}/lineups/${IDS.boys}?entry=${IDS.entry}`,
+        `Open it in Regatta Ops: ${APP}/regattas/${IDS.regatta}/lineups/${IDS.boys}?entry=${IDS.entry}`,
       );
     });
 
@@ -233,14 +233,15 @@ describe.skipIf(!HAS_BINARY)('mentions and notifications', () => {
     });
 
     it('the jobs routes are for superusers only', async () => {
-      const asCoach = await call(server.url, '/api/srt/jobs/notify', {
+      const asCoach = await call(server.url, '/api/regatta-ops/jobs/notify', {
         method: 'POST',
         body: {},
         token: coach.authStore.token,
       });
       expect([401, 403]).toContain(asCoach.status);
       expect(
-        (await call(server.url, '/api/srt/jobs/digest', { method: 'POST', body: {} })).status,
+        (await call(server.url, '/api/regatta-ops/jobs/digest', { method: 'POST', body: {} }))
+          .status,
       ).toBe(401);
     });
   });
@@ -297,7 +298,7 @@ describe.skipIf(!HAS_BINARY)('mentions and notifications', () => {
       const mails = await outbox(server, 'kind = "digest"');
       expect(mails).toHaveLength(2);
       const boys = mails.find((m) => m.to[0] === EMAILS.coach)!;
-      expect(boys.subject).toBe('SRT daily digest: Digest regatta');
+      expect(boys.subject).toBe('Regatta Ops daily digest: Digest regatta');
       expect(boys.text).toContain('Changes in the last 24 hours, for Junior boys.');
       expect(boys.text).toContain('Schedule changes\n- Cy Coach added logistics item Bus departs');
       expect(boys.text).toContain(

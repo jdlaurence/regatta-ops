@@ -15,7 +15,7 @@ import {
   RefreshCcw,
   Trash2,
 } from 'lucide-react';
-import { entryStats, type Entry, type EntryStatus, type Finding } from '@srt/domain';
+import { entryStats, type Entry, type EntryStatus, type Finding } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { worstSeverity } from '@/data';
 import { ClassBadge } from '@/components/chips';

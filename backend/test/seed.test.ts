@@ -1,8 +1,8 @@
-// The full seed world (@srt/seed) loads into the migrated schema: every collection and every
+// The full seed world (@regatta-ops/seed) loads into the migrated schema: every collection and every
 // field the domain types carry has a home, and loading twice changes nothing.
 
-import { COLLECTION_NAMES } from '@srt/domain';
-import { buildSeedWorld } from '@srt/seed';
+import { COLLECTION_NAMES } from '@regatta-ops/domain';
+import { buildSeedWorld } from '@regatta-ops/seed';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadWorld } from '../seed/load';
 import { HAS_BINARY, client, signIn, startTestServer, type TestServer } from './helpers';
@@ -63,8 +63,8 @@ describe.skipIf(!HAS_BINARY)('Google sign-in configuration from the environment'
 
   beforeAll(async () => {
     server = await startTestServer({
-      SRT_GOOGLE_CLIENT_ID: 'test-client.apps.googleusercontent.com',
-      SRT_GOOGLE_CLIENT_SECRET: 'test-secret',
+      REGATTA_OPS_GOOGLE_CLIENT_ID: 'test-client.apps.googleusercontent.com',
+      REGATTA_OPS_GOOGLE_CLIENT_SECRET: 'test-secret',
     });
   });
 

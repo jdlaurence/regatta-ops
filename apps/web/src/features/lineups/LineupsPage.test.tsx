@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
-import type { Seat } from '@srt/domain';
+import type { Seat } from '@regatta-ops/domain';
 import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
 import type { MemoryStore } from '@/data/memory-store';

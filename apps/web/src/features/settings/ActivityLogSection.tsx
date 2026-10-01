@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { History, Search } from 'lucide-react';
-import type { ActivityEntry, CollectionName } from '@srt/domain';
+import type { ActivityEntry, CollectionName } from '@regatta-ops/domain';
 import { targetCollection, useList, useNow } from '@/data';
 import { Avatar } from '@/app/shell/UserMenu';
 import { activityLink } from '@/components/ActivityFeed';

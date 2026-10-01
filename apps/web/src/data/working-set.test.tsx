@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { buildSeedWorld } from '@srt/seed';
+import { buildSeedWorld } from '@regatta-ops/seed';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import { MemoryStore } from './memory-store';
@@ -190,7 +190,7 @@ describe('roles', () => {
     );
     expect(result.current.user!.name).toBe('Vic Viewer');
     expect(result.current).toMatchObject({ edit: false, comment: true, admin: false });
-    await act(() => store.auth.signInWithPassword('admin@srt.local', ''));
+    await act(() => store.auth.signInWithPassword('admin@regatta-ops.local', ''));
     expect(result.current).toMatchObject({ edit: true, admin: true });
   });
 });

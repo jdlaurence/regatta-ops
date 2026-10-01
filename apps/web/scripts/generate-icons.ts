@@ -1,7 +1,7 @@
 // Draws the app icons into public/ (PLAN.md §7.1: installable PWA). Run after changing the
 // mark or the accent token, and commit the output:
 //
-//   pnpm --filter @srt/web icons
+//   pnpm --filter @regatta-ops/web icons
 //
 // The mark is the Logo component's hull (app/shell/Logo.tsx): a shell seen from above, pointed
 // bow left, seat lines, the cox circle at the stern, in white on lake teal. Colors come from

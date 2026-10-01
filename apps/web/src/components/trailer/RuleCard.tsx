@@ -11,7 +11,7 @@ import {
   type Rule,
   type RuleWeight,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { SegmentedControl, Switch } from '@/components/ui/controls';

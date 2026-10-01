@@ -20,7 +20,7 @@ import {
   Trash2,
   Truck,
 } from 'lucide-react';
-import type { Id, LoadItem } from '@srt/domain';
+import type { Id, LoadItem } from '@regatta-ops/domain';
 import {
   batchOp,
   useBatch,

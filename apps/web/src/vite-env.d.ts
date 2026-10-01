@@ -10,14 +10,14 @@ interface ImportMetaEnv {
   readonly VITE_CACHE_BUSTER?: string;
 }
 
-declare module 'virtual:srt-local-rosters' {
-  import type { RosterAthlete } from '@srt/seed';
+declare module 'virtual:regatta-ops-local-rosters' {
+  import type { RosterAthlete } from '@regatta-ops/seed';
   /** Real junior rosters in demo mode (scripts/local-rosters.ts); empty otherwise. */
   const rosters: RosterAthlete[];
   export default rosters;
 }
 
-declare module 'virtual:srt-sealed-roster' {
+declare module 'virtual:regatta-ops-sealed-roster' {
   import type { SealedRoster } from './app/unlock/sealed-roster';
   /** The published demo's encrypted rosters (`--mode pages`, scripts/pages.ts); null otherwise. */
   const sealed: SealedRoster | null;

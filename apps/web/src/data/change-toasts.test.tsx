@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import type { ActivityEntry } from '@srt/domain';
+import type { ActivityEntry } from '@regatta-ops/domain';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import {

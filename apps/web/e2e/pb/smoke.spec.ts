@@ -212,7 +212,7 @@ test('a share link opens in a separate browser, and its checklist syncs after go
   const path = new URL(address).pathname;
   expect(path).toMatch(/^\/share\/[A-Za-z0-9]{40}$/);
 
-  // A phone that has never seen SRT: no session, no data on the device.
+  // A phone that has never seen Regatta Ops: no session, no data on the device.
   const phoneContext = await browser.newContext(PHONE);
   const phone = await phoneContext.newPage();
   await phone.goto(path);

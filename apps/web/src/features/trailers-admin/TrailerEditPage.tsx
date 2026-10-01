@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useBlocker, useNavigate, useParams } from 'react-router';
 import { MoreHorizontal, Trash2 } from 'lucide-react';
-import { meters, shellLabel } from '@srt/domain';
+import { meters, shellLabel } from '@regatta-ops/domain';
 import { newId, useCan, useList } from '@/data';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/states';

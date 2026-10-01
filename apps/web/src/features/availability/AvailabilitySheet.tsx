@@ -19,7 +19,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useBatch, useCan, useCreate, useList, type BatchOp } from '@/data';
 import { regattaPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';

@@ -22,7 +22,7 @@ import {
   type Entry,
   type Seat,
   type Severity,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { BoatSeat, BoatStrip, type BoatSeatProps, type SeatOccupant } from '@/components/BoatStrip';
 import { ConflictIcon } from '@/components/ConflictBadge';

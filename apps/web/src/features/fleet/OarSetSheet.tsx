@@ -6,7 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Trash2 } from 'lucide-react';
-import { BASE_KEYS, oarSetSchema, requiredText, type OarSet } from '@srt/domain';
+import { BASE_KEYS, oarSetSchema, requiredText, type OarSet } from '@regatta-ops/domain';
 import { useCan, useCreate, useDelete, useRecord, useUpdate } from '@/data';
 import { OarChip, TeamChip } from '@/components/chips';
 import { ErrorState, SkeletonRows } from '@/components/states';

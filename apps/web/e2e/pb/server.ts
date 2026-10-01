@@ -6,7 +6,7 @@
 // Seeding runs on a throwaway server on a free port; the fixed port only answers once the data
 // is in, so Playwright starts the tests on a complete world.
 //
-//   pnpm build && pnpm exec tsx e2e/pb/server.ts      (SRT_E2E_PB_PORT, default 4392)
+//   pnpm build && pnpm exec tsx e2e/pb/server.ts      (REGATTA_OPS_E2E_PB_PORT, default 4392)
 
 import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -24,21 +24,21 @@ import {
 } from '../../../../backend/scripts/pocketbase';
 import { seedInto } from '../../../../backend/seed/seed';
 
-const PORT = Number(process.env.SRT_E2E_PB_PORT ?? 4392);
+const PORT = Number(process.env.REGATTA_OPS_E2E_PB_PORT ?? 4392);
 const APP_URL = `http://127.0.0.1:${PORT}`;
 
-/** Ignore the developer's own SRT_* settings (backend/.env is not loaded either). */
+/** Ignore the developer's own REGATTA_OPS_* settings (backend/.env is not loaded either). */
 const ENV: NodeJS.ProcessEnv = {
-  SRT_ALLOWED_DOMAIN: '',
-  SRT_GOOGLE_CLIENT_ID: '',
-  SRT_GOOGLE_CLIENT_SECRET: '',
-  SRT_SMTP_HOST: '',
-  SRT_MAIL_FROM: '',
-  SRT_MAIL_FROM_NAME: '',
+  REGATTA_OPS_ALLOWED_DOMAIN: '',
+  REGATTA_OPS_GOOGLE_CLIENT_ID: '',
+  REGATTA_OPS_GOOGLE_CLIENT_SECRET: '',
+  REGATTA_OPS_SMTP_HOST: '',
+  REGATTA_OPS_MAIL_FROM: '',
+  REGATTA_OPS_MAIL_FROM_NAME: '',
   // Emails (mentions, change notices) land in mail_outbox instead of the log.
-  SRT_MAIL_CAPTURE: '1',
-  SRT_APP_URL: APP_URL,
-  SRT_DIGEST_HOUR: '',
+  REGATTA_OPS_MAIL_CAPTURE: '1',
+  REGATTA_OPS_APP_URL: APP_URL,
+  REGATTA_OPS_DIGEST_HOUR: '',
 };
 
 function log(message: string) {
@@ -47,7 +47,7 @@ function log(message: string) {
 
 async function main() {
   requireBinary();
-  const dataDir = await mkdtemp(path.join(tmpdir(), 'srt-e2e-pb-'));
+  const dataDir = await mkdtemp(path.join(tmpdir(), 'regatta-ops-e2e-pb-'));
   let server: ChildProcess | null = null;
   let stopping = false;
 

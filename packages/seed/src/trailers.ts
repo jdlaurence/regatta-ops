@@ -1,4 +1,4 @@
-// SRA's two trailers from the domain definitions in @srt/domain trailer/sra.ts (PLAN.md §14,
+// SRA's two trailers from the domain definitions in @regatta-ops/domain trailer/sra.ts (PLAN.md §14,
 // §16.4, §17.1), turned into trailer, trailer_shelves, and trailer_compartments records.
 
 import {
@@ -8,7 +8,7 @@ import {
   type CompartmentDef,
   type TrailerDef,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { COMPARTMENT_IDS, SEED_TRAILER_IDS, SHELF_IDS, remapRuleShelfIds } from './ids';
 
 const NOTES = 'Placeholder dimensions until measured (PLAN.md §15 Q1).';

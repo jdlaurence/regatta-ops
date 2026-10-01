@@ -26,7 +26,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm exec prettier --check .
-      - run: pnpm --filter @srt/domain coverage
+      - run: pnpm --filter @regatta-ops/domain coverage
       - run: pnpm test
       - run: pnpm build
 
@@ -41,7 +41,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm pb:download
-      - run: pnpm --filter @srt/backend test
+      - run: pnpm --filter @regatta-ops/backend test
 
   e2e:
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm pb:download
-      - run: pnpm --filter @srt/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @regatta-ops/web exec playwright install --with-deps chromium
       - name: Playwright, demo mode (phase demos)
         run: pnpm test:e2e
         env:

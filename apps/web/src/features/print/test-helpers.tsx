@@ -2,8 +2,8 @@
 
 import { expect } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { buildSeedWorld } from '@srt/seed';
-import type { World } from '@srt/domain';
+import { buildSeedWorld } from '@regatta-ops/seed';
+import type { World } from '@regatta-ops/domain';
 import { useRegattaWorkingSet, type RegattaWorkingSet } from '@/data';
 import { MemoryStore } from '@/data/memory-store';
 import { dataWrapper } from '@/test/render';

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { useInspectorStore } from './Inspector';
 
-const KEY = 'srt-inspector-open';
+const KEY = 'regatta-ops-inspector-open';
 
 describe('inspector store', () => {
   afterEach(() => {

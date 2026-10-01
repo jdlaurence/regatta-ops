@@ -17,7 +17,7 @@ import {
   type Id,
   type ShelfDef,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { sideNamesOf, tierLabel, tierWordOf } from './labels';
 
 export type EndViewSize = 'full' | 'thumb';

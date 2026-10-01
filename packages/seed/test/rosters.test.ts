@@ -2,7 +2,7 @@
 // real names never enter the repository.
 
 import { describe, expect, it } from 'vitest';
-import { stableId } from '@srt/domain';
+import { stableId } from '@regatta-ops/domain';
 import { ALL_LAST_NAMES } from '../src/names';
 import { SEED_REGATTA_IDS, SEED_TEAM_IDS, buildSeedWorld, type RosterAthlete } from '../src';
 

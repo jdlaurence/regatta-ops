@@ -11,7 +11,7 @@ import {
   type QueryClient,
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import type { CollectionName, User } from '@srt/domain';
+import type { CollectionName, User } from '@regatta-ops/domain';
 import { useStore } from './context';
 import {
   networkMonitor,

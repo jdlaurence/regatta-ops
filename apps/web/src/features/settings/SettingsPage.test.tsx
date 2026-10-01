@@ -94,7 +94,9 @@ describe('users and roles', () => {
     const { store } = renderApp('/settings?tab=users', fixtureStore({ signedIn: IDS.admin }));
     await pick(await screen.findByRole('combobox', { name: 'Role for Alex Admin' }), 'Coach');
     expect(
-      await screen.findByText('SRT needs at least one admin. Make someone else an admin first.'),
+      await screen.findByText(
+        'Regatta Ops needs at least one admin. Make someone else an admin first.',
+      ),
     ).toBeInTheDocument();
     expect(store.snapshot().users.find((u) => u.id === IDS.admin)?.role).toBe('admin');
   });

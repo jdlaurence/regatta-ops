@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { RosterAthlete } from '@srt/seed';
+import type { RosterAthlete } from '@regatta-ops/seed';
 import {
   deriveKey,
   openRoster,

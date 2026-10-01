@@ -7,7 +7,7 @@ import {
   THREE_WIDE_EXAMPLE_RULE,
   makeRule,
   type Rule,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { TooltipProvider } from '@/components/ui/menu';
 import { RuleCard } from './RuleCard';
 

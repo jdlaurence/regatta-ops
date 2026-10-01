@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Pencil, Plus, Settings2, Users } from 'lucide-react';
-import type { Team } from '@srt/domain';
+import type { Team } from '@regatta-ops/domain';
 import { useCan, useList } from '@/data';
 import { DataTable, type ColumnDef } from '@/components/DataTable';
 import { PageHeader } from '@/components/PageHeader';

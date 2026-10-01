@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { ChevronDown, Keyboard, Plus, Printer, Rows3, Share2, Table2 } from 'lucide-react';
-import type { Finding, Id, Team } from '@srt/domain';
+import type { Finding, Id, Team } from '@regatta-ops/domain';
 import { useCan, useFindings, type RegattaWorkingSet } from '@/data';
 import { useRegattaId, useTeamIdParam } from '@/app/params';
 import { regattaPath } from '@/app/nav-items';
@@ -48,7 +48,7 @@ import { SEAT_HELP_ID } from './Seats';
 import { SeatSheet } from './SeatSheet';
 import { useLineupUi } from './store';
 
-const ALL_EVENTS_KEY = 'srt-lineups-all-events';
+const ALL_EVENTS_KEY = 'regatta-ops-lineups-all-events';
 
 function readAllEvents(): boolean {
   try {

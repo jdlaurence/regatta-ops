@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { RosterAthlete } from '@srt/seed';
+import type { RosterAthlete } from '@regatta-ops/seed';
 import { openWithRememberedKey, sealRoster } from './sealed-roster';
 import { UnlockPage } from './UnlockPage';
 

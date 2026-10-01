@@ -3,7 +3,7 @@
 
 import { Suspense } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
-import type { Regatta } from '@srt/domain';
+import type { Regatta } from '@regatta-ops/domain';
 import { presencePageFromPath, useChangeToasts, usePresence, useRecord } from '@/data';
 import { cn } from '@/lib/cn';
 import { formatDayRange } from '@/lib/dates';

@@ -4,7 +4,7 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { Check } from 'lucide-react';
-import { athleteName, type Athlete, type Program } from '@srt/domain';
+import { athleteName, type Athlete, type Program } from '@regatta-ops/domain';
 import type { Patch } from '@/data';
 import { DataTable, type ColumnDef } from '@/components/DataTable';
 import { SideBadge } from '@/components/chips';

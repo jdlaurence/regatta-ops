@@ -4,7 +4,7 @@
 
 import { useId } from 'react';
 import { Plus, Trash2, TriangleAlert } from 'lucide-react';
-import type { CompartmentKind } from '@srt/domain';
+import type { CompartmentKind } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

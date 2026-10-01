@@ -6,7 +6,7 @@
 // fields are copied one by one, so emails, notes, availability, rosters, and unpublished drafts
 // never leave the server through a link.
 
-const activity = require(`${__hooks}/srt/activity.js`);
+const activity = require(`${__hooks}/regatta-ops/activity.js`);
 
 const TOKEN_LENGTH = 40;
 const TOKEN_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -20,7 +20,7 @@ const KIND_ORDER = ['shell', 'riggers', 'oar_set', 'gear', 'extra'];
 // boathouse Wi-Fi share an IP, so reads and check-offs are generous. Tokens are 238 random bits,
 // so guessing is hopeless anyway; unknown tokens are still throttled hard.
 const LIMITS = { read: 600, check: 600, miss: 30 };
-const LIMIT_PREFIX = 'srt_rl:';
+const LIMIT_PREFIX = 'regatta_ops_rl:';
 const LIMIT_MAX_KEYS = 20000;
 
 const NOT_FOUND = 'This share link does not exist or was revoked.';
@@ -241,7 +241,7 @@ function kindRank(kind) {
   return i === -1 ? KIND_ORDER.length : i;
 }
 
-/** The read-only JSON for GET /api/srt/share/{token}. */
+/** The read-only JSON for GET /api/regatta-ops/share/{token}. */
 function project(app, link) {
   const regatta = findOrNull(app, 'regattas', link.getString('regatta'));
   if (!regatta) throw new NotFoundError(NOT_FOUND);
@@ -345,7 +345,7 @@ function cleanName(v) {
 }
 
 /**
- * POST /api/srt/share/{token}/load-items/{id} with { loaded?: boolean, returned?: boolean,
+ * POST /api/regatta-ops/share/{token}/load-items/{id} with { loaded?: boolean, returned?: boolean,
  * by?: string }. Sets or clears loaded_at / returned_at (loaded_by / returned_by stay empty; the
  * typed name goes to loaded_by_name / returned_by_name) and logs the change. Ticking an item that
  * is already ticked keeps the first time and name. Returns { item } in the GET's load item shape.

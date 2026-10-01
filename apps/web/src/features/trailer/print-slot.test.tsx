@@ -4,7 +4,12 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { RouterProvider } from 'react-router/dom';
-import { SEED_REGATTA_IDS, SEED_TRAILER_IDS, SEED_USER_IDS, buildSeedWorld } from '@srt/seed';
+import {
+  SEED_REGATTA_IDS,
+  SEED_TRAILER_IDS,
+  SEED_USER_IDS,
+  buildSeedWorld,
+} from '@regatta-ops/seed';
 import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
 import { MemoryStore } from '@/data/memory-store';

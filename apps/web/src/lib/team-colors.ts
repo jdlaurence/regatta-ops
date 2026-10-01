@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { TeamColorKey } from '@srt/domain';
+import type { TeamColorKey } from '@regatta-ops/domain';
 
 /**
  * CSS variables that point `bg-team`, `text-team`, `border-team`, `bg-team-tint` (and SVG

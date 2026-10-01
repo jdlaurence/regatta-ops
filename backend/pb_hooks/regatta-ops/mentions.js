@@ -7,8 +7,8 @@
 // The match must end at the end of the body or before a non-word character, so "@Dana" does not
 // match inside "@Danaher". "a@b.org" is not a mention (a word character precedes the "@").
 
-const activity = require(`${__hooks}/srt/activity.js`);
-const mail = require(`${__hooks}/srt/mail.js`);
+const activity = require(`${__hooks}/regatta-ops/activity.js`);
+const mail = require(`${__hooks}/regatta-ops/mail.js`);
 
 const WORD = /[A-Za-z0-9_À-ɏ]/;
 
@@ -133,7 +133,7 @@ function describeTarget(app, targetType, targetId) {
       };
     }
   }
-  return { regatta: null, short: 'a comment', phrase: 'a comment in SRT', path: '/' };
+  return { regatta: null, short: 'a comment', phrase: 'a comment in Regatta Ops', path: '/' };
 }
 
 /**
@@ -165,10 +165,10 @@ function notify(app, comment, previous, author) {
     '',
     quoted,
     '',
-    'Open it in SRT: ' + mail.appUrl() + target.path,
+    'Open it in Regatta Ops: ' + mail.appUrl() + target.path,
     '',
     '--',
-    'You get this email because someone mentioned you in a comment in SRT.',
+    'You get this email because someone mentioned you in a comment in Regatta Ops.',
   ].join('\n');
   let sent = 0;
   ids.forEach((id) => {

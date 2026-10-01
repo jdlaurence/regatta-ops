@@ -1,7 +1,7 @@
 // "Mark all available" (PLAN.md §6.5): clears every availability record for the athletes in
 // view, reasons included, since no record means available.
 
-import type { Athlete, Availability } from '@srt/domain';
+import type { Athlete, Availability } from '@regatta-ops/domain';
 import { batchOp, type BatchOp } from '@/data';
 import { toast } from '@/components/toast';
 import { Button } from '@/components/ui/button';

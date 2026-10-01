@@ -2,14 +2,14 @@
 // (`--mode pages`, §18), or VITE_DATA_MODE=memory runs on MemoryStore with the seed world and no
 // backend; anything else talks to PocketBase.
 
-import { hash32 } from '@srt/domain';
-import { buildSeedWorld, type RosterAthlete } from '@srt/seed';
+import { hash32 } from '@regatta-ops/domain';
+import { buildSeedWorld, type RosterAthlete } from '@regatta-ops/seed';
 import { MemoryStore, readPersistedWorld } from './memory-store';
 import { PocketBaseStore } from './pocketbase-store';
 import type { DataStore } from './store';
 
-export const DEMO_STORAGE_KEY = 'srt-demo-v1';
-export const DEMO_AUTH_KEY = 'srt-demo-auth-v1';
+export const DEMO_STORAGE_KEY = 'regatta-ops-demo-v1';
+export const DEMO_AUTH_KEY = 'regatta-ops-demo-auth-v1';
 
 export type DataMode = 'memory' | 'pocketbase';
 

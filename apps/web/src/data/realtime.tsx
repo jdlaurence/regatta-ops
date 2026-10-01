@@ -13,7 +13,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { CollectionName } from '@srt/domain';
+import type { CollectionName } from '@regatta-ops/domain';
 import { useStore } from './context';
 import { useCurrentUser } from './hooks';
 import { queryKeys } from './query-keys';

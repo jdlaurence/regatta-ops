@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Presence, TeamColorKey } from '@srt/domain';
+import type { Presence, TeamColorKey } from '@regatta-ops/domain';
 import { shortUserName } from './collab-format';
 import { useStore } from './context';
 import { useCurrentUser, useList } from './hooks';

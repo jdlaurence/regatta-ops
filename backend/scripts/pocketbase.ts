@@ -12,12 +12,12 @@ export const PB_BIN = path.join(BACKEND_DIR, 'bin', 'pocketbase');
 export const DATA_DIR = path.join(BACKEND_DIR, 'pb_data');
 export const MIGRATIONS_DIR = path.join(BACKEND_DIR, 'pb_migrations');
 export const HOOKS_DIR = path.join(BACKEND_DIR, 'pb_hooks');
-export const DEFAULT_URL = process.env.SRT_PB_URL ?? 'http://127.0.0.1:8090';
+export const DEFAULT_URL = process.env.REGATTA_OPS_PB_URL ?? 'http://127.0.0.1:8090';
 
 /** Local development superuser (PocketBase dashboard at /_/). Never used in production. */
 export const SUPERUSER = {
-  email: process.env.SRT_PB_SUPERUSER_EMAIL ?? 'admin@srt.local',
-  password: process.env.SRT_PB_SUPERUSER_PASSWORD ?? 'srt-local-dev',
+  email: process.env.REGATTA_OPS_PB_SUPERUSER_EMAIL ?? 'admin@regatta-ops.local',
+  password: process.env.REGATTA_OPS_PB_SUPERUSER_PASSWORD ?? 'regatta-ops-local-dev',
 };
 
 export function hasBinary(): boolean {

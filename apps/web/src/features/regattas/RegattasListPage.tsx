@@ -5,7 +5,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Archive, ChevronDown, Lock, Plus } from 'lucide-react';
-import type { Regatta } from '@srt/domain';
+import type { Regatta } from '@regatta-ops/domain';
 import { useCan, useFindings, useList } from '@/data';
 import { regattaPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';
