@@ -3,6 +3,7 @@
 // an eight (1990 cm, §16.1) with a little slack. The 2026 layout puts an eight on level 3 of the
 // boys' trailer and on level 2 of the girls', so those levels get the long overhang too.
 
+import { DEFAULT_BALANCE_TOLERANCE_PCT } from './catalog';
 import type { CompartmentDef, Rule, ShelfDef, TrailerDef } from './types';
 
 interface LevelOverhang {
@@ -203,9 +204,8 @@ export const SRA_DEFAULT_RULES: Rule[] = [
     origin: 'trailer',
     params: {},
   },
-  // Low: at Medium the balance term outweighs "fours on levels 3 and 2" and moves a four to
-  // level 1, narrow side; the coaches' own 2026 layout is 27% heavier on the wide side. Like
-  // heavy-low, balance should break ties without fighting the convention (§9.3.5 case 12).
+  // Low: like heavy-low, balance should break ties without fighting the convention. At High it
+  // takes eights off the top levels to ride in the inner lane, which counts for neither side.
   {
     id: 'r_balance',
     type: 'side-balance',
@@ -213,7 +213,7 @@ export const SRA_DEFAULT_RULES: Rule[] = [
     weight: 1,
     enabled: true,
     origin: 'trailer',
-    params: { tolerancePct: 15 },
+    params: { tolerancePct: DEFAULT_BALANCE_TOLERANCE_PCT },
   },
   {
     id: 'r_unload',

@@ -116,6 +116,8 @@ Rowing terms as used in this document and the UI. The UI uses these exact words.
 | **Overhang** | How far a boat sticks out past the trailer frame at the front (over the tow vehicle) or the rear. |
 | **Load plan** | The set of placements of shells on trailer shelves for a regatta, plus the checklist of oars and gear. |
 | **Loading rule** | A constraint or preference the auto-layout follows, editable by coaches in plain language. |
+| **Run of show** | A team's race-day sheet: one row per crew with event, cox, bow number, shell, rig, oars, clams, oar carriers, and the warm-up, boat meeting, launch, and race times. Athletes get the long version, coaches a short one. |
+| **Bow number** | The number a regatta assigns a crew for its bow marker. |
 | **Nickname** | The short name coaches actually use for a shell: "Peggy" for Peggy's Delight, "LLL" for Live.Laugh.Love. Shown everywhere the full name would not fit. |
 | **Re-rig** | Converting a shell between sweep and sculling (or 4+ and 4-). Takes time and a rigger set, so it matters for turnaround. |
 | **Publish** | Freezing a team's lineups for a regatta into the version athletes and parents see. Coaches keep editing the draft; the published copy changes only when they publish again. |
@@ -131,6 +133,8 @@ Rowing terms as used in this document and the UI. The UI uses these exact words.
 - Any coach or admin creates a regatta: name, venue, city, start date, end date (multi-day allowed), timezone (default America/Los_Angeles), notes.
 - Regatta settings, with club-wide defaults editable by admins and per-regatta overrides:
   - `launchLeadMin` (default 40): minutes before race time a crew needs its shell.
+  - `boatMeetingLeadMin` (default 15): minutes before launch the crew meets at its shell; suggests run of show times.
+  - `warmUpLeadMin` (default 30): minutes before the boat meeting the crew starts warming up; suggests run of show times.
   - `raceDurationMin` (default 10 for sprints, 20 for head races; the regatta picks a format).
   - `returnMin` (default 15): minutes from finish until the shell is back on the dock or in slings.
   - `hotSeatMinGapMin` (default 15): the smallest dock-to-race-start gap that a hot seat can survive.
@@ -259,9 +263,10 @@ Admins define trailers in the Trailers admin page with a live diagram that updat
 - **Day schedule**, also as published today: per day, one row per race with time, stage, cox, shell, oars, and the lineup as a name list, with logistics items (bus departures, lunch, awards) in order between them.
 - **Master schedule** for the regatta: all teams, time order, with shells and oars. Coaches tape this to the trailer.
 - **Schedule list**: the schedule page's list as it stands (its day, filters, and "Show entries" switch), with live lineups. The schedule's "Print" button opens it, for everyone; scratched crews are marked, and conflict badges and entries without an event stay off paper.
+- **Run of show** per team per day (`view=run` of the schedule print, opened from the Lineups page header): one row per crew in race order. The athletes' version (landscape) has event number, cox, event, crew, bow number, shell, rig (the stroke seat's side: "Port stroke", "Starboard stroke", or "Sculling"), oars, clams, oar carriers, warm-up, boat meeting, launch, and race; the coaches' version (portrait) has crew, boat meeting, launch, race, shell, oars with clams, and bow number. Shell, oars, and cox follow the published or live choice; race times come from the live schedule, and the race-day values from the live entry (they are not part of publishing). Coaches type bow number, clams, oar carriers, and the three times into the sheet itself (click a cell; saved to the entry, logged, and asked first on a final regatta). An untyped time is suggested back from the race: launch is the launch lead before it, the boat meeting the boat meeting lead before launch, the warm-up the warm-up lead before the meeting; on screen suggestions are grey, on paper they print as is. A typed time is stored as minutes before the race, so it moves when the race does; clearing it goes back to the suggestion; a time at or after the race is refused.
 - **Load sheet** per trailer: shelf-by-shelf list with the end-view diagram, the bed zones and what rides in each, and the checklist: rows assigned to that trailer, shells placed on it, and spares on it, with rows that have no container flagged.
 - **Share links:** a public page (`/share/:token`) for athletes and parents showing races with a published crew plus logistics lines; it refreshes every minute and keeps a copy on the device for offline reloads. Links with check permission add the phone checklist (`/share/:token/load`).
-- **CSV export** of entries, roster, fleet.
+- **Export to Excel** on the lineup and schedule prints: an `.xlsx` of the view on screen (the same layout, team, days, filters, version, and source), one tab per printed page, a title line, bold headers, and race times as Excel times. Roster and fleet export CSV.
 
 ### 4.12 Admin and settings
 
@@ -382,7 +387,7 @@ Phone (< 768 px): bottom tab bar within a regatta (Schedule, Lineups, Trailer, L
 
 **Timeline bar**: a rounded bar with a darker race segment; conflicts hatched.
 
-**Trailer end view** (`<TrailerEndView>`): draws the trailer's real cross-section for its style (offset post at one third for SRA, center post, or goalpost), rack arms per shelf, the bed compartment below, and boat chips as pills with the shell nickname, class badge, and team color. The frame is SVG; chips and drop lanes are HTML laid over it. Widths are to scale and rack spacing is fixed; chips are drawn 1.15 to 1.3 times the hull's beam so names fit. On an outer-first shelf the inner lane is drawn beside the outer one, with "Loads 1st" and "Loads 2nd" per column. Below 480 px, tiers show only their number. Overhang is shown on the plan view only.
+**Trailer end view** (`<TrailerEndView>`): draws the trailer's real cross-section for its style (offset post at one third for SRA, center post, or goalpost), rack arms per shelf, the bed compartment below, and boat chips as pills with the shell nickname, class badge, and team color. The frame is SVG; chips and drop lanes are HTML laid over it. Widths are to scale and rack spacing is fixed; chips are drawn 1.15 to 1.3 times the hull's beam so names fit. On an outer-first shelf the inner lane is drawn beside the outer one. Below 480 px, tiers show only their number. Overhang is shown on the plan view only.
 
 **Rule card**: a sentence ("Top rack holds only eights and fours"), a Must/Prefer tag, a toggle, and an edit affordance. Regatta overrides carry a small "This regatta" tag.
 
@@ -466,8 +471,8 @@ A tab of the team page: the season sheet, athletes by regattas, with a checkbox 
 ││ ▭ Spencer 4+  boys    │ │  level 3  [ Dan 4+   ]║[ Alma 4+    ][ Kokanee   ]│ │  wide    │ │
 ││ ▭ Spare oars…         │ │  level 2  [ Thursday ]║[ —          ][ —         ]│ │Prefer    │ │
 ││                        │ │  level 1  [ —        ]║[ —          ][ —         ]│ │☑ Eights  │ │
-││ Gear checklist  ▸      │ │   narrow side   post   wide side (outer first)   │ │  on top ▮▮▮│ │
-│└────────────────────────┘ │  Left 384 kg · Right 576 kg · check balance     │ │☑ Fours   │ │
+││ Gear checklist  ▸      │ │ narrow (truck left)   post   wide (truck right) │ │  on top ▮▮▮│ │
+│└────────────────────────┘ │  Weight and balance              1 warning  ▾   │ │☑ Fours   │ │
 │                           └──────────────────────────────────────────────────┘ │  lower ▮▮▯│ │
 │ Why here? Peggy: Prefer eights on levels 5 and 4 (+30) · Heavier boats low (−4)  │+ Add rule│ │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -476,7 +481,7 @@ A tab of the team page: the season sheet, athletes by regattas, with a checkbox 
 - Left: unplaced shells (draggable), then the gear checklist. "To load" says "No boats yet" when no entry has a shell.
 - Center: end view by default, drawn as the real cross-section (post at one third, one lane left, two lanes right, bed compartments below); plan view per level, and the isometric view, via the toggle. Selecting a cell or chip shows reasons in the inspector; after a move, focus follows the boat. A trailer switcher at the top moves between the boys' and girls' trailers; unplaced boats can be dragged onto either.
 - Right: rules panel, folded under its "Loading rules" heading and closed when the page opens (the heading shows how many rules are this regatta's and "Changed" after an edit). Editing a rule and clicking "Auto pack trailer" re-packs; locked chips stay.
-- Bottom: weight per side, per-tier overhang, warnings.
+- Bottom: "Weight and balance", folded under its heading and closed when the page opens (the heading shows how many warnings the layout has): weight per side (on SRA's trailers the narrow side and the wide side's outer lane, the two that balance compares), per-tier overhang, warnings.
 
 ### 6.7 Load list `/regattas/:id/load`
 
@@ -503,7 +508,7 @@ Club defaults, users and roles, preferences, activity log. The open tab is kept 
 Server-free print routes with print CSS:
 
 - `/print/regattas/:id/lineups/:teamId|all?day=&source=live&layout=grid&boats=names`
-- `/print/regattas/:id/schedule?view=master|list&day=&team=&source=live`; the list view also takes `class=`, `shell=`, and `entries=hide`, and its toolbar offers the team, the day, and "Show entries". "Back" returns to the schedule with the same day and filters.
+- `/print/regattas/:id/schedule?view=master|list|run&day=&team=&source=live`; the list view also takes `class=`, `shell=`, and `entries=hide`, and its toolbar offers the team, the day, and "Show entries". The run of show takes `for=coaches` for the short version. "Back" returns to the schedule with the same day and filters, or, from one team's run of show, to that team's lineups.
 - `/print/regattas/:id/load/:trailerId`
 
 ---
@@ -589,7 +594,7 @@ Field names are the snake_case forms of the domain names in `packages/domain/src
 
 **events** — `regatta` relation, `kind` select(`race`,`logistics`), `event_number`, `name`, `boat_class` select(`1x`,`2x`,`2-`,`2+`,`4x`,`4x+`,`4+`,`4-`,`8+`), `category`, `day` day, `scheduled_at` date (nullable), `stage` select(`heat`,`semi`,`final`,`time_trial`,`race`), `progression_group`, `team_filter` relation(teams, multi; logistics only), `notes`, `sort_order` number, `source`. Index `(regatta, day, scheduled_at)`.
 
-**entries** — `regatta` relation, `event` relation (nullable), `team` relation, `label`, `boat_class` select, `shell` relation (nullable), `oar_set` relation (nullable), `status` select(`draft`,`planned`,`confirmed`,`scratched`), `coach` relation(users, nullable), `notes`, `hot_seat_plan`, `hot_seat_ack_by` relation (nullable), `hot_seat_fingerprint`, `seat_sides` json (nullable), `created_by`, `updated_by`. `boat_class` is copied from the event on create and kept in sync by a hook when the entry moves events or the event's class is edited. `hot_seat_fingerprint` may hold several fingerprints, space-separated (§9.2). `seat_sides` holds bucket rigs, since shells have no rig-pattern field (§15). Indexes `(regatta, team)`, `(regatta, shell)`, `(regatta, oar_set)`.
+**entries** — `regatta` relation, `event` relation (nullable), `team` relation, `label`, `boat_class` select, `shell` relation (nullable), `oar_set` relation (nullable), `status` select(`draft`,`planned`,`confirmed`,`scratched`), `coach` relation(users, nullable), `notes`, `hot_seat_plan`, `hot_seat_ack_by` relation (nullable), `hot_seat_fingerprint`, `seat_sides` json (nullable), `bow_number`, `clams`, `oar_carriers` (run of show text), `warm_up_before_race_min`, `boat_meeting_before_race_min`, `launch_before_race_min` (run of show times typed for the crew, whole minutes before its race; 0 means not typed, so the time is suggested from the timing settings), `created_by`, `updated_by`. `boat_class` is copied from the event on create and kept in sync by a hook when the entry moves events or the event's class is edited. `hot_seat_fingerprint` may hold several fingerprints, space-separated (§9.2). `seat_sides` holds bucket rigs, since shells have no rig-pattern field (§15). Indexes `(regatta, team)`, `(regatta, shell)`, `(regatta, oar_set)`.
 
 **entry_seats** — `entry` relation, `seat` select(`1`..`8`,`cox`), `athlete` relation (nullable), `note`. Unique `(entry, seat)`; unique `(entry, athlete)` where athlete is set (SQLite partial index in the migration). An empty seat needs no record: a missing record and a null athlete both mean empty.
 
@@ -854,7 +859,7 @@ export function layoutReport(trailer, boats, rules, placements): Pick<PackResult
 export function explain(rule: Rule, trailer: TrailerDef, context?: ExplainContext): string;   // the sentence shown on the rule card
 ```
 
-`balancePct` is |L − R| / (L + R) × 100. `explain` takes optional shell and team names for pin and team sentences. Drag and drop uses `dropBoat`, which finds the offset the packer would use, instead of calling `validatePlacement` with a literal offset.
+`balancePct` is |L − R| / (L + R) × 100, where L and R are the weights that count toward each side: a boat in a lane over the trailer's centerline counts for neither (§9.3.3). `explain` takes optional shell and team names for pin and team sentences. Drag and drop uses `dropBoat`, which finds the offset the packer would use, instead of calling `validatePlacement` with a literal offset.
 
 #### 9.3.2 Geometry
 
@@ -881,12 +886,12 @@ Rules are JSON objects `{ id, type, hard, weight, enabled, origin: 'trailer'|'re
 | `class-tier` | soft | `classes[]`, `tiers[]` | "Prefer eights on the top rack" | +10 × weight when satisfied. With `hard: true` it is a Must: "Eights must go on the top rack". |
 | `heavy-low` | soft | none | "Keep heavier boats low" | −(weightKg / 10) × (tier − 1) × weight. |
 | `forward-bias` | soft | none | "Put overhang in front, over the truck, rather than behind" | −(rearOverhangCm / 50) × weight per lane. |
-| `side-balance` | soft | `tolerancePct` (default 10) | "Balance weight between the two sides" | Global: −(|L − R| / (L + R)) × 100 × weight. Ignored on `full` shelves; uses lane position (left third, right third) there instead. |
+| `side-balance` | soft | `tolerancePct` (default 20) | "Balance weight between the two sides" | Global: −(|L − R| / W) × 100 × weight, where W is the weight of every boat in the pack, so a kilogram of difference costs the same however much is loaded. A lane over the trailer's centerline counts for neither side: the inner lane of an offset-post trailer's wide side, which sits between the wheels, and the middle third of a `full` shelf (which goes by lane position: left third, right third). The warning compares `balancePct` with `tolerancePct` and says which side is heavier and how far apart they are. |
 | `unload-order` | soft | none | "Boats racing first should be easiest to reach" | +5 × weight when a boat with an earlier `firstRaceAt` is on a shelf with a better `accessRank`, and on the outer lane. |
 | `team-together` | soft | `teamIds?` | "Keep each team's boats together" | +3 × weight for each same-team neighbor (same shelf, adjacent lane, or same tier adjacent shelf). |
 | `fragile-inside` | soft | none | "Keep fragile boats in inside lanes" | +8 × weight for a `fragile` boat in a non-outer lane. |
 
-Default rule set for SRA's trailers (seeded in §14, JSON in §17.2): `fit`; `class-tier` (8+ on levels 5 and 4, High); `class-tier` (4+, 4-, 4x, 4x+ on levels 3 and 2, Medium); `heavy-low` (Low, so it breaks ties without fighting the eights-on-top convention); `forward-bias` (Medium); `side-balance` (Low, comparing the one-wide side against the two-wide side by weight; at Medium it pulls a four down to level 1 against the coaches' own layout); `unload-order` (Low); `team-together` (Low). No hard `shelf-classes` rule by default: the girls' 2026 layout put an eight on level 4 between two fours, so the convention is a preference.
+Default rule set for SRA's trailers (seeded in §14, JSON in §17.2): `fit`; `class-tier` (8+ on levels 5 and 4, High); `class-tier` (4+, 4-, 4x, 4x+ on levels 3 and 2, Medium); `heavy-low` (Low, so it breaks ties without fighting the eights-on-top convention); `forward-bias` (Medium); `side-balance` (Low, comparing the narrow side against the wide side's outer lane by weight, with the default 20% tolerance; at High it takes eights off the top levels to ride in the inner lane); `unload-order` (Low); `team-together` (Low). No hard `shelf-classes` rule by default: the girls' 2026 layout put an eight on level 4 between two fours, so the convention is a preference.
 
 The built-in fit rule's id is `fit`. A shelf's own limits (allowed classes, lane override, maximum boats and weight) report under rule ids `shelf:<id>:<key>`.
 
@@ -919,6 +924,7 @@ Small inputs (at most ~40 boats, ~15 shelves) mean clarity beats cleverness. The
 11. `explain()` yields the sentences in the catalog table for each rule type with sample params.
 12. Offset-post trailer: seven 8+ and five 4+ (the boys' 2026 Regionals load) all place on a five-level trailer with the SRA default rules, eights on the top levels, and the class grid matches `data/reference/trailer-layout-2026-regionals.md` up to the order within a level.
 13. `outer_first` lane access: with two equal 4+ where one races first, the earlier boat lands in lane 1 (outside) and the reason names the unload-order rule.
+14. `side-balance` on an offset-post trailer: the wide side's inner lane counts for neither side, so the coaches' boys' layout reports 339 kg against 294 kg with no warning; a load past the tolerance warns, naming the wide side's outer lane; a light load packs down the inner lane.
 
 ### 9.4 Load list derivation
 
@@ -1232,7 +1238,7 @@ Sources: [RCW 46.44.034](https://app.leg.wa.gov/RCW/default.aspx?cite=46.44.034)
   { "id": "r_heavy_low", "type": "heavy-low", "hard": false, "weight": 1, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_forward", "type": "forward-bias", "hard": false, "weight": 2, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_balance", "type": "side-balance", "hard": false, "weight": 1, "enabled": true, "origin": "trailer",
-    "params": { "tolerancePct": 15 } },
+    "params": { "tolerancePct": 20 } },
   { "id": "r_unload", "type": "unload-order", "hard": false, "weight": 1, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_team", "type": "team-together", "hard": false, "weight": 1, "enabled": true, "origin": "trailer", "params": {} },
   { "id": "r_three_wide", "type": "shelf-lanes", "hard": true, "weight": 3, "enabled": true, "origin": "regatta",
@@ -1240,7 +1246,7 @@ Sources: [RCW 46.44.034](https://app.leg.wa.gov/RCW/default.aspx?cite=46.44.034)
 ]
 ```
 
-The last rule is what a coach adds when they say "we can squeeze three fours on the wide side of level 3": it appears with the "This regatta" tag and can be turned off or deleted after the regatta. Side balance on an offset-post trailer compares the narrow side against the wide side, so a perfectly even split is not expected; the tolerance is wider than on a symmetric trailer.
+The last rule is what a coach adds when they say "we can squeeze three fours on the wide side of level 3": it appears with the "This regatta" tag and can be turned off or deleted after the regatta. Side balance on an offset-post trailer compares the narrow side against the wide side's outer lane; the inner lane sits between the wheels and counts for neither. The tolerance is 20% on every trailer style, a 60/40 split between the two sides.
 
 ### 17.3 Pack result excerpt
 
@@ -1260,8 +1266,8 @@ The last rule is what a coach adds when they say "we can squeeze three fours on 
   "unplaced": [
     { "shellId": "sh_donq", "reasons": [ { "ruleId": "r_fit", "hard": true, "text": "No active shelf has a lane with 19.9 m free" } ] }
   ],
-  "metrics": { "leftWeightKg": 384, "rightWeightKg": 576, "balancePct": 20.0, "perShelf": [] },
-  "warnings": ["Wide side carries 20% more than the narrow side (tolerance 15%)"]
+  "metrics": { "leftWeightKg": 192, "rightWeightKg": 384, "balancePct": 33.3, "perShelf": [] },
+  "warnings": ["Wide side, outer lane is heavier than the narrow side: 33.3% apart (tolerance 20%)"]
 }
 ```
 

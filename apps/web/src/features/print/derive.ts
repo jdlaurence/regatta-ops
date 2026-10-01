@@ -4,6 +4,7 @@
 // published/live toggle changes the rows and nothing else.
 
 import {
+  isSculling,
   bedZones,
   classSizeRank,
   compartmentDefFromRecord,
@@ -13,13 +14,16 @@ import {
   meters,
   mergeLoadItems,
   seatsFor,
+  runOfShowTimes,
   sortPublishedEntries,
+  strokeSide,
   daysBetween,
   defaultRiggerCount,
   shellFullLabel,
   shellLabel,
   type Athlete,
   type BoatClass,
+  type Entry,
   type EventStage,
   type Id,
   type LoadItemKind,
@@ -28,8 +32,10 @@ import {
   type MergedLoadRow,
   type PublishedEntry,
   type RegattaEvent,
+  type RunOfShowTimes,
   type Seat,
   type Shell,
+  type Side,
   type SnapshotChange,
   type Team,
   type Trailer,
@@ -389,6 +395,57 @@ export function masterScheduleRows(
   day: string,
 ): RaceRow[] {
   return raceRows(ws, lineups, day);
+}
+
+// ---------------------------------------------------------------------------
+// Run of show
+
+/**
+ * The lineups with each entry's day and race time taken from the live schedule, so a race that
+ * runs late moves on the run of show without publishing again.
+ */
+export function withLiveTimes(
+  ws: RegattaWorkingSet,
+  lineups: readonly TeamLineups[],
+): TeamLineups[] {
+  return lineups.map((tl) => ({
+    ...tl,
+    entries: tl.entries.map((e) => {
+      const ev = e.eventId ? ws.byId.events.get(e.eventId) : undefined;
+      return ev ? { ...e, day: ev.day, scheduledAt: ev.scheduledAt ?? null } : e;
+    }),
+  }));
+}
+
+export interface RunOfShowRow extends RaceRow {
+  /** The live entry, which holds the race-day values; null when it was deleted since publishing. */
+  live: Entry | null;
+  /** The side the stroke rows; null for sculls and boats without a shell. */
+  rig: Side | null;
+  sculling: boolean;
+  /** Warm-up, boat meeting, and launch; null while the race has no time. */
+  times: RunOfShowTimes | null;
+}
+
+/** One day of the run of show: every race row of the lineups (with live times), in race order. */
+export function runOfShowRows(
+  ws: RegattaWorkingSet,
+  lineups: readonly TeamLineups[],
+  day: string,
+): RunOfShowRow[] {
+  const entries = new Map(ws.entries.map((e) => [e.id, e]));
+  return raceRows(ws, lineups, day).map((row) => {
+    const live = entries.get(row.entry.entryId) ?? null;
+    const shell = row.entry.shellId ? ws.byId.shells.get(row.entry.shellId) : undefined;
+    const sides = { boatClass: row.entry.boatClass, seatSides: live?.seatSides };
+    return {
+      ...row,
+      live,
+      rig: shell ? strokeSide(sides, shell) : null,
+      sculling: isSculling(row.entry.boatClass),
+      times: runOfShowTimes(row.entry.scheduledAt, live ?? {}, ws.settings),
+    };
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -28,7 +28,8 @@ import {
   type PrintSource,
 } from './derive';
 import { dayHeading, oarText } from './format';
-import { ExportEntriesButton } from './ExportEntriesButton';
+import { ExportButton } from './ExportButton';
+import { exportFileName, lineupGridExport, lineupSheetExport, type ExportSheet } from './export';
 import { LineupGridSheet } from './LineupGrid';
 import { LineupSheetPage, type BoatsStyle } from './LineupSheet';
 import { usePrintedAt } from './parts';
@@ -123,6 +124,8 @@ export default function PrintLineupsPage() {
   );
 
   let sheets: ReactNode = null;
+  // What "Export to Excel" writes: the sheets on screen.
+  let toExport: (() => ExportSheet[]) | null = null;
   if (data && unknownTeam) {
     sheets = (
       <p className="w-full max-w-[210mm] rounded-card border border-line bg-surface p-5 text-ink-2">
@@ -134,6 +137,8 @@ export default function PrintLineupsPage() {
     const unboated = new Map(
       lineups.map((tl) => [tl.team.id, unboatedFor(data, tl.team.id, tl.entries)]),
     );
+    toExport = () =>
+      pages.map((page) => lineupSheetExport(data, page, unboated.get(page.lineups.team.id) ?? []));
     sheets = pages.map((page) => (
       <LineupSheetPage
         key={`${page.lineups.team.id}:${page.day ?? 'none'}`}
@@ -152,15 +157,23 @@ export default function PrintLineupsPage() {
         (eventId ? data.byId.events.get(eventId)?.progressionGroup : undefined) || undefined,
       oarText: (e: Parameters<typeof oarText>[0]) => oarText(e, data.byId.oarSets),
     };
-    sheets = lineups.map((tl) => (
+    const dayLabel = day
+      ? dayHeading(day)
+      : days.length > 1
+        ? 'All days'
+        : dayHeading(days[0] ?? null);
+    const grids = lineups.map((tl) => ({
+      lineups: tl,
+      tables: lineupGrids(day ? tl.entries.filter((e) => e.day === day) : tl.entries, ctx),
+    }));
+    toExport = () => grids.map((g) => lineupGridExport(data, g.lineups, g.tables, dayLabel));
+    sheets = grids.map((g) => (
       <LineupGridSheet
-        key={tl.team.id}
-        lineups={tl}
-        tables={lineupGrids(day ? tl.entries.filter((e) => e.day === day) : tl.entries, ctx)}
+        key={g.lineups.team.id}
+        lineups={g.lineups}
+        tables={g.tables}
         ws={data}
-        dayLabel={
-          day ? dayHeading(day) : days.length > 1 ? 'All days' : dayHeading(days[0] ?? null)
-        }
+        dayLabel={dayLabel}
         printedAt={printedAt}
       />
     ));
@@ -173,12 +186,17 @@ export default function PrintLineupsPage() {
       controls={controls}
       status={status}
       actions={
-        <ExportEntriesButton
-          regattaId={regattaId}
-          teamId={teamId}
-          variant="ghost"
-          className="max-sm:hidden"
-        />
+        data && (
+          <ExportButton
+            fileName={exportFileName(data, layout === 'grid' ? 'lineup-grid' : 'lineups', {
+              team: team ?? null,
+              day,
+            })}
+            sheets={unknownTeam ? null : toExport}
+            variant="ghost"
+            className="max-sm:hidden"
+          />
+        )
       }
       state={ws}
     >

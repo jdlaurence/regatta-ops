@@ -1,9 +1,10 @@
 // /regattas/:id/trailer and /regattas/:id/trailer/:trailerId: the regatta's load plan on each
 // trailer. Left, the boats still to load; center, the end view (or the plan view) with drag and
-// drop, the metrics under it; right, the loading rules. "Auto pack trailer" runs the packer and
-// the chips glide to their new spots, the app's one orchestrated motion. Selecting a boat shows
-// "Why here?" in the inspector (a bottom sheet on phones). There is no step to start a load plan:
-// the first change to a trailer (a pack, a boat placed, a rule, the status) creates its plan.
+// drop, "Weight and balance" folded under it; right, the loading rules. "Auto pack trailer" runs
+// the packer and the chips glide to their new spots, the app's one orchestrated motion. Selecting
+// a boat shows "Why here?" in the inspector (a bottom sheet on phones). There is no step to start
+// a load plan: the first change to a trailer (a pack, a boat placed, a rule, the status) creates
+// its plan.
 //
 // A manual move locks the boat ("Locked by Sam"); a drop that breaks a hard rule is refused
 // unless Alt (Option) is held, and then it is kept, locked, and flagged. "Auto pack both
@@ -99,10 +100,10 @@ import {
   type PlanRef,
   type TrailerModel,
 } from './lib';
-import { MetricsFooter } from './MetricsFooter';
 import { BoatPill } from './parts';
 import { RulesPanel } from './RulesPanel';
 import { ToLoadPanel } from './ToLoadPanel';
+import { WeightAndBalance } from './WeightAndBalance';
 
 // ---------------------------------------------------------------------------
 // Loading states
@@ -969,7 +970,7 @@ function TrailerWorkspace({ ws }: { ws: RegattaWorkingSet }) {
               )}
 
               {metrics && (
-                <MetricsFooter metrics={metrics} toLoad={model.toLoad.length} placed={placed} />
+                <WeightAndBalance metrics={metrics} toLoad={model.toLoad.length} placed={placed} />
               )}
             </section>
 

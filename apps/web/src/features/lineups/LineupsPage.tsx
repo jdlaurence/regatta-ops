@@ -8,7 +8,16 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { ChevronDown, Keyboard, Plus, Printer, Rows3, Share2, Table2 } from 'lucide-react';
+import {
+  ChevronDown,
+  ClipboardList,
+  Keyboard,
+  Plus,
+  Printer,
+  Rows3,
+  Share2,
+  Table2,
+} from 'lucide-react';
 import type { Finding, Id, Team } from '@regatta-ops/domain';
 import { useCan, useFindings, type RegattaWorkingSet } from '@/data';
 import { useRegattaId, useTeamIdParam } from '@/app/params';
@@ -34,6 +43,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/menu';
 import { useLineupActions } from './actions';
+import { printSchedulePath } from '@/features/print/links';
 import { AthleteMatrix } from './AthleteMatrix';
 import { LineupContext, useLineup, type LineupContextValue } from './context';
 import { LineupDialogs } from './Dialogs';
@@ -267,6 +277,12 @@ function Builder({ regattaId }: { regattaId: string }) {
                 Share
               </Button>
             )}
+            <Button asChild size="sm">
+              <Link to={printSchedulePath(regattaId, { view: 'run', team: team.id })}>
+                <ClipboardList aria-hidden />
+                Run of show
+              </Link>
+            </Button>
             <Button asChild size="sm">
               <Link to={`/print/regattas/${regattaId}/lineups/${team.id}`}>
                 <Printer aria-hidden />

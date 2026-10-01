@@ -116,6 +116,8 @@ export const athleteSchema = z.object({
 
 export const regattaSettingsSchema = z.object({
   launchLeadMin: countSchema,
+  boatMeetingLeadMin: countSchema,
+  warmUpLeadMin: countSchema,
   raceDurationMin: countSchema,
   returnMin: countSchema,
   hotSeatMinGapMin: countSchema,
@@ -218,6 +220,12 @@ export const entrySchema = z.object({
   hotSeatAckBy: optionalRef,
   hotSeatFingerprint: optionalText,
   seatSides: z.partialRecord(seatSchema, sideSchema).nullable().optional(),
+  bowNumber: optionalText,
+  clams: optionalText,
+  oarCarriers: optionalText,
+  warmUpBeforeRaceMin: z.number().int().nullable().optional(),
+  boatMeetingBeforeRaceMin: z.number().int().nullable().optional(),
+  launchBeforeRaceMin: z.number().int().nullable().optional(),
   createdBy: optionalRef,
   updatedBy: optionalRef,
 });

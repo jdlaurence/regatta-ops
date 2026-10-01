@@ -4,6 +4,8 @@ import type { ClubSettings, Regatta, RegattaSettings } from './types';
 
 export const DEFAULT_TIMING: RegattaSettings = {
   launchLeadMin: 40,
+  boatMeetingLeadMin: 15,
+  warmUpLeadMin: 30,
   raceDurationMin: 10,
   returnMin: 15,
   hotSeatMinGapMin: 15,
@@ -27,7 +29,8 @@ export function effectiveSettings(
   regatta: Pick<Regatta, 'format' | 'settings'>,
   club?: Pick<ClubSettings, 'timingDefaults' | 'headRaceDurationMin'> | null,
 ): RegattaSettings {
-  const base = { ...(club?.timingDefaults ?? DEFAULT_TIMING) };
+  // Club records saved before a setting existed lack its key.
+  const base = { ...DEFAULT_TIMING, ...club?.timingDefaults };
   if (regatta.format === 'head') {
     base.raceDurationMin = club?.headRaceDurationMin ?? DEFAULT_HEAD_RACE_DURATION_MIN;
   }
@@ -41,6 +44,14 @@ export const TIMING_LABELS: Record<keyof RegattaSettings, { label: string; help:
   launchLeadMin: {
     label: 'Launch lead',
     help: 'Minutes before race time a crew needs its shell.',
+  },
+  boatMeetingLeadMin: {
+    label: 'Boat meeting lead',
+    help: 'Minutes before launch the crew meets at its shell. Suggests boat meeting times on the run of show.',
+  },
+  warmUpLeadMin: {
+    label: 'Warm-up lead',
+    help: 'Minutes before the boat meeting the crew starts warming up. Suggests warm-up times on the run of show.',
   },
   raceDurationMin: { label: 'Race duration', help: 'Minutes from start to finish.' },
   returnMin: {

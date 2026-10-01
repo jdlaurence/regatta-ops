@@ -106,6 +106,10 @@ export interface Athlete extends BaseRecord {
 
 export interface RegattaSettings {
   launchLeadMin: number;
+  /** Minutes before launch the crew meets at its shell (suggests run-of-show times). */
+  boatMeetingLeadMin: number;
+  /** Minutes before the boat meeting the crew starts warming up (suggests run-of-show times). */
+  warmUpLeadMin: number;
   raceDurationMin: number;
   returnMin: number;
   hotSeatMinGapMin: number;
@@ -220,6 +224,19 @@ export interface Entry extends BaseRecord {
   hotSeatFingerprint?: string;
   /** Per-seat side overrides for non-standard rigs. */
   seatSides?: Partial<Record<Seat, Side>> | null;
+  /** Run of show: the bow number the regatta assigns. */
+  bowNumber?: string;
+  /** Run of show: clams on the oars, as the coach writes it ("1", "x"). */
+  clams?: string;
+  /** Run of show: who carries the oars down. */
+  oarCarriers?: string;
+  /**
+   * Run of show times typed for this crew, in minutes before its race, so they move when the
+   * race does; null means the time suggested from the regatta's timing settings.
+   */
+  warmUpBeforeRaceMin?: number | null;
+  boatMeetingBeforeRaceMin?: number | null;
+  launchBeforeRaceMin?: number | null;
   createdBy?: Id | null;
   updatedBy?: Id | null;
 }

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Label, Textarea } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { ScrollRegion } from './ScrollRegion';
+import { downloadBlob } from '@/lib/download';
 
 // ---------------------------------------------------------------------------
 // Pure helpers
@@ -118,14 +119,7 @@ export function missingRequired(mapping: CsvMapping, fields: readonly CsvField[]
 
 /** Start a download of text as a file (CSV export). */
 export function downloadText(fileName: string, text: string, type = 'text/csv;charset=utf-8') {
-  const url = URL.createObjectURL(new Blob([text], { type }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+  downloadBlob(fileName, new Blob([text], { type }));
 }
 
 // ---------------------------------------------------------------------------

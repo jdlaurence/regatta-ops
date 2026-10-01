@@ -11,7 +11,7 @@ export const DEFAULT_CLEARANCE_CM = 20;
 export const DEFAULT_GAP_CM = 30;
 /** Washington: loads more than 4 ft past the rear need flags (§16.5). */
 export const REAR_FLAG_THRESHOLD_CM = 122;
-export const DEFAULT_BALANCE_TOLERANCE_PCT = 10;
+export const DEFAULT_BALANCE_TOLERANCE_PCT = 20;
 
 /** The built-in fit rule, used when the rule set has no enabled `fit` rule (§9.3.3). */
 export const BUILTIN_FIT_RULE: FitRule = {

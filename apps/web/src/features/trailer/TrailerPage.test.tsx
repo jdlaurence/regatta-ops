@@ -106,6 +106,29 @@ describe('Trailer page', () => {
     );
   });
 
+  it('folds weight, overhang, and warnings under "Weight and balance"', async () => {
+    const user = userEvent.setup();
+    renderTrailer(`/regattas/${NW}/trailer`);
+    await endView();
+    const section = screen.getByRole('region', { name: 'Weight and balance' });
+    // Closed, the heading still counts the warnings.
+    const toggle = within(section).getByRole('button', {
+      name: /^Weight and balance \d+ warnings?$/,
+    });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(within(section).queryByText('Balance')).toBeNull();
+    expect(within(section).queryByRole('list', { name: 'Warnings' })).toBeNull();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(within(section).getByText('Balance')).toBeInTheDocument();
+    expect(within(section).getByRole('heading', { name: 'Overhang' })).toBeInTheDocument();
+    expect(
+      within(within(section).getByRole('list', { name: 'Warnings' })).getAllByRole('listitem')
+        .length,
+    ).toBeGreaterThan(0);
+  });
+
   it('moves a boat from "To load" to a lane with a click, locked by the coach', async () => {
     const user = userEvent.setup();
     const { store } = renderTrailer(`/regattas/${NW}/trailer`);

@@ -74,6 +74,8 @@ export interface PackModel {
   boatIndex: Map<Id, number>;
   /** Earliest race per boat as epoch ms (NaN when unknown); drives unload order. */
   raceTime: number[];
+  /** Weight of every boat in the pack, placed or not: what side balance is scored against. */
+  loadKg: number;
   fit: FitRule;
   clearanceCm: number;
   gapCm: number;
@@ -95,8 +97,10 @@ export interface PackModel {
   text: (ruleId: string) => string;
   /** Name inside another sentence ("must physically fit"). */
   label: (ruleId: string) => string;
-  /** Column names for balance warnings. */
+  /** Names of the two sides that balance compares, for warnings. */
   sideNames: { left: string; right: string };
+  /** Where the post sits across the width, 0 to 1 from the left; 0.5 unless offset-post. */
+  postAt: number;
 }
 
 function synthetic<R extends Rule>(rule: Omit<R, 'hard' | 'weight' | 'enabled' | 'origin'>): R {
@@ -220,16 +224,28 @@ export function laneRuleFor(
   });
 }
 
-function sideNames(trailer: TrailerDef): { left: string; right: string } {
+/**
+ * The two sides that side balance compares. On an offset-post trailer the wide side's inner lane
+ * rides over the centerline and counts for neither, so the wide side is named by its outer lane.
+ */
+export function balanceSideNames(trailer: Pick<TrailerDef, 'style' | 'shelves'>): {
+  left: string;
+  right: string;
+} {
   if (trailer.style === 'offset_post') {
     const width = (key: 'left' | 'right') =>
       trailer.shelves.filter((s) => s.columnKey === key).reduce((t, s) => t + s.widthCm, 0);
     const leftNarrow = width('left') <= width('right');
     return leftNarrow
-      ? { left: 'narrow side', right: 'wide side' }
-      : { left: 'wide side', right: 'narrow side' };
+      ? { left: 'narrow side', right: 'wide side, outer lane' }
+      : { left: 'wide side, outer lane', right: 'narrow side' };
   }
   return { left: 'left side', right: 'right side' };
+}
+
+function postAt(trailer: TrailerDef): number {
+  if (trailer.style !== 'offset_post') return 0.5;
+  return Math.min(100, Math.max(0, trailer.postOffsetPct ?? 33)) / 100;
 }
 
 export function buildModel(
@@ -312,6 +328,7 @@ export function buildModel(
     boats,
     boatIndex,
     raceTime,
+    loadKg: boats.reduce((t, b) => t + b.weightKg, 0),
     fit,
     clearanceCm,
     gapCm,
@@ -335,7 +352,8 @@ export function buildModel(
     explainContext,
     text,
     label,
-    sideNames: sideNames(trailer),
+    sideNames: balanceSideNames(trailer),
+    postAt: postAt(trailer),
   };
 }
 

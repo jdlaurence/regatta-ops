@@ -1,4 +1,4 @@
-// Click-to-edit text for the schedule list (event time and name edit inline).
+// Click-to-edit text (event times and names on the schedule, run of show cells).
 // Shows the value as a button; clicking turns it into an input. Enter or leaving the field
 // saves, Escape cancels, and focus returns to the button either way.
 

@@ -104,13 +104,6 @@ describe('endViewGeometry: offset post (SRA)', () => {
     expect(inner!.rect.x).toBeLessThan(outer!.rect.x);
     expect(inner!.outer).toBe(false);
     expect(outer!.outer).toBe(true);
-    expect([inner!.loadOrder, outer!.loadOrder]).toEqual([1, 2]);
-  });
-
-  it('draws the load order once, on the top level', () => {
-    expect(shelf(g, 'r5').lanes.every((l) => l.showLoadOrder)).toBe(true);
-    expect(shelf(g, 'r4').lanes.some((l) => l.showLoadOrder)).toBe(false);
-    expect(shelf(g, 'l5').lanes[0]!.loadOrder).toBeNull();
   });
 
   it('stacks the tiers top down with the arm under each lane', () => {
@@ -169,11 +162,16 @@ describe('endViewGeometry: offset post (SRA)', () => {
 
   it('captions the sides and the post without overlap', () => {
     const texts = g.captions.map((c) => c.text);
-    expect(texts).toEqual(['Narrow side', 'Post', 'Wide side (outer first)']);
+    expect(texts).toEqual(['Narrow side (truck left)', 'Post', 'Wide side (truck right)']);
     const [l, p, r] = g.captions;
     expect(l!.align).toBe('end');
     expect(l!.x).toBeLessThan(p!.x);
     expect(r!.x).toBeGreaterThan(p!.x);
+  });
+
+  it('drops the truck side from both captions when one would not fit', () => {
+    const texts = geo(SRA_BOYS_TRAILER, 358).captions.map((c) => c.text);
+    expect(texts).toEqual(['Narrow side', 'Post', 'Wide side']);
   });
 
   it('shows "Level 5" at full width and the number under a heading when narrow', () => {

@@ -6,7 +6,8 @@
 // - per-lane terms: forward-bias (−rear overhang/50 × w);
 // - pair terms: team-together (+3w to each of two same-team neighbors), unload-order (+5w when
 //   the earlier-racing boat of a pair is easier to reach);
-// - one global term: side-balance (−|L−R|/(L+R) × 100 × w).
+// - one global term: side-balance (−|L−R|/W × 100 × w, W the weight of every boat in the pack,
+//   so a kilogram of difference costs the same however much is loaded).
 // The greedy step scores a candidate by how much it changes this sum, and the improvement pass
 // accepts the swap or move that raises it most, so both steps optimize the same thing.
 
@@ -77,10 +78,8 @@ export function pairTerm(lay: Layout, a: number, b: number): number {
 
 export function balanceTerm(m: PackModel, left: number, right: number): number {
   const w = m.weights.balance;
-  if (w === 0) return 0;
-  const total = left + right;
-  if (total <= 0) return 0;
-  return -(Math.abs(left - right) / total) * 100 * w;
+  if (w === 0 || m.loadKg <= 0) return 0;
+  return -(Math.abs(left - right) / m.loadKg) * 100 * w;
 }
 
 /** Boat term plus pair terms with every placed boat not in `exclude`. */

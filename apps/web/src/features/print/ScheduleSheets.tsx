@@ -12,7 +12,7 @@
 // with shell, oars, and the lineup (cox, then stroke to bow). Portrait.
 
 import { Fragment, type ReactNode } from 'react';
-import { isCoxed, type PublishedEntry, type Team } from '@regatta-ops/domain';
+import type { PublishedEntry, Team } from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
@@ -20,6 +20,7 @@ import { PrintSheet, SheetHeader, TableScroll } from './PrintFrame';
 import { eventTitle } from '@/features/schedule/lib';
 import type { ListScheduleRow, RaceRow, ScheduleRow, TeamLineups } from './derive';
 import {
+  coxText,
   dayHeading,
   eventText,
   oarText,
@@ -67,7 +68,7 @@ export function ScheduleSourceMeta({
   );
 }
 
-function TeamTag({ team }: { team: Team }) {
+export function TeamTag({ team }: { team: Team }) {
   return (
     <span
       style={teamStyle(team.colorKey)}
@@ -76,12 +77,6 @@ function TeamTag({ team }: { team: Team }) {
       {team.shortName || team.name}
     </span>
   );
-}
-
-function coxName(entry: PublishedEntry): string {
-  if (!isCoxed(entry.boatClass)) return '';
-  const cox = entry.seats.find((s) => s.seat === 'cox' && s.athleteId);
-  return cox ? (cox.athleteName ?? 'Unknown athlete') : 'empty';
 }
 
 /** The lineup as a names list, stroke to bow; with the cox first when `withCox`. */
@@ -112,8 +107,8 @@ function Lineup({ entry, withCox = false }: { entry: PublishedEntry; withCox?: b
   );
 }
 
-const th = 'border-b-2 border-ink px-1.5 py-1 text-left text-sm font-medium text-ink-2';
-const td = 'border-b border-line px-1.5 py-1.5 align-top';
+export const th = 'border-b-2 border-ink px-1.5 py-1 text-left text-sm font-medium text-ink-2';
+export const td = 'border-b border-line px-1.5 py-1.5 align-top';
 
 export function DayScheduleSheet({
   ws,
@@ -218,7 +213,7 @@ export function DayScheduleSheet({
                     showTeam={!team}
                     tz={tz}
                   >
-                    <td className={td}>{coxName(row.entry)}</td>
+                    <td className={td}>{coxText(row.entry)}</td>
                     <td className={cn(td, 'font-medium')}>{row.entry.shellName ?? ''}</td>
                     <td className={td}>{oarText(row.entry, oarSets)}</td>
                     <td className={td}>

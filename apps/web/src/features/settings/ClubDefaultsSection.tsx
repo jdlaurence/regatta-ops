@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   clubSettingsInputSchema,
+  DEFAULT_TIMING,
   TIMING_LABELS,
   type ClubSettings,
   type RegattaSettings,
@@ -26,20 +27,18 @@ const minutes = z
   .min(0, 'Enter zero or more')
   .max(600, 'Enter 600 minutes or fewer');
 
+const TIMING_KEYS = Object.keys(TIMING_LABELS) as (keyof RegattaSettings)[];
+
 const formSchema = clubSettingsInputSchema.extend({
-  timingDefaults: z.object({
-    launchLeadMin: minutes,
-    raceDurationMin: minutes,
-    returnMin: minutes,
-    hotSeatMinGapMin: minutes,
-    athleteMinGapMin: minutes,
-    rerigMin: minutes,
-  }),
+  timingDefaults: z.object(
+    Object.fromEntries(TIMING_KEYS.map((k) => [k, minutes])) as Record<
+      keyof RegattaSettings,
+      typeof minutes
+    >,
+  ),
   headRaceDurationMin: minutes,
 });
 type FormValues = z.infer<typeof formSchema>;
-
-const TIMING_KEYS = Object.keys(TIMING_LABELS) as (keyof RegattaSettings)[];
 
 function timezones(current: string): string[] {
   let zones: string[];
@@ -78,7 +77,9 @@ function ClubDefaultsForm({ settings, exists }: { settings: ClubSettings; exists
   const canManage = useCan('settings.manage');
   const update = useUpdate('club_settings');
   const create = useCreate('club_settings');
-  const { id: _id, created: _c, updated: _u, ...values } = settings;
+  const { id: _id, created: _c, updated: _u, ...stored } = settings;
+  // A record saved before a timing setting existed lacks its key.
+  const values = { ...stored, timingDefaults: { ...DEFAULT_TIMING, ...stored.timingDefaults } };
   const {
     register,
     control,

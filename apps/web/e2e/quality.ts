@@ -102,6 +102,14 @@ export const PAGES: PageCase[] = [
     path: `/print/regattas/${NW_YOUTH}/schedule?view=list&day=2025-05-16&team=${BOYS}`,
   },
   {
+    name: 'print, run of show',
+    path: `/print/regattas/${NW_YOUTH}/schedule?view=run&day=2025-05-16&team=${BOYS}`,
+  },
+  {
+    name: 'print, run of show for coaches',
+    path: `/print/regattas/${NW_YOUTH}/schedule?view=run&day=2025-05-16&team=${BOYS}&for=coaches`,
+  },
+  {
     name: 'print, load sheet',
     path: `/print/regattas/${NW_YOUTH}/load/${SEED_TRAILER_IDS.boys}`,
   },

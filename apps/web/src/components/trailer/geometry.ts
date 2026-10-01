@@ -41,10 +41,6 @@ export interface LaneGeometry extends EndViewCell {
   slot: Rect;
   /** Farthest from the post on its shelf: the first off and the easiest to reach. */
   outer: boolean;
-  /** Outer-first shelves: 1 loads first (by the post); null elsewhere. */
-  loadOrder: number | null;
-  /** Show the load order label here: the top shelf of a column of alike shelves. */
-  showLoadOrder: boolean;
 }
 
 export interface ShelfGeometry {
@@ -375,8 +371,6 @@ export function endViewGeometry(input: EndViewGeometryInput): EndViewGeometry {
           height: spec.chipHeight,
         },
         outer,
-        loadOrder: s.def.laneAccess === 'outer_first' && laneCount > 1 ? lane + 1 : null,
-        showLoadOrder: false,
       };
     });
     let armX1 = x1;
@@ -397,19 +391,6 @@ export function endViewGeometry(input: EndViewGeometryInput): EndViewGeometry {
       laneWidthCm: Math.max(0, s.def.widthCm) / laneCount,
     };
   });
-
-  // Load order reads like a column heading: shown on the top shelf of each run of alike
-  // shelves in a column (same side, span, and lane count), not repeated on every level.
-  const byColumn = new Map<string, ShelfGeometry[]>();
-  for (const sg of shelves) {
-    if (sg.lanes[0]?.loadOrder == null) continue;
-    const k = `${sg.shelf.columnKey}:${Math.round(sg.rect.x)}:${Math.round(sg.rect.width)}:${sg.laneCount}`;
-    byColumn.set(k, [...(byColumn.get(k) ?? []), sg]);
-  }
-  for (const list of byColumn.values()) {
-    const top = list.reduce((a, b) => (b.shelf.tier > a.shelf.tier ? b : a));
-    for (const lane of top.lanes) lane.showLoadOrder = true;
-  }
 
   // Uprights run from above the top arm down to the bed.
   const bedTop = racksBottom + spec.bedGap;
@@ -481,29 +462,38 @@ export function endViewGeometry(input: EndViewGeometryInput): EndViewGeometry {
     const post = posts[0];
     const postMid = post.x + post.width / 2;
     const names = sideNamesOf(trailer);
-    const sideCaption = (key: 'left' | 'right') => {
-      const list = shelves.filter((s) => s.shelf.columnKey === key);
-      if (list.length === 0) return null;
-      const outerFirst = list.every((s) => s.shelf.laneAccess === 'outer_first');
-      const text = `${names[key][0]!.toUpperCase()}${names[key].slice(1)}${outerFirst ? ' (outer first)' : ''}`;
-      const x1 = Math.min(...list.map((s) => s.rect.x));
-      const x2 = Math.max(...list.map((s) => s.rect.x + s.rect.width));
-      return { text, mid: (x1 + x2) / 2, w: text.length * CAPTION_CHAR_PX };
-    };
-    const left = sideCaption('left');
-    const right = sideCaption('right');
     const postText = 'Post';
     const postHalf = (postText.length * CAPTION_CHAR_PX) / 2 + 8;
-    if (left) {
-      // Centered under the column, pushed left so it stays clear of the post caption.
-      const end = Math.min(left.mid + left.w / 2, postMid - postHalf);
-      captions.push({ text: left.text, x: end, align: 'end' });
+    // Centered under the column, pushed outward so it stays clear of the post caption.
+    const sideCaption = (key: 'left' | 'right', withTruck: boolean): Caption | null => {
+      const list = shelves.filter((s) => s.shelf.columnKey === key);
+      if (list.length === 0) return null;
+      // Seen from the back, the left column is the truck's left; say so unless the name does.
+      const truck = withTruck && names[key] !== `${key} side` ? ` (truck ${key})` : '';
+      const text = `${names[key][0]!.toUpperCase()}${names[key].slice(1)}${truck}`;
+      const w = text.length * CAPTION_CHAR_PX;
+      const x1 = Math.min(...list.map((s) => s.rect.x));
+      const x2 = Math.max(...list.map((s) => s.rect.x + s.rect.width));
+      const mid = (x1 + x2) / 2;
+      return key === 'left'
+        ? { text, x: Math.min(mid + w / 2, postMid - postHalf), align: 'end' }
+        : { text, x: Math.max(mid - w / 2, postMid + postHalf), align: 'start' };
+    };
+    const fits = (c: Caption | null) => {
+      if (!c) return true;
+      const w = c.text.length * CAPTION_CHAR_PX;
+      return c.align === 'end' ? c.x - w >= 0 : c.x + w <= width;
+    };
+    // Both sides drop the truck side together when either would run off the drawing.
+    let left = sideCaption('left', true);
+    let right = sideCaption('right', true);
+    if (!fits(left) || !fits(right)) {
+      left = sideCaption('left', false);
+      right = sideCaption('right', false);
     }
+    if (left) captions.push(left);
     captions.push({ text: postText, x: postMid, align: 'middle' });
-    if (right) {
-      const start = Math.max(right.mid - right.w / 2, postMid + postHalf);
-      captions.push({ text: right.text, x: start, align: 'start' });
-    }
+    if (right) captions.push(right);
   }
 
   const height = Math.ceil(

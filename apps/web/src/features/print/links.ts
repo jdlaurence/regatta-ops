@@ -2,13 +2,14 @@
 //
 //   /print/regattas/:id/lineups/:teamId?day=&source=published|live&layout=sheet|grid&boats=strip|names
 //       (:teamId may be "all" for every participating team)
-//   /print/regattas/:id/schedule?day=&team=&view=list|day|master&source=published|live
-//       (view=list also takes the schedule page's class=, shell=, and entries=hide)
+//   /print/regattas/:id/schedule?day=&team=&view=list|day|master|run&source=published|live
+//       (view=list also takes the schedule page's class=, shell=, and entries=hide; view=run
+//       takes for=athletes|coaches)
 //   /print/regattas/:id/load/:trailerId
 //
 // Omitted parameters take their defaults: every day, the published lineups (the live draft for
 // a team that has not published), the lineup sheet with boat strips, the day schedule for
-// every team, entries listed under their races.
+// every team, entries listed under their races, the athletes' run of show.
 
 export interface PrintLineupsOptions {
   day?: string | null;
@@ -20,13 +21,15 @@ export interface PrintLineupsOptions {
 export interface PrintScheduleOptions {
   day?: string | null;
   team?: string | null;
-  view?: 'list' | 'day' | 'master';
+  view?: 'list' | 'day' | 'master' | 'run';
   source?: 'published' | 'live';
   /** List view: the schedule page's class and shell filters. */
   boatClass?: string | null;
   shell?: string | null;
   /** List view: the "Show entries" switch (on when left out). */
   entries?: boolean;
+  /** Run of show: the athletes' long version (default) or the coaches' short one. */
+  version?: 'athletes' | 'coaches';
 }
 
 function query(params: Record<string, string | null | undefined>): string {
@@ -51,12 +54,13 @@ export function printLineupsPath(
 
 export function printSchedulePath(regattaId: string, options: PrintScheduleOptions = {}): string {
   return `/print/regattas/${regattaId}/schedule${query({
-    view: options.view === 'master' || options.view === 'list' ? options.view : null,
+    view: options.view && options.view !== 'day' ? options.view : null,
     day: options.day,
     team: options.team,
     class: options.boatClass,
     shell: options.shell,
     entries: options.entries === false ? 'hide' : null,
+    for: options.version === 'coaches' ? 'coaches' : null,
     source: options.source === 'live' ? 'live' : null,
   })}`;
 }

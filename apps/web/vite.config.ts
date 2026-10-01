@@ -78,6 +78,8 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}'],
+          // The Excel writer loads only when someone exports, so phones never download it.
+          globIgnores: ['**/exceljs*.js'],
           // Every route is the SPA, except PocketBase's API and its dashboard.
           navigateFallback: 'index.html',
           navigateFallbackDenylist: [/^\/api\//, /^\/_\//],

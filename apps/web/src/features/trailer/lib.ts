@@ -5,6 +5,7 @@
 import {
   DEFAULT_BALANCE_TOLERANCE_PCT,
   REAR_FLAG_THRESHOLD_CM,
+  balanceSideNames,
   dropBoat,
   effectiveShelvesFor,
   explainPlacement,
@@ -32,7 +33,7 @@ import {
   type TrailerDef,
 } from '@regatta-ops/domain';
 import { batchOp, type BatchOp, type RegattaWorkingSet } from '@/data';
-import { cellLabel, sideNamesOf, tierLabel } from '@/components/trailer/labels';
+import { cellLabel, tierLabel } from '@/components/trailer/labels';
 
 // ---------------------------------------------------------------------------
 // The page model: boats, trailers, plans, and where every boat is
@@ -573,7 +574,7 @@ export function placementWhere(
 }
 
 // ---------------------------------------------------------------------------
-// Metrics footer
+// Weight and balance
 
 export interface TierOverhang {
   tier: number;
@@ -600,7 +601,7 @@ export interface MetricsSummary {
 /** Weight per side, per-level overhang, and warnings for the layout as it stands. */
 export function metricsSummary(tm: TrailerModel): MetricsSummary {
   const report = layoutReport(tm.def, tm.boats, tm.rules, tm.placements);
-  const sides = sideNamesOf(tm.def);
+  const sides = balanceSideNames(tm.def);
   const balance = tm.rules.find((r) => r.type === 'side-balance' && r.enabled);
   const tolerancePct =
     balance && balance.type === 'side-balance'

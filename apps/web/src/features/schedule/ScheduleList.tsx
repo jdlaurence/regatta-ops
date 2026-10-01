@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/menu';
 import { EventCommentsButton, EventCommentsDialog } from './EventComments';
-import { InlineEdit } from './InlineEdit';
+import { InlineEdit } from '@/components/InlineEdit';
 import { STAGE_LABELS, eventTitle, wallTime, type ScheduleItem } from './lib';
 
 /** A row reached from a link to its event (`?event=`) glows briefly (set by useEventLink). */

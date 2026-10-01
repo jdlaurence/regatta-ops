@@ -6,6 +6,7 @@
 import { useMemo, useState } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import {
+  balanceSideNames,
   packTrailer,
   type Id,
   type PackBoat,
@@ -15,7 +16,7 @@ import {
 } from '@regatta-ops/domain';
 import { useList } from '@/data';
 import { toEndViewBoats } from '@/components/trailer/boats';
-import { sideNamesOf, tierLabel } from '@/components/trailer/labels';
+import { tierLabel } from '@/components/trailer/labels';
 import { SAMPLE_LOADS, sampleEndViewBoats, samplePackBoats } from '@/components/trailer/samples';
 import { TrailerEndView, type EndViewBoat } from '@/components/trailer/TrailerEndView';
 import { TrailerIsometric } from '@/components/trailer/TrailerIsometric';
@@ -123,7 +124,7 @@ export function TrailerPreview({
       .filter((r) => r.status !== 'archived')
       .map((r) => ({ value: `regatta:${r.id}`, label: `${r.name}: every boat racing` })),
   ];
-  const sides = sideNamesOf(trailer);
+  const sides = balanceSideNames(trailer);
   // The unplaced boats have their own list, with reasons.
   const warnings = (pack?.warnings ?? []).filter((w) => !/\bnot placed:/.test(w));
   const loading = parsed.kind !== 'none' && parsed.kind !== 'sample' && !boats;
