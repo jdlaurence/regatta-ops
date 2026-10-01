@@ -671,17 +671,6 @@ export function TrailerEndView({
                 Not in use
               </span>
             ))}
-          {lanes
-            .filter((l) => l.loadOrder !== null && l.showLoadOrder)
-            .map((l) => (
-              <span
-                key={laneKey(l)}
-                className="absolute truncate text-center text-xs leading-none text-ink-2"
-                style={{ left: l.rect.x, top: l.rect.y + 1, width: l.rect.width }}
-              >
-                Loads {ordinal(l.loadOrder!)}
-              </span>
-            ))}
           {g.compartments.map((c) => (
             <span
               key={c.id}
@@ -764,13 +753,6 @@ export function TrailerEndView({
       </p>
     </div>
   );
-}
-
-function ordinal(n: number): string {
-  if (n === 1) return '1st';
-  if (n === 2) return '2nd';
-  if (n === 3) return '3rd';
-  return `${n}th`;
 }
 
 function LaneLayer({

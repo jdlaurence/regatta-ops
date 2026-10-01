@@ -51,7 +51,7 @@ describe('TrailerEndView', () => {
     // Tier labels, captions, and the bed.
     // Drawn once, and once per lane in the description table.
     expect(screen.getAllByText('Level 5')).toHaveLength(1 + 3);
-    expect(screen.getByText('Wide side (outer first)')).toBeInTheDocument();
+    expect(screen.getByText('Wide side (truck right)')).toBeInTheDocument();
     expect(screen.getByText('Riggers')).toBeInTheDocument();
     expect(screen.getByText('Slings and oars ahead')).toBeInTheDocument();
     expect(within(table).getByRole('row', { name: /^Bed Front to back: Oars/ })).toHaveTextContent(
