@@ -9,7 +9,7 @@ import {
   toPbField,
   toPbListParams,
 } from './pb-mapper';
-import type { Entry, EntrySeat, RegattaEvent, Shell, User } from '@srt/domain';
+import type { Entry, EntrySeat, RegattaEvent, Shell, User } from '@regatta-ops/domain';
 
 describe('field names', () => {
   it('converts case both ways', () => {

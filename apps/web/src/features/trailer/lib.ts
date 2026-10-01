@@ -30,7 +30,7 @@ import {
   type Team,
   type Trailer,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { batchOp, type BatchOp, type RegattaWorkingSet } from '@/data';
 import { cellLabel, sideNamesOf, tierLabel } from '@/components/trailer/labels';
 

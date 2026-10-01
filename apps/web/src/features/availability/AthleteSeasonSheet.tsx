@@ -3,7 +3,13 @@
 // regattas; a reason), and a link to any lineup that seats them on a day they are out.
 
 import { Link } from 'react-router';
-import { athleteName, type Athlete, type Availability, type Regatta, type Team } from '@srt/domain';
+import {
+  athleteName,
+  type Athlete,
+  type Availability,
+  type Regatta,
+  type Team,
+} from '@regatta-ops/domain';
 import { lineupEntryPath } from '@/app/nav-items';
 import { formatDayRange } from '@/lib/dates';
 import { SideBadge } from '@/components/chips';

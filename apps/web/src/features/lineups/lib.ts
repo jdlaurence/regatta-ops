@@ -35,7 +35,7 @@ import {
   type Shell,
   type Side,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { batchOp, type BatchOp } from '@/data';
 
 const MINUTE = 60_000;

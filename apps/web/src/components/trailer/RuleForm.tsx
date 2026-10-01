@@ -14,7 +14,7 @@ import {
   type Rule,
   type RuleNumberField,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { Button } from '@/components/ui/button';
 import { Checkbox, SegmentedControl } from '@/components/ui/controls';
 import { Combobox } from '@/components/ui/combobox';

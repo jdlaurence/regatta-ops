@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SEED_REGATTA_IDS, SEED_TEAM_IDS, SEED_TRAILER_IDS } from '@srt/seed';
-import { zonedToInstant } from '@srt/domain';
+import { SEED_REGATTA_IDS, SEED_TEAM_IDS, SEED_TRAILER_IDS } from '@regatta-ops/seed';
+import { zonedToInstant } from '@regatta-ops/domain';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import {
   chunkColumns,

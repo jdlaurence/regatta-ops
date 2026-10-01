@@ -5,7 +5,7 @@
 // the real app: created/updated timestamps, createdBy/updatedBy stamping, activity_log lines,
 // entries.boatClass following its event, unique indexes, relation cascades, and change events.
 
-import { COLLECTION_NAMES, type CollectionName, type User, type World } from '@srt/domain';
+import { COLLECTION_NAMES, type CollectionName, type User, type World } from '@regatta-ops/domain';
 import { blobToDataUrl, type ImageCodec } from '../lib/image';
 import { describeChange, type Lookup } from './activity';
 import { isGuarded, sameStamp } from './concurrency';

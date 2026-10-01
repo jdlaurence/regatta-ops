@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { clockAt, regattaEventInputSchema, type RegattaEvent } from '@srt/domain';
+import { clockAt, regattaEventInputSchema, type RegattaEvent } from '@regatta-ops/domain';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import { EventFormDialog } from './EventFormDialog';

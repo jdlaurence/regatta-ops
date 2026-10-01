@@ -12,7 +12,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 
 // ---------------------------------------------------------------------------
 // Days

@@ -13,7 +13,7 @@
 // until the page reloads and covers every feature for that regatta.
 
 import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
-import type { Regatta } from '@srt/domain';
+import type { Regatta } from '@regatta-ops/domain';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/controls';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';

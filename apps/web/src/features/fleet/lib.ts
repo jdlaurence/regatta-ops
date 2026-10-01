@@ -21,7 +21,7 @@ import {
   type Rigging,
   type Shell,
   type ShellRigging,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 
 // ---------------------------------------------------------------------------
 // Labels (glossary words, sentence case)
@@ -520,7 +520,7 @@ export function countText(shown: number, total: number, plural: string, retiredH
 // ---------------------------------------------------------------------------
 // Files
 
-/** "srt-shells-2026-09-29.csv" */
+/** "regatta-ops-shells-2026-09-29.csv" */
 export function exportFileName(kind: 'shells' | 'oar-sets' | 'gear', today: string): string {
-  return `srt-${kind}-${today}.csv`;
+  return `regatta-ops-${kind}-${today}.csv`;
 }

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import type { Presence } from '@srt/domain';
+import type { Presence } from '@regatta-ops/domain';
 import { fixtureStore, flush, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import { shortUserName } from './collab-format';

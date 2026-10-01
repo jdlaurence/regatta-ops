@@ -5,7 +5,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type Shell,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import {
   activeFilterCount,
   applyClassChange,

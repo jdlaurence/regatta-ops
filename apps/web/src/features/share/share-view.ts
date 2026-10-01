@@ -2,7 +2,7 @@
 // a name list, and how times are written. Times are in the regatta's time zone (parents are at
 // the course), 12-hour with AM/PM.
 
-import { clockAt, daysBetween, instantToZoned, type LoadItemKind } from '@srt/domain';
+import { clockAt, daysBetween, instantToZoned, type LoadItemKind } from '@regatta-ops/domain';
 import type { ShareEntry, ShareLoadItem, ShareScheduleItem, ShareTeam, ShareView } from '@/data';
 
 export interface CrewOnRow {

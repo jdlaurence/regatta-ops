@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildSeedWorld } from '@srt/seed';
+import { buildSeedWorld } from '@regatta-ops/seed';
 import { guessMapping, mapRow, readCsvTable, type CsvField } from '@/components/CsvImport';
 import {
   checkGearRows,

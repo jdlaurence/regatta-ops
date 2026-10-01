@@ -12,7 +12,7 @@
 // with shell, oars, and the lineup (cox, then stroke to bow). Portrait.
 
 import { Fragment, type ReactNode } from 'react';
-import { isCoxed, type PublishedEntry, type Team } from '@srt/domain';
+import { isCoxed, type PublishedEntry, type Team } from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';

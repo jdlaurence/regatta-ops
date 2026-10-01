@@ -9,7 +9,7 @@ import {
   type BoatClass,
   type EventStage,
   type RegattaEvent,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { CreateInput } from '@/data';
 
 export const STAGE_LABELS: Record<EventStage, string> = {

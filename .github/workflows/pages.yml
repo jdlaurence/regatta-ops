@@ -31,7 +31,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm pages:build
         env:
-          SRT_PAGES_BASE: /${{ github.event.repository.name }}/
+          REGATTA_OPS_PAGES_BASE: /${{ github.event.repository.name }}/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

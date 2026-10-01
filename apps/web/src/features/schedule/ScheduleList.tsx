@@ -15,7 +15,7 @@ import {
   type Finding,
   type RegattaEvent,
   type Seat,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useCan, worstSeverity, type RegattaWorkingSet } from '@/data';
 import { lineupEntryPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';

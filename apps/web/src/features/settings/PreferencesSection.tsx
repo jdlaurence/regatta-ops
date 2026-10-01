@@ -3,7 +3,7 @@
 
 import { useId } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
-import type { User, UserPreferences } from '@srt/domain';
+import type { User, UserPreferences } from '@regatta-ops/domain';
 import { useCurrentUser, useList, useUpdate } from '@/data';
 import { useTheme, type ThemeChoice } from '@/app/theme';
 import { toast } from '@/components/toast';

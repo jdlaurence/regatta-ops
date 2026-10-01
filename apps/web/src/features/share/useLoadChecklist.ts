@@ -22,7 +22,7 @@ import { TickQueue, type QueuedTick, type TickField } from './offline-queue';
 /** How often to try again while ticks wait and the browser says it is online. */
 const RETRY_MS = 20_000;
 
-export const NAME_STORAGE_KEY = 'srt-share-name';
+export const NAME_STORAGE_KEY = 'regatta-ops-share-name';
 
 // ---------------------------------------------------------------------------
 // Online state

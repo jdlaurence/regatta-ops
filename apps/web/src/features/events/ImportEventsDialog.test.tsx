@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { clockAt } from '@srt/domain';
+import { clockAt } from '@regatta-ops/domain';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import { NW_DAYS, REFERENCE_CSV, REGATTACENTRAL } from './__fixtures__/paste-samples';

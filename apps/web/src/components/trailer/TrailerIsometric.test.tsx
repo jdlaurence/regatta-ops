@@ -7,7 +7,7 @@ import {
   SRA_DEFAULT_RULES,
   type Placement,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { presetByKey } from '@/features/trailers-admin/presets';
 import {
   BED_WALL_CM,

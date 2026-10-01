@@ -21,7 +21,7 @@ import {
   type BoatClass,
   type Id,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { endViewGeometry, type ShelfState } from './geometry';
 import type { EndViewBoat, EndViewPlacement } from './TrailerEndView';
 

@@ -1,4 +1,4 @@
-import type { Finding, Severity } from '@srt/domain';
+import type { Finding, Severity } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
 

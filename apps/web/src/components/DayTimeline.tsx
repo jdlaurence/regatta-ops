@@ -31,7 +31,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { clockAt, type ConflictInput, type Entry, type Finding } from '@srt/domain';
+import { clockAt, type ConflictInput, type Entry, type Finding } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import { OarChip, ShellChip, TeamChip } from './chips';

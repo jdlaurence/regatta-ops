@@ -2,7 +2,12 @@
 // ConflictInput and run through the pure engine, recomputed only when the data changes.
 
 import { useMemo } from 'react';
-import { findConflicts, type ConflictInput, type Finding, type Severity } from '@srt/domain';
+import {
+  findConflicts,
+  type ConflictInput,
+  type Finding,
+  type Severity,
+} from '@regatta-ops/domain';
 import { useRegattaWorkingSet, type RegattaWorkingSet } from './working-set';
 
 /** The engine's input for a working set. Pure; exported for tests and feature code. */

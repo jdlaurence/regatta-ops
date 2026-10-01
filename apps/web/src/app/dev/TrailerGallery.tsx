@@ -13,7 +13,7 @@ import {
   type Id,
   type Rule,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { TrailerEndView } from '@/components/trailer/TrailerEndView';
 import { TrailerIsometric } from '@/components/trailer/TrailerIsometric';
 import {

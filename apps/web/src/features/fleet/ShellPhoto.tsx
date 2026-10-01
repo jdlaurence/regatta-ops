@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from 'react';
 import { ImagePlus, ImageUp, Trash2 } from 'lucide-react';
-import { shellLabel, type Shell } from '@srt/domain';
+import { shellLabel, type Shell } from '@regatta-ops/domain';
 import {
   looksLikePhoto,
   NOT_A_PHOTO,

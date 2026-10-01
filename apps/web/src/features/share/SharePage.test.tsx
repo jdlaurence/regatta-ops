@@ -189,7 +189,9 @@ describe('the phone load checklist', () => {
     expect(screen.getAllByText('Waiting to sync')).toHaveLength(2);
     // Nothing reached the store yet, and the queue is on the device.
     expect((await store.get('load_items', SHARE_IDS.coxBoxes))!.loadedAt ?? null).toBeNull();
-    expect(localStorage.getItem(`srt-share-queue:${TOKENS.load}`)).toContain(SHARE_IDS.slings);
+    expect(localStorage.getItem(`regatta-ops-share-queue:${TOKENS.load}`)).toContain(
+      SHARE_IDS.slings,
+    );
 
     setOnline(true);
     await waitFor(() => expect(screen.queryByText(/waiting to sync/)).not.toBeInTheDocument());
@@ -200,7 +202,7 @@ describe('the phone load checklist', () => {
       loadedByName: 'Sam',
       returnedByName: 'Sam',
     });
-    expect(localStorage.getItem(`srt-share-queue:${TOKENS.load}`)).toBeNull();
+    expect(localStorage.getItem(`regatta-ops-share-queue:${TOKENS.load}`)).toBeNull();
     const log = await store.list('activity_log', { where: { targetId: SHARE_IDS.slings } });
     expect(log.map((l) => l.summary)).toHaveLength(2);
   });

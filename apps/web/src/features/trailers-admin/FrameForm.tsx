@@ -1,7 +1,7 @@
 // The trailer's own fields: name, style, frame, width, post offset, orientation, notes.
 
 import { useId, type ReactNode } from 'react';
-import { meters, type TrailerStyle } from '@srt/domain';
+import { meters, type TrailerStyle } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { STYLE_LABELS } from '@/components/trailer/labels';
 import { Switch } from '@/components/ui/controls';

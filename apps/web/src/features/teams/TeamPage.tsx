@@ -5,7 +5,7 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, NavLink, useParams } from 'react-router';
 import { Check, Download, Plus, Search, Settings2, Upload, UserPlus } from 'lucide-react';
-import { athleteName, type Athlete, type Team } from '@srt/domain';
+import { athleteName, type Athlete, type Team } from '@regatta-ops/domain';
 import { batchOp, useBatch, useCan, useList, useRecord, useUpdate, type Patch } from '@/data';
 import { TeamDot } from '@/components/chips';
 import { PageHeader } from '@/components/PageHeader';

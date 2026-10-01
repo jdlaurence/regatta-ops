@@ -12,7 +12,7 @@ import {
   type EntryStatus,
   type Id,
   type Seat,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 
 const SEAT_COLUMNS: Seat[] = ['1', '2', '3', '4', '5', '6', '7', '8', 'cox'];

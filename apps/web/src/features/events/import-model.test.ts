@@ -2,7 +2,7 @@
 // RegattaCentral-style paste. Equipment names only; no athletes.
 
 import { describe, expect, it } from 'vitest';
-import { clockAt } from '@srt/domain';
+import { clockAt } from '@regatta-ops/domain';
 import {
   importCountText,
   importDay,

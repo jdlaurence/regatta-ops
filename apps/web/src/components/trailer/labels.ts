@@ -2,7 +2,7 @@
 // tier, shelf, lane). Tier labels read "Level 5" whatever the shelf labels say, so the drawing
 // and the spoken labels agree.
 
-import type { ShelfDef, TrailerDef } from '@srt/domain';
+import type { ShelfDef, TrailerDef } from '@regatta-ops/domain';
 
 export type TierWord = 'level' | 'rack' | 'tier';
 

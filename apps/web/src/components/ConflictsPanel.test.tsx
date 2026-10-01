@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { zonedToInstant, type Finding } from '@srt/domain';
+import { zonedToInstant, type Finding } from '@regatta-ops/domain';
 import { MemoryStore } from '@/data/memory-store';
 import { fixtureWorld, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';

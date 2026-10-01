@@ -20,8 +20,8 @@
 import { existsSync } from 'node:fs';
 import { chromium, defineConfig, devices } from '@playwright/test';
 
-const DEMO_PORT = Number(process.env.SRT_E2E_PORT ?? 4391);
-const PB_PORT = Number(process.env.SRT_E2E_PB_PORT ?? 4392);
+const DEMO_PORT = Number(process.env.REGATTA_OPS_E2E_PORT ?? 4391);
+const PB_PORT = Number(process.env.REGATTA_OPS_E2E_PB_PORT ?? 4392);
 const channel =
   process.env.PW_CHANNEL || (existsSync(chromium.executablePath()) ? undefined : 'chrome');
 const browser = { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) };
@@ -73,7 +73,7 @@ export default defineConfig({
           {
             command: `pnpm build:demo && pnpm preview:demo --port ${DEMO_PORT} --strictPort`,
             // Invented athletes, so screenshots and traces never show the real rosters.
-            env: { SRT_SEED_INVENTED: '1' },
+            env: { REGATTA_OPS_SEED_INVENTED: '1' },
             url: `http://localhost:${DEMO_PORT}`,
             reuseExistingServer,
             timeout: 240_000,
@@ -86,7 +86,7 @@ export default defineConfig({
       ? [
           {
             command: 'pnpm build && pnpm exec tsx e2e/pb/server.ts',
-            env: { SRT_E2E_PB_PORT: String(PB_PORT) },
+            env: { REGATTA_OPS_E2E_PB_PORT: String(PB_PORT) },
             // Answers only once the seed is in (server.ts seeds on a throwaway port first).
             url: `http://127.0.0.1:${PB_PORT}/api/health`,
             reuseExistingServer,

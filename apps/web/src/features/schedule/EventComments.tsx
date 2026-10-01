@@ -1,7 +1,7 @@
 // Comments on a race, from its row on the schedule (PLAN.md §4.6): the count on the row opens
 // the thread, and so does "Comments" in the row's menu (the way to start one).
 
-import type { RegattaEvent } from '@srt/domain';
+import type { RegattaEvent } from '@regatta-ops/domain';
 import { CommentCount, CommentsThread } from '@/components/CommentsThread';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { eventTitle } from './lib';

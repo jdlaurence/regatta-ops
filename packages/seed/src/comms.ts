@@ -9,7 +9,7 @@ import {
   type Entry,
   type Id,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { SEED_REGATTA_IDS, SEED_TRAILER_IDS, SEED_USER_IDS, teamId, type TeamKey } from './ids';
 
 function entryOf(w: World, regattaId: Id, team: TeamKey, label: string): Entry {

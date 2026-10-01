@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-/** The SRT mark: a hull from above, pointed bow left, seats, cox circle at the stern. */
+/** The Regatta Ops mark: a hull from above, pointed bow left, seats, cox circle at the stern. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 36 14" className={cn('h-3.5 w-9 shrink-0', className)} aria-hidden>
@@ -22,7 +22,9 @@ export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
       <LogoMark />
-      <span className="font-display text-lg font-semibold tracking-tight text-ink">SRT</span>
+      <span className="font-display text-lg font-semibold tracking-tight text-ink">
+        Regatta Ops
+      </span>
     </span>
   );
 }

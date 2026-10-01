@@ -25,7 +25,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { SCHEDULE_ROWS } from '../generated/reference';
 import type { FleetIndex } from '../fleet';
 import {

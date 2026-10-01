@@ -12,7 +12,7 @@
 
 import { useMemo, useState } from 'react';
 import { Copy, ExternalLink, Link2Off, Plus } from 'lucide-react';
-import type { ShareLink, Team } from '@srt/domain';
+import type { ShareLink, Team } from '@regatta-ops/domain';
 import { sharePath, useCan, useList, useStoreMutation, useUpdate, type CreateInput } from '@/data';
 import { relativeTime } from '@/lib/relative-time';
 import { cn } from '@/lib/cn';

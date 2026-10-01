@@ -10,7 +10,7 @@ import {
   type RuleParamsOf,
   type RuleType,
   type RuleWeight,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 
 export type RulesMode = 'trailer' | 'regatta';
 

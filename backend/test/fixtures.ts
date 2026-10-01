@@ -1,6 +1,6 @@
 // A small hand-built world for the rule tests. Invented people only.
 
-import { DEFAULT_CLUB_SETTINGS, stableId, type SeedAccount, type World } from '@srt/domain';
+import { DEFAULT_CLUB_SETTINGS, stableId, type SeedAccount, type World } from '@regatta-ops/domain';
 
 export const PASSWORD = 'test-password-1';
 
@@ -30,10 +30,10 @@ export const IDS = {
 };
 
 export const EMAILS = {
-  admin: 'admin@srt.test',
-  coach: 'coach@srt.test',
-  coach2: 'coach2@srt.test',
-  viewer: 'viewer@srt.test',
+  admin: 'admin@regatta-ops.test',
+  coach: 'coach@regatta-ops.test',
+  coach2: 'coach2@regatta-ops.test',
+  viewer: 'viewer@regatta-ops.test',
   outsider: 'someone@elsewhere.test',
 };
 

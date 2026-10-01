@@ -6,7 +6,7 @@
 // TrailerEndView. Screen readers get a summary instead of the drawing.
 
 import { useCallback, useMemo, useState } from 'react';
-import { effectiveShelvesFor, type Id, type Rule, type TrailerDef } from '@srt/domain';
+import { effectiveShelvesFor, type Id, type Rule, type TrailerDef } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import {

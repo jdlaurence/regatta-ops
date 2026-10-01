@@ -48,7 +48,7 @@ import {
   type ShelfDef,
   type TeamColorKey,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';
 import {

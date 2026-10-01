@@ -1,9 +1,9 @@
 // Seed world (PLAN.md §14). buildSeedWorld() is pure and deterministic: no clock, no
 // Math.random, every id from stableId(<meaningful key>). The PocketBase seed script and demo mode
 // (MemoryStore) both call it, so it must stay fast and must not touch the file system; the
-// reference CSVs are compiled into src/generated/reference.ts by `pnpm --filter @srt/seed gen`.
+// reference CSVs are compiled into src/generated/reference.ts by `pnpm --filter @regatta-ops/seed gen`.
 
-import type { SeedAccount, World } from '@srt/domain';
+import type { SeedAccount, World } from '@regatta-ops/domain';
 import { addActivity, addComments } from './comms';
 import { FleetIndex, addFleet } from './fleet';
 import { addAthletes, addClubSettings, addTeams, addUsers, type RosterAthlete } from './people';
@@ -23,7 +23,7 @@ export interface SeedResult {
 }
 
 /** Password of every seeded account. Local development only. */
-export const SEED_PASSWORD = 'srt-local-dev';
+export const SEED_PASSWORD = 'regatta-ops-local-dev';
 
 export interface SeedOptions {
   /** Real junior rosters (read from data/ by pnpm pb:seed); teams without rows stay invented. */

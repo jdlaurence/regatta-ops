@@ -6,7 +6,7 @@
 // (pnpm pb:download). Uses the backend's own test harness and fixture world.
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { PublishedSnapshot } from '@srt/domain';
+import type { PublishedSnapshot } from '@regatta-ops/domain';
 import { PocketBaseStore } from '@/data/pocketbase-store';
 import { isShareGone, shareApiFor } from '@/data/share';
 
@@ -125,7 +125,7 @@ describe.skipIf(!harness.HAS_BINARY)('share links against PocketBase', () => {
     expect(boys.entries[0]!.seats[0]!.athleteName).toBe('Rowan Test');
     expect(view.loadItems!.map((i) => i.label)).toContain('Cox boxes');
     expect(JSON.stringify(view)).not.toContain('Private item notes');
-    expect(JSON.stringify(view)).not.toContain('@srt.test');
+    expect(JSON.stringify(view)).not.toContain('@regatta-ops.test');
 
     const ticked = await api.tickLoadItem(link.token, coxBoxes.id, { loaded: true, by: 'Sam' });
     expect(ticked).toMatchObject({ id: coxBoxes.id, loaded: true, loadedBy: 'Sam' });

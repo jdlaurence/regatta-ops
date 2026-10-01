@@ -3,7 +3,7 @@
 // shows. Viewers see who sits there and nothing to change.
 
 import { useMemo, useState } from 'react';
-import { athleteName, entrySeatSides } from '@srt/domain';
+import { athleteName, entrySeatSides } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { filterOptions } from '@/components/ui/combobox';
 import { ConflictIcon } from '@/components/ConflictBadge';

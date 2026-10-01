@@ -292,10 +292,12 @@ describe('MemoryStore auth', () => {
     const seen: (string | null)[] = [];
     store.auth.onChange((u) => seen.push(u?.id ?? null));
     expect(store.auth.user).toBeNull();
-    const user = await store.auth.signInWithPassword('ADMIN@srt.local', 'anything');
+    const user = await store.auth.signInWithPassword('ADMIN@regatta-ops.local', 'anything');
     expect(user.role).toBe('admin');
     expect(store.auth.user).toBe(store.auth.user); // stable between reads
-    await expect(store.auth.signInWithPassword('nobody@srt.local', '')).rejects.toMatchObject({
+    await expect(
+      store.auth.signInWithPassword('nobody@regatta-ops.local', ''),
+    ).rejects.toMatchObject({
       code: 'auth',
     });
     await expect(store.auth.signInWithGoogle()).rejects.toBeInstanceOf(StoreError);
@@ -316,15 +318,15 @@ describe('MemoryStore auth', () => {
     const { fixtureWorld } = await import('@/test/fixtures');
     const store = new MemoryStore({
       world: fixtureWorld(),
-      persistKey: 'srt-test',
+      persistKey: 'regatta-ops-test',
       reseed: fixtureWorld,
       userId: IDS.coach,
     });
     await store.update('teams', IDS.boys, { name: 'Renamed' });
     store.flush();
-    expect(localStorage.getItem('srt-test')).toContain('Renamed');
+    expect(localStorage.getItem('regatta-ops-test')).toContain('Renamed');
     await store.resetDemo();
     expect((await store.get('teams', IDS.boys))!.name).toBe('Junior boys');
-    expect(localStorage.getItem('srt-test')).not.toContain('Renamed');
+    expect(localStorage.getItem('regatta-ops-test')).not.toContain('Renamed');
   });
 });

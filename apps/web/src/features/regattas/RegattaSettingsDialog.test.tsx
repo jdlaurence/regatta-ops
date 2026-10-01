@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { clockAt, DEFAULT_CLUB_SETTINGS, type ClubSettings } from '@srt/domain';
+import { clockAt, DEFAULT_CLUB_SETTINGS, type ClubSettings } from '@regatta-ops/domain';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import { RegattaSettingsDialog } from './RegattaSettingsDialog';

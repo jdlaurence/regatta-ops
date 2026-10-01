@@ -19,7 +19,7 @@ import {
   type ShellRigging,
   type Side,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { OAR_SET_ROWS, SHELL_ROWS } from './generated/reference';
 import type { OarSetRow, ShellRow } from './reference-types';
 import { SEED_TEAM_IDS, seedGearId, seedOarSetId, seedShellId } from './ids';

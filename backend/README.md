@@ -1,66 +1,67 @@
-# SRT backend (PocketBase)
+# Regatta Ops backend (PocketBase)
 
-One PocketBase binary, pinned to **v0.40.4**, with SRT's collections and API rules in
+One PocketBase binary, pinned to **v0.40.4**, with the app's collections and API rules in
 `pb_migrations/`, server logic in `pb_hooks/`, and the seed loader in `seed/`. Spec: PLAN.md §8.
 
 ## Commands (from the repo root)
 
-| Command                           | What it does                                                                                                                 |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm pb:download`                | Fetch the pinned binary for this OS and architecture into `backend/bin/` (checksum verified; does nothing if already there). |
-| `pnpm dev`                        | PocketBase on http://127.0.0.1:8090 next to Vite. `pnpm pb:serve` runs PocketBase alone.                                     |
-| `pnpm pb:reset`                   | Wipe `backend/pb_data`, migrate, create the local superuser, seed. Stop `pnpm dev` first.                                    |
-| `pnpm pb:seed`                    | Upsert the seed world (`@srt/seed`) into the running server, or into `pb_data` through a temporary server. Safe to repeat.   |
-| `pnpm pb:migrate`                 | Apply pending migrations to `pb_data` (serve also applies them on start).                                                    |
-| `pnpm pb:types`                   | Regenerate `apps/web/src/data/pb-types.ts` from the migrations (throwaway server). Commit the result.                        |
-| `pnpm --filter @srt/backend test` | Rule and hook tests against real PocketBase instances (skipped with a message when the binary is missing).                   |
+| Command                                   | What it does                                                                                                                       |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm pb:download`                        | Fetch the pinned binary for this OS and architecture into `backend/bin/` (checksum verified; does nothing if already there).       |
+| `pnpm dev`                                | PocketBase on http://127.0.0.1:8090 next to Vite. `pnpm pb:serve` runs PocketBase alone.                                           |
+| `pnpm pb:reset`                           | Wipe `backend/pb_data`, migrate, create the local superuser, seed. Stop `pnpm dev` first.                                          |
+| `pnpm pb:seed`                            | Upsert the seed world (`@regatta-ops/seed`) into the running server, or into `pb_data` through a temporary server. Safe to repeat. |
+| `pnpm pb:migrate`                         | Apply pending migrations to `pb_data` (serve also applies them on start).                                                          |
+| `pnpm pb:types`                           | Regenerate `apps/web/src/data/pb-types.ts` from the migrations (throwaway server). Commit the result.                              |
+| `pnpm --filter @regatta-ops/backend test` | Rule and hook tests against real PocketBase instances (skipped with a message when the binary is missing).                         |
 
 ## Real junior rosters
 
 `pb:seed` and `pb:reset` read the club's roster workbooks in `data/` when they are there
 (`*Boys*Roster*.xlsx`, `*Girls*Roster*.xlsx`; git ignores them) and seed those junior boys and girls
 instead of invented ones, so real names reach `pb_data` and never the repository
-(`packages/seed/src/local-rosters.ts`). A team without a workbook stays invented, and `SRT_SEED_INVENTED=1` keeps both
-invented. Sides and sculling are not on the rosters; the seed assigns them, so set them in the app.
+(`packages/seed/src/local-rosters.ts`). A team without a workbook stays invented, and
+`REGATTA_OPS_SEED_INVENTED=1` keeps both invented. Sides and sculling are not on the rosters; the seed assigns them, so set them in the app.
 Athlete ids come from the name, so after switching between invented and real athletes run
 `pnpm pb:reset`, which clears the old ones. The unit tests and both Playwright suites always use invented athletes. `pnpm demo` reads the same workbooks (PLAN.md §18).
 
 ## Local accounts
 
-- Dashboard: http://127.0.0.1:8090/_/ as superuser `admin@srt.local` / `srt-local-dev`
-  (override with `SRT_PB_SUPERUSER_EMAIL` / `SRT_PB_SUPERUSER_PASSWORD`). Superuser writes skip
-  the activity log.
+- Dashboard: http://127.0.0.1:8090/_/ as superuser `admin@regatta-ops.local` /
+  `regatta-ops-local-dev` (override with `REGATTA_OPS_PB_SUPERUSER_EMAIL` /
+  `REGATTA_OPS_PB_SUPERUSER_PASSWORD`). Superuser writes skip the activity log.
 - App sign-in: the seed's email and password accounts, printed by `pb:seed` and `pb:reset`
-  (password `srt-local-dev`), for example `admin@srt.local`, `coach.boys@srt.local`,
-  `viewer@srt.local`.
+  (password `regatta-ops-local-dev`), for example `admin@regatta-ops.local`,
+  `coach.boys@regatta-ops.local`, `viewer@regatta-ops.local`.
 
 ## Configuration
 
 `pnpm pb:serve` and `pnpm dev` load `backend/.env` (git-ignored) if present:
 
 ```sh
-SRT_ALLOWED_DOMAIN=example.org        # sign-in domain allowlist; comma-separate several; unset = any
-SRT_GOOGLE_CLIENT_ID=...apps.googleusercontent.com
-SRT_GOOGLE_CLIENT_SECRET=...
+REGATTA_OPS_ALLOWED_DOMAIN=example.org        # sign-in domain allowlist; comma-separate several; unset = any
+REGATTA_OPS_GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+REGATTA_OPS_GOOGLE_CLIENT_SECRET=...
 
-SRT_APP_URL=https://srt.example.org   # start of links in emails; default http://localhost:5173
-SRT_SMTP_HOST=smtp.example.org        # set to send email (see "Email" below)
-SRT_SMTP_PORT=587                     # default 587
-SRT_SMTP_USERNAME=...
-SRT_SMTP_PASSWORD=...
-SRT_SMTP_TLS=false                    # true for implicit TLS (usually port 465); else STARTTLS
-SRT_SMTP_AUTH_METHOD=PLAIN            # PLAIN (default) or LOGIN
-SRT_SMTP_LOCAL_NAME=                  # EHLO name, only some relays need it
-SRT_MAIL_FROM=srt@example.org         # sender address (default: the dashboard's)
-SRT_MAIL_FROM_NAME=SRT                # sender name
-SRT_DIGEST_HOUR=6                     # local hour (regatta time zone) of the daily digest
-SRT_MAIL_CAPTURE=1                    # store every email in mail_outbox instead of sending it
+# start of links in emails; default http://localhost:5173
+REGATTA_OPS_APP_URL=https://regatta-ops.example.org
+REGATTA_OPS_SMTP_HOST=smtp.example.org        # set to send email (see "Email" below)
+REGATTA_OPS_SMTP_PORT=587                     # default 587
+REGATTA_OPS_SMTP_USERNAME=...
+REGATTA_OPS_SMTP_PASSWORD=...
+REGATTA_OPS_SMTP_TLS=false                    # true for implicit TLS (usually port 465); else STARTTLS
+REGATTA_OPS_SMTP_AUTH_METHOD=PLAIN            # PLAIN (default) or LOGIN
+REGATTA_OPS_SMTP_LOCAL_NAME=                  # EHLO name, only some relays need it
+REGATTA_OPS_MAIL_FROM=regatta-ops@example.org # sender address (default: the dashboard's)
+REGATTA_OPS_MAIL_FROM_NAME=Regatta Ops        # sender name
+REGATTA_OPS_DIGEST_HOUR=6                     # local hour (regatta time zone) of the daily digest
+REGATTA_OPS_MAIL_CAPTURE=1                    # store every email in mail_outbox instead of sending it
 ```
 
-Google sign-in stays disabled until `SRT_GOOGLE_CLIENT_ID` is set; on start, `auth.pb.js`
+Google sign-in stays disabled until `REGATTA_OPS_GOOGLE_CLIENT_ID` is set; on start, `auth.pb.js`
 writes the provider into the `users` collection. In the Google Cloud console, the authorized
-redirect URI is `<app origin>/api/oauth2-redirect`. With `SRT_ALLOWED_DOMAIN` set, the seed's
-`@srt.local` accounts can no longer sign in.
+redirect URI is `<app origin>/api/oauth2-redirect`. With `REGATTA_OPS_ALLOWED_DOMAIN` set, the
+seed's `@regatta-ops.local` accounts can no longer sign in.
 
 ## Record shapes (what `PocketBaseStore` maps)
 
@@ -105,7 +106,7 @@ keep their name (`created_by`, `hot_seat_ack_by`, `loaded_by`). `targetId` and `
 - `entries.pb.js`: `entries.boat_class` follows its event (on create, on move, and when the event's
   class is edited); moving an entry or changing its shell clears `hot_seat_ack_by` unless the
   same write sets it.
-- `activity.pb.js` (+ `srt/activity.js`): an `activity_log` row after each create, update, or
+- `activity.pb.js` (+ `regatta-ops/activity.js`): an `activity_log` row after each create, update, or
   delete of entries, seats, events, availability, placements, load items, shells, and oar sets.
   `summary` is a sentence without the actor, e.g. `moved entry Boys V4+ to Event 21`,
   `set seat 3 of Boys V8 to Sam Lee`; several changes are joined with `; `. `diff` is
@@ -113,11 +114,11 @@ keep their name (`created_by`, `hot_seat_ack_by`, `loaded_by`). `targetId` and `
 - `concurrency.pb.js`: the `expected_updated` 409 above.
 - `housekeeping.pb.js`: one `club_settings` record only; presence rows older than 2 minutes are
   pruned every minute.
-- `share.pb.js` (+ `srt/share.js`): share-link tokens and revocation, and the public routes
+- `share.pb.js` (+ `regatta-ops/share.js`): share-link tokens and revocation, and the public routes
   (below).
-- `comments.pb.js` (+ `srt/mentions.js`): `comments.mentions` and mention emails (below).
-- `notify.pb.js` (+ `srt/notify.js`): change emails and the daily digest (below).
-- `mail.pb.js` (+ `srt/mail.js`): SMTP settings from the environment, and mail capture.
+- `comments.pb.js` (+ `regatta-ops/mentions.js`): `comments.mentions` and mention emails (below).
+- `notify.pb.js` (+ `regatta-ops/notify.js`): change emails and the daily digest (below).
+- `mail.pb.js` (+ `regatta-ops/mail.js`): SMTP settings from the environment, and mail capture.
 
 ## Share links
 
@@ -138,7 +139,7 @@ tokens get 404. Responses carry `Cache-Control: no-store`. Requests are limited 
 per minute (600 reads, 600 check-offs, 30 unknown tokens; 429 beyond). Behind a proxy, set the
 trusted proxy header in the dashboard (Settings > Application) so the limit sees visitors' IPs.
 
-**`GET /api/srt/share/{token}`** returns a projection built field by field. It never contains
+**`GET /api/regatta-ops/share/{token}`** returns a projection built field by field. It never contains
 emails, notes, availability, rosters, or live (unpublished) entries: lineups come only from each
 team's `regatta_teams.published_snapshot`.
 
@@ -179,7 +180,7 @@ team's `regatta_teams.published_snapshot`.
 Entry times in `teams[].entries` are as published; `schedule` is live, so join on `eventId` for
 the current time.
 
-**`POST /api/srt/share/{token}/load-items/{id}`** with `{ "loaded"?: boolean, "returned"?:
+**`POST /api/regatta-ops/share/{token}/load-items/{id}`** with `{ "loaded"?: boolean, "returned"?:
 boolean, "by"?: string }` (at least one of the two flags; body at most 4 KB; `by` trimmed to 60
 characters) ticks or unticks an item and returns `{ "item": <load item as above> }`. Ticking an
 item that is already ticked keeps the first time and name. 403 when the link cannot check off the
@@ -189,8 +190,8 @@ subscribers see the update.
 
 ## Email
 
-SRT sends three kinds of email, all plain text, one message per recipient. Links start with
-`SRT_APP_URL`.
+Regatta Ops sends three kinds of email, all plain text, one message per recipient. Links start with
+`REGATTA_OPS_APP_URL`.
 
 - **Mentions.** A comment's `@Name` (full name, any case), `@email-local-part`, or `@First` (when
   exactly one user has that first name) mentions a user; the match must end at a non-word
@@ -205,27 +206,27 @@ SRT sends three kinds of email, all plain text, one message per recipient. Links
   an email, the next one for the same entry waits 10 minutes and carries everything changed
   meanwhile. Opt out with `users.preferences.emailOnChange = false`.
 - **Daily digest.** Hourly, for regattas that are not archived, have not ended, and start within
-  7 days, at `SRT_DIGEST_HOUR`:00 (default 6) in the regatta's time zone, each coach whose team
-  takes part gets the last 24 hours: schedule changes, their team's entry changes, and a count of
+  7 days, at `REGATTA_OPS_DIGEST_HOUR`:00 (default 6) in the regatta's time zone, each coach whose
+  team takes part gets the last 24 hours: schedule changes, their team's entry changes, and a count of
   other teams' entry changes. Conflicts are computed in the browser, so the digest links to the
   conflicts panel instead of listing them. Sent once per coach, regatta, and day; nothing is sent
   when nothing changed. Opt out with `users.preferences.emailDigest = false`.
 
-**SMTP.** Either set `SRT_SMTP_HOST` (and friends, above) in `backend/.env`, which `mail.pb.js`
-writes into PocketBase's settings on every start, or fill in Settings > Mail settings in the
-dashboard (and leave `SRT_SMTP_HOST` unset). The sender is `SRT_MAIL_FROM` / `SRT_MAIL_FROM_NAME`
-or the dashboard's. Without SMTP, SRT does not fall back to `sendmail`: each email is written to
-the PocketBase log (dashboard > Logs, message "SRT: email not sent...") and skipped.
+**SMTP.** Either set `REGATTA_OPS_SMTP_HOST` (and friends, above) in `backend/.env`, which
+`mail.pb.js` writes into PocketBase's settings on every start, or fill in Settings > Mail settings
+in the dashboard (and leave `REGATTA_OPS_SMTP_HOST` unset). The sender is `REGATTA_OPS_MAIL_FROM` /
+`REGATTA_OPS_MAIL_FROM_NAME` or the dashboard's. Without SMTP, Regatta Ops does not fall back to
+`sendmail`: each email is written to the PocketBase log (dashboard > Logs, message "Regatta Ops: email not sent...") and skipped.
 
-**Capture.** With `SRT_MAIL_CAPTURE=1`, every outgoing email (SRT's and PocketBase's own) is
-stored in `mail_outbox` (`to` as an array of addresses, `subject`, `text`, `html`, `kind`:
+**Capture.** With `REGATTA_OPS_MAIL_CAPTURE=1`, every outgoing email (the app's and PocketBase's
+own) is stored in `mail_outbox` (`to` as an array of addresses, `subject`, `text`, `html`, `kind`:
 `mention`, `entry_change`, `digest`, or '' for PocketBase's) and not sent. The backend tests use
 this; it also works for local development (read it in the dashboard).
 
 **Jobs on demand** (superuser only; tests use them):
 
-- `POST /api/srt/jobs/notify` `{ now?: ISO }` sends change emails due at `now` → `{ sent }`.
-- `POST /api/srt/jobs/digest` `{ now?: ISO, anyHour?: boolean }` runs the digest as of `now`.
+- `POST /api/regatta-ops/jobs/notify` `{ now?: ISO }` sends change emails due at `now` → `{ sent }`.
+- `POST /api/regatta-ops/jobs/digest` `{ now?: ISO, anyHour?: boolean }` runs the digest as of `now`.
   `anyHour` defaults to true here (every regatta in the window is due); the hourly job passes
   false. → `{ emails: [{ to, subject, regattas }] }`.
 

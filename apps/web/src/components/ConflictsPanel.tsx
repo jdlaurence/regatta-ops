@@ -5,7 +5,7 @@
 
 import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { clockAt, isHotSeat, type Finding, type Severity } from '@srt/domain';
+import { clockAt, isHotSeat, type Finding, type Severity } from '@regatta-ops/domain';
 import {
   countBySeverity,
   findingsForTeam,

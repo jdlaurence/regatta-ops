@@ -3,7 +3,7 @@
 
 import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from 'react';
 import { create } from 'zustand';
-import type { Id, LoadPlan, Rule } from '@srt/domain';
+import type { Id, LoadPlan, Rule } from '@regatta-ops/domain';
 import {
   shortUserName,
   useBatch,

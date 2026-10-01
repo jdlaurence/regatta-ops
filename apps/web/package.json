@@ -1,9 +1,9 @@
 {
-  "name": "@srt/web",
+  "name": "@regatta-ops/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "SRT web app: React 19 + Vite SPA (PLAN.md §5, §6, §7).",
+  "description": "Regatta Ops web app: React 19 + Vite SPA (PLAN.md §5, §6, §7).",
   "scripts": {
     "dev": "vite",
     "demo": "vite --mode demo",
@@ -26,8 +26,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.9.1",
-    "@srt/domain": "workspace:*",
-    "@srt/seed": "workspace:*",
+    "@regatta-ops/domain": "workspace:*",
+    "@regatta-ops/seed": "workspace:*",
     "@tanstack/react-query": "^5.104.0",
     "@tanstack/react-query-persist-client": "^5.104.0",
     "@tanstack/react-table": "^8.21.3",

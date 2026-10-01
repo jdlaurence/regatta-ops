@@ -1,6 +1,6 @@
 // Builds the conflict engine's input for one seeded regatta, the way the app will (§9.2).
 
-import { effectiveSettings, type ConflictInput, type Id, type World } from '@srt/domain';
+import { effectiveSettings, type ConflictInput, type Id, type World } from '@regatta-ops/domain';
 
 export function conflictInputFor(w: World, regattaId: Id): ConflictInput {
   const regatta = w.regattas.find((r) => r.id === regattaId);

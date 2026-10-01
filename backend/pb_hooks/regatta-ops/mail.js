@@ -1,21 +1,21 @@
 // Outgoing email for mentions and notifications (PLAN.md §4.6).
 //
 // - send() delivers one plain-text message through PocketBase's mailer (SMTP settings from the
-//   dashboard or from SRT_SMTP_* on start, see mail.pb.js). It never throws: an email problem must
+//   dashboard or from REGATTA_OPS_SMTP_* on start, see mail.pb.js). It never throws: an email problem must
 //   never fail the edit that caused it.
-// - Without SMTP configured, SRT does not fall back to the system `sendmail`: it writes the message
+// - Without SMTP configured, Regatta Ops does not fall back to the system `sendmail`: it writes the message
 //   to the PocketBase log and moves on (local development).
-// - SRT_MAIL_CAPTURE=1 turns every outgoing email into a mail_outbox row instead (mail.pb.js), so
+// - REGATTA_OPS_MAIL_CAPTURE=1 turns every outgoing email into a mail_outbox row instead (mail.pb.js), so
 //   tests can read what would have been sent.
-// - Links in emails start with SRT_APP_URL (default http://localhost:5173, the Vite dev server).
+// - Links in emails start with REGATTA_OPS_APP_URL (default http://localhost:5173, the Vite dev server).
 
 function appUrl() {
-  const raw = ($os.getenv('SRT_APP_URL') || '').trim() || 'http://localhost:5173';
+  const raw = ($os.getenv('REGATTA_OPS_APP_URL') || '').trim() || 'http://localhost:5173';
   return raw.replace(/\/+$/, '');
 }
 
 function captureOn() {
-  return ($os.getenv('SRT_MAIL_CAPTURE') || '').trim() === '1';
+  return ($os.getenv('REGATTA_OPS_MAIL_CAPTURE') || '').trim() === '1';
 }
 
 /** A user's preferences json as a plain object ({} when unset or unreadable). */
@@ -48,7 +48,7 @@ function send(app, opts) {
     app
       .logger()
       .info(
-        'SRT: email not sent because SMTP is not configured',
+        'Regatta Ops: email not sent because SMTP is not configured',
         'kind',
         opts.kind,
         'to',
@@ -66,14 +66,22 @@ function send(app, opts) {
       to: [{ address: to.address, name: to.name || '' }],
       subject: opts.subject,
       text: opts.text,
-      headers: { 'X-SRT-Kind': opts.kind || 'other' },
+      headers: { 'X-Regatta-Ops-Kind': opts.kind || 'other' },
     });
     app.newMailClient().send(message);
     return true;
   } catch (err) {
     app
       .logger()
-      .error('SRT: email failed', 'kind', opts.kind, 'to', to.address, 'error', String(err));
+      .error(
+        'Regatta Ops: email failed',
+        'kind',
+        opts.kind,
+        'to',
+        to.address,
+        'error',
+        String(err),
+      );
     return false;
   }
 }

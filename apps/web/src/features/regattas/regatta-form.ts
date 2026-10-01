@@ -11,7 +11,7 @@ import {
   type Regatta,
   type RegattaFormat,
   type RegattaSettings,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { CreateInput, Patch } from '@/data';
 
 export const TIMING_KEYS = Object.keys(TIMING_LABELS) as (keyof RegattaSettings)[];

@@ -32,11 +32,11 @@ describe('the saved-at time', () => {
   it('is the oldest data on screen, else the newest saved', () => {
     const qc = testQueryClient();
     expect(savedAt(qc)).toBeNull();
-    qc.setQueryData(['srt', 'events'], [], { updatedAt: 1_000 });
-    qc.setQueryData(['srt', 'entries'], [], { updatedAt: 3_000 });
+    qc.setQueryData(['regatta-ops', 'events'], [], { updatedAt: 1_000 });
+    qc.setQueryData(['regatta-ops', 'entries'], [], { updatedAt: 3_000 });
     expect(savedAt(qc)).toBe(3_000);
     // Something on screen is watching the older one.
-    const onScreen = new QueryObserver(qc, { queryKey: ['srt', 'events'], enabled: false });
+    const onScreen = new QueryObserver(qc, { queryKey: ['regatta-ops', 'events'], enabled: false });
     const unsubscribe = onScreen.subscribe(() => {});
     expect(savedAt(qc)).toBe(1_000);
     unsubscribe();
@@ -46,7 +46,7 @@ describe('the saved-at time', () => {
 describe('OfflineBanner', () => {
   function renderBanner() {
     const qc = testQueryClient();
-    qc.setQueryData(['srt', 'events'], [], { updatedAt: Date.now() });
+    qc.setQueryData(['regatta-ops', 'events'], [], { updatedAt: Date.now() });
     return render(
       <QueryClientProvider client={qc}>
         <OfflineBanner />
@@ -71,7 +71,7 @@ describe('OfflineBanner', () => {
     act(() => void window.dispatchEvent(new Event('online')));
     expect(screen.queryByTestId('offline-banner')).not.toBeInTheDocument();
     expect(success).toHaveBeenCalledWith('Back online. Editing is on.', {
-      id: 'srt-back-online',
+      id: 'regatta-ops-back-online',
     });
   });
 

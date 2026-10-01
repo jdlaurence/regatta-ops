@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, Info } from 'lucide-react';
-import type { PackBoat, Rule, Team } from '@srt/domain';
+import type { PackBoat, Rule, Team } from '@regatta-ops/domain';
 import { RulesEditor } from '@/components/trailer/RulesEditor';
 import { cn } from '@/lib/cn';
 import type { TrailerModel } from './lib';

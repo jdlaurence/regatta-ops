@@ -2,7 +2,7 @@
 // real PocketBase. The response shapes checked here are the contract for the web share page and
 // the phone checklist (backend/README.md "Share links").
 
-import { stableId, type PublishedSnapshot } from '@srt/domain';
+import { stableId, type PublishedSnapshot } from '@regatta-ops/domain';
 import type PocketBase from 'pocketbase';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { EMAILS, IDS, PASSWORD, testWorld } from './fixtures';
@@ -87,9 +87,12 @@ describe.skipIf(!HAS_BINARY)('share links', () => {
   let teamLink: { id: string; token: string };
   let wideLink: { id: string; token: string };
 
-  const share = (token: string) => call(server.url, `/api/srt/share/${token}`);
+  const share = (token: string) => call(server.url, `/api/regatta-ops/share/${token}`);
   const tick = (token: string, itemId: string, body: unknown) =>
-    call(server.url, `/api/srt/share/${token}/load-items/${itemId}`, { method: 'POST', body });
+    call(server.url, `/api/regatta-ops/share/${token}/load-items/${itemId}`, {
+      method: 'POST',
+      body,
+    });
 
   beforeAll(async () => {
     server = await startTestServer();
@@ -328,7 +331,7 @@ describe.skipIf(!HAS_BINARY)('share links', () => {
 
       const raw = JSON.stringify(body);
       for (const secret of [
-        '@srt.test',
+        '@regatta-ops.test',
         'Private note',
         'Regatta notes',
         'Entry notes',

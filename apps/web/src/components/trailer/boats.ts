@@ -1,6 +1,6 @@
 // Packer boats to end-view chips: the team color comes from the team record.
 
-import type { PackBoat, Team } from '@srt/domain';
+import type { PackBoat, Team } from '@regatta-ops/domain';
 import type { EndViewBoat } from './TrailerEndView';
 
 export function toEndViewBoats(

@@ -2,7 +2,7 @@
 // Every name here is invented.
 
 import { describe, expect, it } from 'vitest';
-import type { Athlete } from '@srt/domain';
+import type { Athlete } from '@regatta-ops/domain';
 import { mapRow, readCsvTable } from '@/components/CsvImport';
 import {
   ageBadge,

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Runs backend/bin/pocketbase against backend/pb_data with the repo's migrations and hooks.
-# Loads backend/.env (git-ignored) first, so SRT_GOOGLE_CLIENT_ID and friends reach the hooks.
+# Loads backend/.env (git-ignored) first, so REGATTA_OPS_GOOGLE_CLIENT_ID and friends reach the hooks.
 #   sh scripts/pb.sh serve --http 127.0.0.1:8090
 #   sh scripts/pb.sh migrate up
 set -eu

@@ -40,7 +40,7 @@
  * schedule) use a named page, so the browser rotates just those pages on A4 or Letter.
  */
 @media print {
-  @page srt-landscape {
+  @page regatta-ops-landscape {
     size: landscape;
   }
 
@@ -57,7 +57,7 @@
   }
 
   .print-sheet[data-orientation='landscape'] {
-    page: srt-landscape;
+    page: regatta-ops-landscape;
   }
 
   /* Column headings repeat on each page; totals and footers do not. */

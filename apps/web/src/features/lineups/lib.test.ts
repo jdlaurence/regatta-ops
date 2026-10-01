@@ -6,7 +6,7 @@ import {
   unboatedAthletes,
   type RegattaEvent,
   type Seat,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { buildConflictInput } from '@/data';
 import type { MemoryStore } from '@/data/memory-store';
 import { IDS } from '@/test/fixtures';

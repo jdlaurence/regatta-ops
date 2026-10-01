@@ -9,7 +9,7 @@ import {
   type Athlete,
   type PublishedEntry,
   type Seat,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 import { BoatStrip, type SeatOccupant } from '@/components/BoatStrip';
 import { teamStyle } from '@/lib/team-colors';

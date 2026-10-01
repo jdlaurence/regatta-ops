@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ChartNoAxesGantt, List, ListFilter, X } from 'lucide-react';
-import { shellLabel, type BoatClass } from '@srt/domain';
+import { shellLabel, type BoatClass } from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 import { cn } from '@/lib/cn';
 import { formatWeekday } from '@/lib/dates';

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider } from 'react-router/dom';
-import { clockAt } from '@srt/domain';
+import { clockAt } from '@regatta-ops/domain';
 import { AppProviders } from '@/app/providers';
 import { createTestRouter } from '@/app/router';
 import { fixtureStore, IDS } from '@/test/fixtures';

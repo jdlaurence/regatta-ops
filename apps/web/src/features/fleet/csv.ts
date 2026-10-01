@@ -22,7 +22,7 @@ import {
   type Shell,
   type ShellRigging,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { z } from 'zod';
 import type { CsvField, CsvRowCheck } from '@/components/CsvImport';
 import { crewRangeFromLabel, GEAR_CATEGORY_LABELS, newShellInput, suggestedRigging } from './lib';

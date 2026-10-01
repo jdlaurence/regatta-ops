@@ -1,6 +1,6 @@
 // The empty World and small helpers shared by the builders.
 
-import type { World } from '@srt/domain';
+import type { World } from '@regatta-ops/domain';
 
 export function emptyWorld(): World {
   return {

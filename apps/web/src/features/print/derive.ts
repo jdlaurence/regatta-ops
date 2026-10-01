@@ -36,7 +36,7 @@ import {
   type TrailerShelf,
   zoneExtent,
   zoneName,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 import { defaultHomes, homeKey, zoneOfContainer } from '@/features/load-list/lib';
 import { scheduleItems, type ScheduleFilters } from '@/features/schedule/lib';

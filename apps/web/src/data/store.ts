@@ -2,7 +2,7 @@
 // through this interface, via the hooks in data/hooks.ts. Two implementations:
 // PocketBaseStore (the real backend) and MemoryStore (tests, the gallery, and demo mode).
 
-import type { BaseRecord, CollectionMap, CollectionName, User } from '@srt/domain';
+import type { BaseRecord, CollectionMap, CollectionName, User } from '@regatta-ops/domain';
 
 export type { CollectionMap, CollectionName };
 

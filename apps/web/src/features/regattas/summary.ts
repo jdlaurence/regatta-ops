@@ -11,7 +11,7 @@ import {
   type LoadPlacement,
   type LoadPlan,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { countBySeverity, findingsForTeam, type SeverityCounts } from '@/data';
 import type { RegattaWorkingSet } from '@/data';
 

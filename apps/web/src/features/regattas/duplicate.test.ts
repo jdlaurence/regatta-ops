@@ -5,7 +5,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type RegattaTeam,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import {
   chunk,
   dayDelta,

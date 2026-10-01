@@ -5,7 +5,12 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router';
 import { z } from 'zod';
-import { requiredText, type Regatta, type RegattaEvent, type RegattaTeam } from '@srt/domain';
+import {
+  requiredText,
+  type Regatta,
+  type RegattaEvent,
+  type RegattaTeam,
+} from '@regatta-ops/domain';
 import { newId, useBatch } from '@/data';
 import { regattaPath } from '@/app/nav-items';
 import { formatDay, formatDayRange } from '@/lib/dates';

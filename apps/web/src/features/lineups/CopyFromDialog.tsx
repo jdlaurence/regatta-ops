@@ -4,7 +4,7 @@
 
 import { useId, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { shellLabel, type Regatta } from '@srt/domain';
+import { shellLabel, type Regatta } from '@regatta-ops/domain';
 import { useList } from '@/data';
 import { formatDayRange } from '@/lib/dates';
 import { Button } from '@/components/ui/button';
@@ -181,7 +181,7 @@ export function CopyFromDialog() {
       {choices && choices.length === 0 && (
         <EmptyState
           title="No other regattas for this team"
-          description={`${team.name} has not raced another regatta in SRT yet. Build these lineups from the roster instead.`}
+          description={`${team.name} has not raced another regatta in Regatta Ops yet. Build these lineups from the roster instead.`}
         />
       )}
       {choices && source && (

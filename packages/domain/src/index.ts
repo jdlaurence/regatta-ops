@@ -1,4 +1,4 @@
-// @srt/domain public surface. No React, no PocketBase, no clock (PLAN.md §7.3).
+// @regatta-ops/domain public surface. No React, no PocketBase, no clock (PLAN.md §7.3).
 
 export * from './types';
 export * from './boat-classes';

@@ -5,7 +5,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { Download, Plus, Upload } from 'lucide-react';
-import type { EquipmentStatus, OarSet, Rigging, Team } from '@srt/domain';
+import type { EquipmentStatus, OarSet, Rigging, Team } from '@regatta-ops/domain';
 import { useCan, useList, useUpdate } from '@/data';
 import { OarChip, TeamChip } from '@/components/chips';
 import { CsvImportDialog, downloadText } from '@/components/CsvImport';

@@ -12,7 +12,7 @@ import {
   type AvailabilityStatus,
   type Regatta,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { BatchOp } from '@/data';
 import { formatWeekday } from '@/lib/dates';
 import { TeamChip } from '@/components/chips';

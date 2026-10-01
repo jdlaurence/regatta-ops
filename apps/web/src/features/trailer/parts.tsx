@@ -3,7 +3,7 @@
 
 import type { ComponentProps, Ref } from 'react';
 import { CircleAlert } from 'lucide-react';
-import type { BoatClass, Reason, TeamColorKey } from '@srt/domain';
+import type { BoatClass, Reason, TeamColorKey } from '@regatta-ops/domain';
 import { RuleTag } from '@/components/trailer/RuleCard';
 import { cn } from '@/lib/cn';
 import { teamStyle } from '@/lib/team-colors';

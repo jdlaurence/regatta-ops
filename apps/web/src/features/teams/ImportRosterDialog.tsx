@@ -3,7 +3,7 @@
 // batches.
 
 import { useState } from 'react';
-import type { Athlete, Team } from '@srt/domain';
+import type { Athlete, Team } from '@regatta-ops/domain';
 import { batchOp, useBatch } from '@/data';
 import { CsvImportDialog } from '@/components/CsvImport';
 import { Checkbox } from '@/components/ui/controls';
@@ -48,7 +48,7 @@ export function ImportRosterDialog({
       fields={ROSTER_FIELDS}
       previewFields={(mapping) => PREVIEW.filter((k) => mapping[k] != null)}
       checkMapping={checkRosterMapping}
-      hint="SRT recognizes first and last name (or one name column), side (P, S, Both, Cox), can scull, can cox, birth year, graduation year, gender, level, status, and notes."
+      hint="Regatta Ops recognizes first and last name (or one name column), side (P, S, Both, Cox), can scull, can cox, birth year, graduation year, gender, level, status, and notes."
       options={() => (
         <div className="flex items-center gap-2">
           <Checkbox

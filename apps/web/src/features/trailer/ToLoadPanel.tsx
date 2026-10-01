@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ChevronRight, ClipboardList } from 'lucide-react';
-import { clockAt, type Id, type PackBoat } from '@srt/domain';
+import { clockAt, type Id, type PackBoat } from '@regatta-ops/domain';
 import type { RegattaWorkingSet } from '@/data';
 import { regattaPath } from '@/app/nav-items';
 import { cn } from '@/lib/cn';

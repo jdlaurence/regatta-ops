@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SRA_BOYS_TRAILER, SRA_DEFAULT_RULES, mergeRules, makeRule, type Rule } from '@srt/domain';
+import {
+  SRA_BOYS_TRAILER,
+  SRA_DEFAULT_RULES,
+  mergeRules,
+  makeRule,
+  type Rule,
+} from '@regatta-ops/domain';
 import { TooltipProvider } from '@/components/ui/menu';
 import { RulesEditor } from './RulesEditor';
 import type { RulesMode } from './rule-utils';

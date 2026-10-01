@@ -1,14 +1,14 @@
-// pnpm pb:seed — writes the seed World (@srt/seed, PLAN.md §14) into PocketBase.
+// pnpm pb:seed — writes the seed World (@regatta-ops/seed, PLAN.md §14) into PocketBase.
 //
-// Seeds the server at SRT_PB_URL (default http://127.0.0.1:8090) when one is running, otherwise
+// Seeds the server at REGATTA_OPS_PB_URL (default http://127.0.0.1:8090) when one is running, otherwise
 // starts a temporary server on backend/pb_data. Upserts by id, so it is safe to run again;
 // pnpm pb:reset wipes the data first for a clean slate. Both seed the real junior rosters in data/
-// when they are there (@srt/seed/local-rosters); SRT_SEED_INVENTED=1 keeps the invented athletes.
+// when they are there (@regatta-ops/seed/local-rosters); REGATTA_OPS_SEED_INVENTED=1 keeps the invented athletes.
 
 import { pathToFileURL } from 'node:url';
-import type { SeedAccount, World } from '@srt/domain';
-import { buildSeedWorld, type SeedOptions } from '@srt/seed';
-import { readLocalRosters } from '@srt/seed/local-rosters';
+import type { SeedAccount, World } from '@regatta-ops/domain';
+import { buildSeedWorld, type SeedOptions } from '@regatta-ops/seed';
+import { readLocalRosters } from '@regatta-ops/seed/local-rosters';
 import PocketBase from 'pocketbase';
 import {
   DATA_DIR,
@@ -35,7 +35,7 @@ export async function superuserClient(url: string): Promise<PocketBase> {
   } catch (err) {
     throw new Error(
       `Could not sign in to ${url} as the local superuser ${SUPERUSER.email}. ` +
-        'Run pnpm pb:reset, or set SRT_PB_SUPERUSER_EMAIL and SRT_PB_SUPERUSER_PASSWORD.',
+        'Run pnpm pb:reset, or set REGATTA_OPS_PB_SUPERUSER_EMAIL and REGATTA_OPS_PB_SUPERUSER_PASSWORD.',
       { cause: err },
     );
   }

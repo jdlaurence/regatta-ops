@@ -9,7 +9,7 @@ import { cn } from '@/lib/cn';
 import { formatDayRange, splitRegattas, todayIn } from '@/lib/dates';
 import { Skeleton } from '@/components/states';
 import { Tooltip } from '@/components/ui/menu';
-import type { Regatta } from '@srt/domain';
+import type { Regatta } from '@regatta-ops/domain';
 import { CLUB_SECTIONS, REGATTA_TABS, regattaPath } from '../nav-items';
 import { LogoMark, Wordmark } from './Logo';
 import { UserMenu } from './UserMenu';
@@ -82,7 +82,7 @@ export function SideNav() {
   return (
     <nav aria-label="Main" className="flex h-full min-h-0 flex-col">
       <div className="flex h-14 shrink-0 items-center px-4">
-        <NavLink to="/" aria-label="SRT, all regattas" className="rounded-control">
+        <NavLink to="/" aria-label="Regatta Ops, all regattas" className="rounded-control">
           <Wordmark />
         </NavLink>
       </div>
@@ -209,7 +209,7 @@ export function RailNav() {
     <nav aria-label="Main" className="flex h-full flex-col items-center gap-1 py-3">
       <NavLink
         to="/"
-        aria-label="SRT, all regattas"
+        aria-label="Regatta Ops, all regattas"
         className="mb-3 flex h-8 items-center rounded-control"
       >
         <LogoMark />

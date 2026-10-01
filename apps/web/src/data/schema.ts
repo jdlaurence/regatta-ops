@@ -3,7 +3,7 @@
 // PocketBase mapper ('' ↔ null, field names) and by MemoryStore (cascades, stamping, unique
 // indexes). If the backend's schema and this file disagree, fix it here: one line per field.
 
-import type { CollectionName } from '@srt/domain';
+import type { CollectionName } from '@regatta-ops/domain';
 
 export type OnDelete = 'cascade' | 'unset' | 'restrict';
 

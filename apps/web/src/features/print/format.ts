@@ -11,7 +11,7 @@ import {
   type OarSet,
   type PublishedEntry,
   type Seat,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { formatDay, formatWeekday } from '@/lib/dates';
 
 export const STAGE_ORDER: EventStage[] = ['time_trial', 'heat', 'semi', 'final', 'race'];

@@ -10,7 +10,7 @@ import {
   TIMING_LABELS,
   type ClubSettings,
   type RegattaSettings,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useCan, useCreate, useUpdate } from '@/data';
 import { ErrorState, SkeletonRows } from '@/components/states';
 import { toast } from '@/components/toast';

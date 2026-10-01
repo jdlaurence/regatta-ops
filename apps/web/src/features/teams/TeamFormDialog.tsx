@@ -6,7 +6,12 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RadioGroup } from 'radix-ui';
 import { z } from 'zod';
-import { TEAM_COLOR_KEYS, teamInputSchema, type Team, type TeamColorKey } from '@srt/domain';
+import {
+  TEAM_COLOR_KEYS,
+  teamInputSchema,
+  type Team,
+  type TeamColorKey,
+} from '@regatta-ops/domain';
 import { useCreate, useUpdate } from '@/data';
 import { TeamChip, TeamDot } from '@/components/chips';
 import { toast } from '@/components/toast';

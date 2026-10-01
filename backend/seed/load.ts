@@ -2,7 +2,7 @@
 // twice leaves one copy of everything. Needs a superuser-authenticated client.
 
 import { randomUUID } from 'node:crypto';
-import { COLLECTION_NAMES, type SeedAccount, type World } from '@srt/domain';
+import { COLLECTION_NAMES, type SeedAccount, type World } from '@regatta-ops/domain';
 import type PocketBase from 'pocketbase';
 import { ClientResponseError, type CollectionModel } from 'pocketbase';
 import { dependencyOrder, toPbRecord, type PbCollectionSchema } from './mapping';

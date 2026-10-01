@@ -1,7 +1,7 @@
 // Every name here is invented.
 
 import { describe, expect, it } from 'vitest';
-import type { Athlete, Availability } from '@srt/domain';
+import type { Athlete, Availability } from '@regatta-ops/domain';
 import { readCsvTable } from '@/components/CsvImport';
 import {
   ABSENCE_REASON,

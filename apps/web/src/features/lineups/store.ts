@@ -4,7 +4,7 @@
 // Seats subscribe with narrow selectors, so opening one picker re-renders one seat.
 
 import { create } from 'zustand';
-import type { Id, Seat } from '@srt/domain';
+import type { Id, Seat } from '@regatta-ops/domain';
 import { scrollBehavior } from '@/lib/motion';
 import type { SeatRef } from './lib';
 

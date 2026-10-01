@@ -5,7 +5,12 @@
 
 import { useId, useMemo, useRef, useState } from 'react';
 import { Upload } from 'lucide-react';
-import { formatClock, type ColumnGuess, type ColumnRole, type SchedulePaste } from '@srt/domain';
+import {
+  formatClock,
+  type ColumnGuess,
+  type ColumnRole,
+  type SchedulePaste,
+} from '@regatta-ops/domain';
 import { batchOp, useBatch, useList, useRecord } from '@/data';
 import { cn } from '@/lib/cn';
 import { formatWeekday } from '@/lib/dates';

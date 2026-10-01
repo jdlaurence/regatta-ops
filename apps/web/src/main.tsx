@@ -1,10 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
-import type { RosterAthlete } from '@srt/seed';
-import { SEED_EMAILS } from '@srt/seed';
-import juniorRosters from 'virtual:srt-local-rosters';
-import sealedRoster from 'virtual:srt-sealed-roster';
+import type { RosterAthlete } from '@regatta-ops/seed';
+import { SEED_EMAILS } from '@regatta-ops/seed';
+import juniorRosters from 'virtual:regatta-ops-local-rosters';
+import sealedRoster from 'virtual:regatta-ops-sealed-roster';
 import './styles/globals.css';
 import { createStore } from './data/create-store';
 import { createIdbPersister } from './data/persist';

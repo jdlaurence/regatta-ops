@@ -12,7 +12,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useDelete, useList, useUpdate } from '@/data';
 import { SideBadge, TeamChip } from '@/components/chips';
 import { ErrorState, Skeleton } from '@/components/states';

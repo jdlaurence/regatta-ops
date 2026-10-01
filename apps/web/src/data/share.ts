@@ -2,8 +2,8 @@
 // without signing in, so it does not use collections: the server answers two public routes
 // (backend/README.md "Share links"). This module is the only place the app knows those URLs.
 //
-//   GET  /api/srt/share/{token}                   → ShareView
-//   POST /api/srt/share/{token}/load-items/{id}   { loaded?, returned?, by? } → { item }
+//   GET  /api/regatta-ops/share/{token}                   → ShareView
+//   POST /api/regatta-ops/share/{token}/load-items/{id}   { loaded?, returned?, by? } → { item }
 //
 // Two implementations of ShareApi, picked from the DataStore: PocketBase calls the routes with
 // fetch (no session: the token is the credential); demo mode (MemoryStore) builds the same
@@ -43,7 +43,7 @@ import type {
   TeamColorKey,
   Trailer,
   User,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useStore } from './context';
 import type { MemoryStore } from './memory-store';
 import type { PocketBaseStore } from './pocketbase-store';
@@ -51,7 +51,7 @@ import { useRealtimeEvents } from './realtime';
 import { StoreError, type DataStore, type Patch } from './store';
 
 // ---------------------------------------------------------------------------
-// The public JSON (backend/README.md, "GET /api/srt/share/{token}")
+// The public JSON (backend/README.md, "GET /api/regatta-ops/share/{token}")
 
 export interface ShareLinkInfo {
   scope: 'team' | 'regatta';
@@ -248,7 +248,7 @@ export function applyTick(
 }
 
 // ---------------------------------------------------------------------------
-// Projection (demo mode). Mirrors backend/pb_hooks/srt/share.js field by field.
+// Projection (demo mode). Mirrors backend/pb_hooks/regatta-ops/share.js field by field.
 
 /** Everything the projection reads, as plain records. */
 export interface ShareSource {
@@ -595,7 +595,7 @@ export function httpShareApi(url: (path: string) => string): ShareApi {
     if (!res.ok) throw await readError(res);
     return (await res.json()) as T;
   };
-  const base = (token: string) => `/api/srt/share/${encodeURIComponent(token)}`;
+  const base = (token: string) => `/api/regatta-ops/share/${encodeURIComponent(token)}`;
   return {
     getShare: (token) => call<ShareView>(base(token)),
     tickLoadItem: async (token, itemId, input) => {
@@ -644,7 +644,7 @@ export function useShareApi(): ShareApi {
 // ---------------------------------------------------------------------------
 // The copy kept on the device, so a reload with no signal still shows the page.
 
-const COPY_PREFIX = 'srt-share-copy:';
+const COPY_PREFIX = 'regatta-ops-share-copy:';
 
 function readCopy(token: string): ShareView | null {
   try {
@@ -674,7 +674,7 @@ export interface ShareData {
   fromDevice: boolean;
 }
 
-export const shareQueryKey = (token: string) => ['srt', 'share', token] as const;
+export const shareQueryKey = (token: string) => ['regatta-ops', 'share', token] as const;
 
 /** Collections whose changes can show on a share page (for signed-in viewers' realtime). */
 const SHARE_SOURCES = new Set<CollectionName>([

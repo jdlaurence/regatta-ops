@@ -11,7 +11,7 @@ const record = {
   id: 'u1',
   collectionId: '_pb_users_auth_',
   collectionName: 'users',
-  email: 'coach@srt.local',
+  email: 'coach@regatta-ops.local',
   name: 'Cam Coach',
   role: 'coach',
   default_team: '',

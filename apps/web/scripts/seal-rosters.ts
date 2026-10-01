@@ -3,13 +3,13 @@
 // apart, encrypts them with the demo password, and writes data/reference/junior-rosters.sealed.json,
 // which is committed and which `vite build --mode pages` puts in the site. Never prints a name.
 //
-// The password comes from SRT_DEMO_PASSWORD or, in a terminal, a prompt that does not echo.
+// The password comes from REGATTA_OPS_DEMO_PASSWORD or, in a terminal, a prompt that does not echo.
 // Run it again with a new password to change it; everyone then enters the new one.
 
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { stdin, stdout } from 'node:process';
-import { REPO_DIR, readLocalRosters } from '@srt/seed/local-rosters';
+import { REPO_DIR, readLocalRosters } from '@regatta-ops/seed/local-rosters';
 import { sealRoster, shortenLastNames } from '../src/app/unlock/sealed-roster.js';
 import { SEALED_ROSTER_FILE } from './pages.js';
 
@@ -47,9 +47,9 @@ function askHidden(question: string): Promise<string> {
 }
 
 async function password(): Promise<string> {
-  const fromEnv = process.env.SRT_DEMO_PASSWORD;
+  const fromEnv = process.env.REGATTA_OPS_DEMO_PASSWORD;
   if (fromEnv) return fromEnv;
-  if (!stdin.isTTY) throw new Error('Set SRT_DEMO_PASSWORD, or run this in a terminal.');
+  if (!stdin.isTTY) throw new Error('Set REGATTA_OPS_DEMO_PASSWORD, or run this in a terminal.');
   const first = await askHidden('Demo password: ');
   const again = await askHidden('Same password again: ');
   if (first !== again) throw new Error('The two passwords differ. Nothing was written.');
@@ -59,7 +59,7 @@ async function password(): Promise<string> {
 const rosters = await readLocalRosters();
 if (rosters.length === 0) {
   throw new Error(
-    'No roster workbooks in data/ (or SRT_SEED_INVENTED is set). Nothing was written.',
+    'No roster workbooks in data/ (or REGATTA_OPS_SEED_INVENTED is set). Nothing was written.',
   );
 }
 const secret = await password();

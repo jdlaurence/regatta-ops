@@ -6,7 +6,7 @@
 // events, availability, placements, load items) produces one activity_log row carrying the
 // actor and the regatta, while most of those records have no updatedBy field of their own.
 
-import type { ActivityEntry, CollectionName } from '@srt/domain';
+import type { ActivityEntry, CollectionName } from '@regatta-ops/domain';
 import { capitalize, shortUserName, targetCollection } from './collab-format';
 import type { ChangeEvent } from './store';
 
@@ -118,7 +118,7 @@ export class ChangeCoalescer {
     const at = this.now();
     if (!this.burst || at - this.burst.lastAt > this.burstMs) {
       burstSeq += 1;
-      this.burst = { id: `srt-changes-${burstSeq}`, changes: [], lastAt: at };
+      this.burst = { id: `regatta-ops-changes-${burstSeq}`, changes: [], lastAt: at };
     }
     this.burst.changes.push(change);
     this.burst.lastAt = at;

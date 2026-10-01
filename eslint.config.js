@@ -45,7 +45,9 @@ export default tseslint.config(
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: ['react', 'react-*', 'pocketbase', '@srt/web', '@srt/backend'] },
+        {
+          patterns: ['react', 'react-*', 'pocketbase', '@regatta-ops/web', '@regatta-ops/backend'],
+        },
       ],
       'no-restricted-properties': [
         'error',

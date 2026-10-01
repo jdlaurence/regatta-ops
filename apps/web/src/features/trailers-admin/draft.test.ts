@@ -5,7 +5,7 @@ import {
   SRA_GIRLS_TRAILER,
   trailerDefFromRecords,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { BatchOp } from '@/data';
 import {
   addLevel,

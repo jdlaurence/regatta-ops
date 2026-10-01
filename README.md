@@ -1,12 +1,12 @@
-# SRT: Sammamish Regatta Tool
+# Regatta Ops
 
 Regatta lineup planning and trailer loading for Sammamish Rowing Association coaches.
 
-- **Lineups and schedule.** Every team builds its lineups for a regatta in one place. SRT
+- **Lineups and schedule.** Every team builds its lineups for a regatta in one place. Regatta Ops
   crosses athletes off the roster as they're boated, checks that each boat and oar set fits
   the event, and finds equipment and athlete conflicts across teams (hot seats, double
   bookings, re-rigs). The club's whole day is one schedule, derived from every team's entries.
-- **Equipment and trailer.** From the lineups SRT derives the load list, proposes where each
+- **Equipment and trailer.** From the lineups Regatta Ops derives the load list, proposes where each
   shell goes on the trailer, lets a coach drag boats around, and explains its rules in plain
   sentences ("Prefer eights on levels 5 and 4").
 
@@ -24,7 +24,7 @@ pnpm demo              # http://localhost:5173, seed data in the browser, nothin
 Demo mode keeps its data in the browser's local storage. Sign in by picking one of the seeded
 accounts. "Reset demo data" is in the user menu.
 With the club's roster workbooks in `data/`, the junior teams are the real athletes (they stay
-out of git); `SRT_SEED_INVENTED=1 pnpm demo` uses invented ones.
+out of git); `REGATTA_OPS_SEED_INVENTED=1 pnpm demo` uses invented ones.
 
 ## Publish the demo on GitHub Pages
 
@@ -34,13 +34,14 @@ in the repository). Each visitor's changes stay in their own browser.
 
 ```sh
 pnpm pages:seal      # rosters in data/ → data/reference/junior-rosters.sealed.json; asks for the password
-pnpm pages:build     # the site in apps/web/dist/pages, for /srt/
-pnpm pages:preview   # check it at http://localhost:4173/srt/
+pnpm pages:build     # the site in apps/web/dist/pages, for /regatta-ops/
+pnpm pages:preview   # check it at http://localhost:4173/regatta-ops/
 ```
 
 Commit the sealed file. Once, in the repository's Settings → Pages, set Source to "GitHub
 Actions"; `.github/workflows/pages.yml` then deploys every push to `main` (or run it from the
-Actions tab) to `https://<owner>.github.io/srt/`. To change the password, seal again and commit.
+Actions tab) to `https://<owner>.github.io/<repository>/`. To change the password, seal again and
+commit.
 
 ## Run it locally with PocketBase
 
@@ -51,9 +52,9 @@ pnpm pb:reset      # create the database, migrate, and load the seed world (real
 pnpm dev           # PocketBase on :8090 and the app on :5173
 ```
 
-Sign in with `coach.boys@srt.local` (or `admin@`, `coach.girls@`, `coach.5am@`,
-`coach.evening@`, `viewer@srt.local`); every seeded password is `srt-local-dev`. The PocketBase
-dashboard is at http://127.0.0.1:8090/_/ with the same admin credentials. See
+Sign in with `coach.boys@regatta-ops.local` (or `admin@`, `coach.girls@`, `coach.5am@`,
+`coach.evening@`, `viewer@regatta-ops.local`); every seeded password is `regatta-ops-local-dev`.
+The PocketBase dashboard is at http://127.0.0.1:8090/_/ with the same admin credentials. See
 [`backend/README.md`](backend/README.md) for Google sign-in and the domain allowlist.
 
 ## Repository

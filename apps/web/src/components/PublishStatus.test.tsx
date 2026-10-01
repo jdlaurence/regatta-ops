@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SEED_REGATTA_IDS, SEED_TEAM_IDS } from '@srt/seed';
-import type { PublishedSnapshot } from '@srt/domain';
+import { SEED_REGATTA_IDS, SEED_TEAM_IDS } from '@regatta-ops/seed';
+import type { PublishedSnapshot } from '@regatta-ops/domain';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import { seedStore } from '@/features/print/test-helpers';

@@ -4,7 +4,7 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import { isCoxed, seatsFor, type Seat } from '@srt/domain';
+import { isCoxed, seatsFor, type Seat } from '@regatta-ops/domain';
 import type { ShareEntry, ShareTeam, ShareView } from '@/data';
 import { BoatStrip, type SeatOccupant } from '@/components/BoatStrip';
 import { ShellChip, TeamChip, TeamDot } from '@/components/chips';

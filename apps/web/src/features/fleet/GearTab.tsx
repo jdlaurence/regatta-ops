@@ -13,7 +13,7 @@ import {
   requiredText,
   type GearCategory,
   type GearItem,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { useCan, useCreate, useDelete, useList, useUpdate } from '@/data';
 import { CsvImportDialog, downloadText } from '@/components/CsvImport';
 import { DataTable, type ColumnDef } from '@/components/DataTable';

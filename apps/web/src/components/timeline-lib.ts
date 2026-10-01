@@ -26,7 +26,7 @@ import {
   type Shell,
   type Team,
   type TeamColorKey,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 
 export type TimelineGroupBy = 'shell' | 'team' | 'oar_set';
 

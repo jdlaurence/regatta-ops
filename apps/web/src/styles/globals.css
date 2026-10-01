@@ -4,7 +4,7 @@
 
 /*
  * Tailwind reads the tokens here. Default palettes, fonts, sizes, radii, and shadows are
- * cleared so only SRT's tokens exist as utilities (bg-surface, text-ink-2, rounded-card, ...).
+ * cleared so only the app's tokens exist as utilities (bg-surface, text-ink-2, rounded-card, ...).
  */
 @theme inline {
   --color-*: initial;
@@ -86,8 +86,8 @@
   --shadow-popover: var(--shadow-popover-value);
 
   --animate-*: initial;
-  --animate-strike: srt-strike var(--motion-strike) ease-out both;
-  --animate-settle: srt-settle var(--motion-settle) ease-out both;
+  --animate-strike: regatta-ops-strike var(--motion-strike) ease-out both;
+  --animate-settle: regatta-ops-settle var(--motion-settle) ease-out both;
 }
 
 /*
@@ -109,7 +109,7 @@
   }
 }
 
-@keyframes srt-strike {
+@keyframes regatta-ops-strike {
   from {
     background-size: 0% 2px;
   }
@@ -118,7 +118,7 @@
   }
 }
 
-@keyframes srt-settle {
+@keyframes regatta-ops-settle {
   from {
     transform: scale(0.96);
   }

@@ -9,7 +9,7 @@
 //
 // Daily digest. Once an hour the digest job looks for regattas that are not archived, have not
 // ended, and start within the next 7 days (in the regatta's time zone), and whose local hour is
-// SRT_DIGEST_HOUR (default 6). Each coach (role coach or admin with a default_team) whose team is
+// REGATTA_OPS_DIGEST_HOUR (default 6). Each coach (role coach or admin with a default_team) whose team is
 // in such a regatta gets one email: schedule changes, changes to their team's entries, and how many
 // other teams' entries changed in the last 24 hours. Conflicts are computed by the domain engine in
 // the browser (TypeScript, not available here), so the digest links to the conflicts panel instead
@@ -22,9 +22,9 @@ const MAX_PENDING = 50;
 const MAX_LINES = 30;
 const DIGEST_KEEP_MS = 14 * DAY_MS;
 
-const activity = require(`${__hooks}/srt/activity.js`);
-const mail = require(`${__hooks}/srt/mail.js`);
-const time = require(`${__hooks}/srt/time.js`);
+const activity = require(`${__hooks}/regatta-ops/activity.js`);
+const mail = require(`${__hooks}/regatta-ops/mail.js`);
+const time = require(`${__hooks}/regatta-ops/time.js`);
 
 /** ms → PocketBase date text ('2026-05-16 15:00:00.000Z'), which sorts and compares as text. */
 function pbDate(ms) {
@@ -92,7 +92,7 @@ function coachesOf(app, teamId) {
 // -- change emails -------------------------------------------------------------------------------
 
 /**
- * Queues a change for the coaches of the entry's team (called by srt/activity.js after it logs an
+ * Queues a change for the coaches of the entry's team (called by regatta-ops/activity.js after it logs an
  * entry or seat change by a signed-in user). Runs inside the request, and inside the transaction
  * for batch requests, so a rolled-back batch queues nothing.
  *
@@ -243,7 +243,7 @@ function flushEntryChanges(app, nowMs) {
 // -- daily digest --------------------------------------------------------------------------------
 
 function digestHour() {
-  const hour = parseInt(($os.getenv('SRT_DIGEST_HOUR') || '').trim(), 10);
+  const hour = parseInt(($os.getenv('REGATTA_OPS_DIGEST_HOUR') || '').trim(), 10);
   return isNaN(hour) || hour < 0 || hour > 23 ? 6 : hour;
 }
 
@@ -323,7 +323,7 @@ function section(d, team, rows, names) {
 
 /**
  * Sends the daily digest. With anyHour, every regatta in the window counts as due now (the jobs
- * route uses this); otherwise only those whose local hour is SRT_DIGEST_HOUR.
+ * route uses this); otherwise only those whose local hour is REGATTA_OPS_DIGEST_HOUR.
  * Returns { emails: [{ to, subject, regattas }] } for the emails handed to the mailer.
  */
 function runDigest(app, nowMs, anyHour) {
@@ -341,7 +341,7 @@ function runDigest(app, nowMs, anyHour) {
       )
       .forEach((r) => app.delete(r));
   } catch (err) {
-    app.logger().warn('SRT: digest prune failed', 'error', String(err));
+    app.logger().warn('Regatta Ops: digest prune failed', 'error', String(err));
   }
 
   const hour = digestHour();
@@ -430,8 +430,8 @@ function runDigest(app, nowMs, anyHour) {
       if (!sections.length) return;
       const subject =
         sent.length === 1
-          ? 'SRT daily digest: ' + sent[0].regatta.getString('name')
-          : 'SRT daily digest: ' + sent.length + ' regattas this week';
+          ? 'Regatta Ops daily digest: ' + sent[0].regatta.getString('name')
+          : 'Regatta Ops daily digest: ' + sent.length + ' regattas this week';
       const text = [
         'Changes in the last 24 hours, for ' + team.getString('name') + '.',
         '',

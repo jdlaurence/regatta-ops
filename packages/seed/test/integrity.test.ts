@@ -2,7 +2,7 @@
 // PLAN.md §8.1 hold.
 
 import { describe, expect, it } from 'vitest';
-import { COLLECTION_NAMES, seatsFor, type CollectionName, type Id } from '@srt/domain';
+import { COLLECTION_NAMES, seatsFor, type CollectionName, type Id } from '@regatta-ops/domain';
 import { buildSeedWorld } from '../src';
 
 const { world } = buildSeedWorld();

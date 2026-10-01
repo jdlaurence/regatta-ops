@@ -5,7 +5,7 @@
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import type { MouseEvent } from 'react';
-import type { Id, Rule, TrailerDef } from '@srt/domain';
+import type { Id, Rule, TrailerDef } from '@regatta-ops/domain';
 import {
   TrailerChip,
   TrailerEndView,

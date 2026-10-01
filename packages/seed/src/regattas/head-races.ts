@@ -18,7 +18,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type World,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import type { FleetIndex } from '../fleet';
 import type { Eligibility } from '../crews';
 import {

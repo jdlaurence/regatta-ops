@@ -4,7 +4,7 @@
 
 import { useId, useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { shellLabel, type Entry, type OarSet, type Shell } from '@srt/domain';
+import { shellLabel, type Entry, type OarSet, type Shell } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { ClassBadge, OarChip, ShellChip } from '@/components/chips';
 import { ConflictIcon } from '@/components/ConflictBadge';

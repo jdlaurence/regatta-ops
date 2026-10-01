@@ -9,7 +9,7 @@ import {
   type Regatta,
   type RegattaEvent,
   type RegattaTeam,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { batchOp, type BatchOp, type CreateInput } from '@/data';
 
 const DAY_MS = 86_400_000;

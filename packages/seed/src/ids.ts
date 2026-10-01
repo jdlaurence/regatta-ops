@@ -2,7 +2,13 @@
 // the same id on every run, in PocketBase and in demo mode. The maps below let tests and the UI
 // find well-known records without searching.
 
-import { SRA_BOYS_TRAILER, SRA_GIRLS_TRAILER, stableId, type Id, type Rule } from '@srt/domain';
+import {
+  SRA_BOYS_TRAILER,
+  SRA_GIRLS_TRAILER,
+  stableId,
+  type Id,
+  type Rule,
+} from '@regatta-ops/domain';
 
 export type TeamKey = 'boys' | 'girls' | '5am' | 'evening';
 export const TEAM_KEYS: readonly TeamKey[] = ['boys', 'girls', '5am', 'evening'];
@@ -17,12 +23,12 @@ export const SEED_TEAM_IDS = {
 } as const;
 
 export const SEED_EMAILS = {
-  admin: 'admin@srt.local',
-  coachBoys: 'coach.boys@srt.local',
-  coachGirls: 'coach.girls@srt.local',
-  coachFiveAm: 'coach.5am@srt.local',
-  coachEvening: 'coach.evening@srt.local',
-  viewer: 'viewer@srt.local',
+  admin: 'admin@regatta-ops.local',
+  coachBoys: 'coach.boys@regatta-ops.local',
+  coachGirls: 'coach.girls@regatta-ops.local',
+  coachFiveAm: 'coach.5am@regatta-ops.local',
+  coachEvening: 'coach.evening@regatta-ops.local',
+  viewer: 'viewer@regatta-ops.local',
 } as const;
 
 export type UserKey = keyof typeof SEED_EMAILS;

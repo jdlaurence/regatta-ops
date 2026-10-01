@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { zonedToInstant, type Regatta, type RegattaEvent } from '@srt/domain';
+import { zonedToInstant, type Regatta, type RegattaEvent } from '@regatta-ops/domain';
 import { useBatch, useUpdate, batchOp } from '@/data';
 import type { TimelineGroupBy } from '@/components/timeline-lib';
 import { toast } from '@/components/toast';
@@ -27,7 +27,7 @@ export function groupParam(g: TimelineGroupBy): string {
  * `?event=<id>` to open the list on one event.
  * Changes replace the history entry, so filters do not pile up behind the back button.
  */
-const ENTRIES_KEY = 'srt-schedule-entries';
+const ENTRIES_KEY = 'regatta-ops-schedule-entries';
 
 /** The viewer's last "Show entries" choice (a per-device convenience; storage may be blocked). */
 function storedShowEntries(): boolean {

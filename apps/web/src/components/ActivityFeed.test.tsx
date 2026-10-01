@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import type { ActivityEntry } from '@srt/domain';
+import type { ActivityEntry } from '@regatta-ops/domain';
 import { fixtureStore, IDS } from '@/test/fixtures';
 import { dataWrapper } from '@/test/render';
 import type { MemoryStore } from '@/data/memory-store';

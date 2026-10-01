@@ -13,7 +13,7 @@ import {
   type RegattaEvent,
   type Seat,
   type Team,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { batchOp, newId, useBatch, type BatchOp, type Patch } from '@/data';
 import { toast } from '@/components/toast';
 import {

@@ -29,7 +29,7 @@ const NW_YOUTH = SEED_REGATTA_IDS.nwYouth2025;
 const HOTL = SEED_REGATTA_IDS.headOfTheLake2026;
 const GIRLS = SEED_TEAM_IDS.girls;
 const NW_NAME = '2025 USRowing Northwest Youth Championships';
-const DEMO_DATA_KEY = 'srt-demo-v1';
+const DEMO_DATA_KEY = 'regatta-ops-demo-v1';
 
 test.use(DESKTOP);
 

@@ -6,10 +6,10 @@
 // are joined with "; ". Returns null when nothing worth logging changed. `team` is the team whose
 // data changed (entries, seats, availability, share links), '' otherwise.
 //
-// handle() also hands entry and seat changes to srt/notify.js, which emails the team's coaches
+// handle() also hands entry and seat changes to regatta-ops/notify.js, which emails the team's coaches
 // when someone from another team made the change (PLAN.md §4.6).
 
-const time = require(`${__hooks}/srt/time.js`);
+const time = require(`${__hooks}/regatta-ops/time.js`);
 
 const LOGGED = [
   'teams',
@@ -691,7 +691,7 @@ function write(app, opts) {
 
 /** The request hook body shared by create, update, and delete (see activity.pb.js). */
 function handle(e, action) {
-  // Superuser writes (the seed, the dashboard) are not attributed to an SRT user.
+  // Superuser writes (the seed, the dashboard) are not attributed to a Regatta Ops user.
   if (e.hasSuperuserAuth() || !e.auth) {
     e.next();
     return;
@@ -716,7 +716,7 @@ function handle(e, action) {
     });
     if (isUser && (collection === 'entries' || collection === 'entry_seats')) {
       try {
-        require(`${__hooks}/srt/notify.js`).entryChanged(e.app, {
+        require(`${__hooks}/regatta-ops/notify.js`).entryChanged(e.app, {
           actor: e.auth,
           collection: collection,
           before: before,
@@ -724,11 +724,11 @@ function handle(e, action) {
           summary: entry.summary,
         });
       } catch (err) {
-        e.app.logger().error('SRT change email queueing failed', 'error', String(err));
+        e.app.logger().error('Regatta Ops change email queueing failed', 'error', String(err));
       }
     }
   } catch (err) {
-    e.app.logger().error('SRT activity log write failed', 'error', String(err));
+    e.app.logger().error('Regatta Ops activity log write failed', 'error', String(err));
   }
 }
 

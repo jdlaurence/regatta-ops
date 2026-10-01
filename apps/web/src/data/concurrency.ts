@@ -3,7 +3,7 @@
 // StoreError when the stored record has changed since. Everything else is last-write-wins.
 // Shared by MemoryStore (so demo mode and tests behave like the server) and useGuardedUpdate.
 
-import type { CollectionName } from '@srt/domain';
+import type { CollectionName } from '@regatta-ops/domain';
 
 export const GUARDED_COLLECTIONS = [
   'events',

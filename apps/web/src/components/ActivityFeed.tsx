@@ -9,7 +9,14 @@
 
 import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import type { ActivityEntry, Entry, EntrySeat, Id, LoadPlacement, LoadPlan } from '@srt/domain';
+import type {
+  ActivityEntry,
+  Entry,
+  EntrySeat,
+  Id,
+  LoadPlacement,
+  LoadPlan,
+} from '@regatta-ops/domain';
 import { targetCollection, useList, useNow } from '@/data';
 import { cn } from '@/lib/cn';
 import { relativeTime } from '@/lib/relative-time';

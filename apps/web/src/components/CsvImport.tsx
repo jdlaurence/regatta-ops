@@ -12,7 +12,7 @@
 
 import { useId, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { CircleAlert, CircleCheck, TriangleAlert, Upload } from 'lucide-react';
-import { detectDelimiter, parseDelimited } from '@srt/domain';
+import { detectDelimiter, parseDelimited } from '@regatta-ops/domain';
 import { toast } from '@/components/toast';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';

@@ -12,7 +12,7 @@ import {
   type PackBoat,
   type Placement,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { sideNamesOf } from './labels';
 
 // ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 
 import type { ReactNode } from 'react';
 import { Archive, Lock } from 'lucide-react';
-import type { RegattaStatus } from '@srt/domain';
+import type { RegattaStatus } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 
 const COPY: Record<Exclude<RegattaStatus, 'planning'>, { icon: typeof Lock; text: string }> = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COLLECTION_NAMES, collectionSchemas } from '@srt/domain';
+import { COLLECTION_NAMES, collectionSchemas } from '@regatta-ops/domain';
 import { SEED_EMAILS, SEED_PASSWORD, SEED_USER_IDS, buildSeedWorld } from '../src';
 import { ALL_FIRST_NAMES, ALL_LAST_NAMES } from '../src/names';
 

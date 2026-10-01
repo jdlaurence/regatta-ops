@@ -16,7 +16,7 @@ import {
   type Rule,
   type RuleType,
   type TrailerDef,
-} from '@srt/domain';
+} from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter } from '@/components/ui/dialog';

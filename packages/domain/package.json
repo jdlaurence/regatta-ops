@@ -1,9 +1,9 @@
 {
-  "name": "@srt/domain",
+  "name": "@regatta-ops/domain",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Pure domain logic for SRT: types, schemas, boat classes, conflict engine, trailer packer. No React, no PocketBase, no clock.",
+  "description": "Pure domain logic for Regatta Ops: types, schemas, boat classes, conflict engine, trailer packer. No React, no PocketBase, no clock.",
   "exports": {
     ".": "./src/index.ts"
   },

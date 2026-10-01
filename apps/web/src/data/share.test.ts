@@ -117,7 +117,7 @@ describe('the share projection in demo mode', () => {
     for (const token of [TOKENS.wide, TOKENS.load, TOKENS.girls]) {
       const json = JSON.stringify(await share.getShare(token));
       for (const secret of [
-        '@srt.local',
+        '@regatta-ops.local',
         'Private note',
         'Regatta notes',
         'Entry notes',

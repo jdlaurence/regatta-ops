@@ -4,7 +4,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import type { SeedAccount, World } from '@srt/domain';
+import type { SeedAccount, World } from '@regatta-ops/domain';
 import PocketBase from 'pocketbase';
 import { loadWorld, type LoadSummary } from '../seed/load';
 import {
@@ -27,22 +27,22 @@ export interface TestServer {
 }
 
 export async function startTestServer(env: NodeJS.ProcessEnv = {}): Promise<TestServer> {
-  const dataDir = await mkdtemp(path.join(tmpdir(), 'srt-pb-test-'));
+  const dataDir = await mkdtemp(path.join(tmpdir(), 'regatta-ops-pb-test-'));
   await migrateUp(dataDir);
   await upsertSuperuser(dataDir);
-  // Ignore the developer's own SRT_* settings; each suite states what it needs.
+  // Ignore the developer's own REGATTA_OPS_* settings; each suite states what it needs.
   const server = await startPocketBase({
     dataDir,
     env: {
-      SRT_ALLOWED_DOMAIN: '',
-      SRT_GOOGLE_CLIENT_ID: '',
-      SRT_GOOGLE_CLIENT_SECRET: '',
-      SRT_SMTP_HOST: '',
-      SRT_MAIL_FROM: '',
-      SRT_MAIL_FROM_NAME: '',
-      SRT_MAIL_CAPTURE: '',
-      SRT_APP_URL: '',
-      SRT_DIGEST_HOUR: '',
+      REGATTA_OPS_ALLOWED_DOMAIN: '',
+      REGATTA_OPS_GOOGLE_CLIENT_ID: '',
+      REGATTA_OPS_GOOGLE_CLIENT_SECRET: '',
+      REGATTA_OPS_SMTP_HOST: '',
+      REGATTA_OPS_MAIL_FROM: '',
+      REGATTA_OPS_MAIL_FROM_NAME: '',
+      REGATTA_OPS_MAIL_CAPTURE: '',
+      REGATTA_OPS_APP_URL: '',
+      REGATTA_OPS_DIGEST_HOUR: '',
       ...env,
     },
   });
@@ -97,7 +97,7 @@ export interface CapturedMail {
   kind: string;
 }
 
-/** Emails captured in mail_outbox (the server must run with SRT_MAIL_CAPTURE=1), oldest first. */
+/** Emails captured in mail_outbox (the server must run with REGATTA_OPS_MAIL_CAPTURE=1), oldest first. */
 export async function outbox(server: TestServer, filter = ''): Promise<CapturedMail[]> {
   const rows = await server.admin
     .collection('mail_outbox')

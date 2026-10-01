@@ -2,7 +2,7 @@
 // phase-demo flows and the quality pass can change independently.
 
 import { expect, type Page } from '@playwright/test';
-import { seedShellId } from '@srt/seed';
+import { seedShellId } from '@regatta-ops/seed';
 import {
   regattaUrl,
   SEED_EMAILS,

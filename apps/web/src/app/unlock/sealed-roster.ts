@@ -3,7 +3,7 @@
 // Light protection by design, enough to keep strangers out: PBKDF2 and AES-GCM from Web Crypto,
 // which the browser and Node 22 both have, so `pnpm pages:seal` and the unlock page share it.
 
-import type { RosterAthlete } from '@srt/seed';
+import type { RosterAthlete } from '@regatta-ops/seed';
 
 export interface SealedRoster {
   version: 1;
@@ -102,7 +102,7 @@ export async function openRoster(sealed: SealedRoster, key: CryptoKey): Promise<
 // ---------------------------------------------------------------------------
 // Remembering the key on this device, so the password is asked for once.
 
-const KEY_STORAGE = 'srt-pages-key-v1';
+const KEY_STORAGE = 'regatta-ops-pages-key-v1';
 
 export async function rememberKey(key: CryptoKey): Promise<void> {
   const raw = new Uint8Array(await crypto.subtle.exportKey('raw', key));

@@ -3,7 +3,7 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { clockAt, type RegattaEvent } from '@srt/domain';
+import { clockAt, type RegattaEvent } from '@regatta-ops/domain';
 import { formatWeekday } from '@/lib/dates';
 import { Button } from '@/components/ui/button';
 import { SegmentedControl } from '@/components/ui/controls';

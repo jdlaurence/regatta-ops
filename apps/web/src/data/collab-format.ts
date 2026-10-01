@@ -1,7 +1,7 @@
 // Small formatting helpers shared by the collaboration pieces (PLAN.md §4.6, §10): change
 // toasts, presence avatars, and the activity feed. Pure; no React.
 
-import { COLLECTION_NAMES, type CollectionName } from '@srt/domain';
+import { COLLECTION_NAMES, type CollectionName } from '@regatta-ops/domain';
 
 /** "Sarah Williams" → "Sarah W.", "Morgan" → "Morgan". */
 export function shortUserName(name: string | null | undefined): string {

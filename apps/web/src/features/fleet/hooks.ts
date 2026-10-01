@@ -2,7 +2,7 @@
 // timezone, and a shell's or oar set's upcoming use. Reads go through the generic data hooks.
 
 import { useMemo, useSyncExternalStore } from 'react';
-import type { Team } from '@srt/domain';
+import type { Team } from '@regatta-ops/domain';
 import { useCurrentUser, useList } from '@/data';
 import { todayIn } from '@/lib/dates';
 import { upcomingUsage, type UsageGroup } from './lib';
