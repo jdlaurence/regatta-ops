@@ -1,5 +1,5 @@
-// Sign-in domain allowlist (PLAN.md §2). REGATTA_OPS_ALLOWED_DOMAIN holds one domain, or several
-// separated by commas. Unset means every domain is allowed (local development).
+// Sign-in domain allowlist. REGATTA_OPS_ALLOWED_DOMAIN holds one domain, or several separated by
+// commas. Unset means every domain is allowed (local development).
 //
 // Used by auth.pb.js on Google sign-in, on every successful sign-in (any method), and on user
 // creation, so the same check guards all three paths.

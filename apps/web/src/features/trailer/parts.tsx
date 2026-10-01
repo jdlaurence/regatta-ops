@@ -1,4 +1,4 @@
-// Small pieces the trailer page's panels share: the boat pill (a boat, so a pill, §5.2) and the
+// Small pieces the trailer page's panels share: the boat pill (a boat, so a pill) and the
 // "Why here?" reason list.
 
 import type { ComponentProps, Ref } from 'react';
@@ -41,7 +41,7 @@ export function BoatPill({
   );
 }
 
-/** Reasons as sentences with Must/Prefer and the score (§4.10 "Why here?"). */
+/** Reasons as sentences with Must/Prefer and the score. */
 export function ReasonList({
   reasons,
   broken = false,

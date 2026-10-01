@@ -1,8 +1,8 @@
-// /print/regattas/:id/schedule?day=&team=&view=list|day|master&source=published|live (PLAN.md
-// §4.11, §6.12): the schedule list as the schedule page shows it (its filters, class= and
-// shell=, and its "Show entries" switch, entries=hide; live lineups), the day schedule (one page
-// per day, one team or every team, logistics lines in order), or the master schedule (every
-// team, big type, for the trailer).
+// /print/regattas/:id/schedule?day=&team=&view=list|day|master&source=published|live: the
+// schedule list as the schedule page shows it (its filters, class= and shell=, and its "Show
+// entries" switch, entries=hide; live lineups), the day schedule (one page per day, one team or
+// every team, logistics lines in order), or the master schedule (every team, big type, for the
+// trailer).
 
 import { useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';

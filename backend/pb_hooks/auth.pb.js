@@ -1,12 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Sign-in and roles (PLAN.md §2, §8.3).
-//
-// - Google OAuth2 is configured at startup from REGATTA_OPS_GOOGLE_CLIENT_ID and
-//   REGATTA_OPS_GOOGLE_CLIENT_SECRET. Without them it stays disabled (the migration's default).
-// - REGATTA_OPS_ALLOWED_DOMAIN (comma-separated) restricts who can sign in. It is checked on Google
-//   sign-in before any account is created, after every successful sign-in by any method, and
-//   whenever a user is created or their email changes.
-// - New accounts get role coach. Only admins change roles.
+// Sign-in and roles (PLAN.md §8.3; backend/README.md "Hooks" and "Configuration"): the Google
+// provider from the environment, the sign-in domain allowlist, and the default role.
 
 onBootstrap((e) => {
   e.next();

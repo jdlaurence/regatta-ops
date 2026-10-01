@@ -1,6 +1,5 @@
-// The shell drawer (PLAN.md §4.7, §6.8): every field of a shell, its upcoming use (§4.5), and
-// the new-shell flow, which starts by picking a class so dimensions, riggers, and rigging come
-// from §16.1.
+// The shell drawer: every field of a shell, its upcoming use, and the new-shell flow, which
+// starts by picking a class so dimensions, riggers, and rigging come from §16.1.
 
 import { useId, useState } from 'react';
 import { useForm, useWatch, type UseFormReturn } from 'react-hook-form';

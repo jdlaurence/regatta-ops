@@ -1,11 +1,7 @@
-// The activity feed (PLAN.md §4.6, §8.1 activity_log): who changed what, newest first, for one
-// regatta or the whole club. Each line is "<actor> <summary>" as the server wrote it, with a
-// relative time and, where the target can still be found, a link to it. Live: realtime refetches
-// the log on every change, and the times move on by themselves.
-//
-//   <ActivityFeed regattaId={regattaId} />          // a regatta's activity (the inspector)
-//   <ActivityFeed regattaId={null} pageSize={50} /> // everything, with the regatta named
-//   <ActivityFeed regattaId={id} title={false} framed pageSize={8} />  // under a page's heading
+// The activity feed (PLAN.md §8.1 activity_log): who changed what, newest first, for one regatta
+// or the whole club. Each line is "<actor> <summary>" as the server wrote it, with a relative
+// time and, where the target can still be found, a link to it. Live: realtime refetches the log
+// on every change, and the times move on by themselves.
 
 import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router';

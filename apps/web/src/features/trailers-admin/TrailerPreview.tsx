@@ -1,7 +1,7 @@
-// The live diagram of the draft trailer, with a test pack (PLAN.md §6.9, §15 Q1): the end view,
-// the plan view (a level, or the bed's zones along the length), or the isometric view, drawn
-// from the unsaved measurements as they are typed. Pack a sample load or a regatta's boats onto
-// them to see whether the numbers make sense before saving. Nothing is written.
+// The live diagram of the draft trailer, with a test pack (PLAN.md §15 Q1): the end view, the
+// plan view (a level, or the bed's zones along the length), or the isometric view, drawn from the
+// unsaved measurements as they are typed. Pack a sample load or a regatta's boats onto them to
+// see whether the numbers make sense before saving. Nothing is written.
 
 import { useMemo, useState } from 'react';
 import { TriangleAlert } from 'lucide-react';
@@ -28,7 +28,7 @@ import { usePlanShellIds, useRegattaBoats, useTrailerLoadPlans } from './hooks';
 
 const NONE = 'none';
 
-/** The end view (default), the plan view, or the isometric view (PLAN.md §4.10). */
+/** The end view (default), the plan view, or the isometric view. */
 type PreviewView = 'end' | 'plan' | 'iso';
 
 const VIEW_TITLES: Record<PreviewView, { title: string; note: string }> = {

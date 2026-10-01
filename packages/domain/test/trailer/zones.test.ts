@@ -131,7 +131,7 @@ describe('bedZones', () => {
     const { back, ahead } = bedFromBehind(zones);
     expect(back).toHaveLength(2);
     expect(ahead).toEqual([]);
-    // Two whole-length compartments share the bed as before: no warning.
+    // Two whole-length compartments share the bed: no warning.
     expect(
       zoneOverlaps({ frameLengthCm: 1250, compartments: zones.map((z) => z.compartment) }),
     ).toEqual([]);

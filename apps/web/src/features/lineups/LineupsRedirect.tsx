@@ -1,5 +1,5 @@
 // /regattas/:id/lineups → the signed-in coach's default team if it is racing, else the first
-// participating team (PLAN.md §6.4). WP-G may keep or replace this file.
+// participating team.
 
 import { Link, Navigate } from 'react-router';
 import { useCurrentUser, useList } from '@/data';

@@ -1,21 +1,7 @@
-// The inspector slot (PLAN.md §5.3): the right-hand panel any page can fill. By default the
-// shell shows conflicts and activity for the current regatta; a page replaces that by
-// rendering <Inspector> anywhere in its tree. The content is portaled into the panel, so it
-// keeps the page's React context (queries, feature stores).
-//
-//   function LineupsPage() {
-//     const selected = useLineupStore((s) => s.selectedEntry);
-//     return (
-//       <>
-//         ...
-//         {selected && (
-//           <Inspector title="Entry details" openOnMount>
-//             <EntryDetails entryId={selected} />
-//           </Inspector>
-//         )}
-//       </>
-//     );
-//   }
+// The inspector slot: the right-hand panel any page can fill. By default the shell shows
+// conflicts and activity for the current regatta; a page replaces that by rendering <Inspector>
+// anywhere in its tree. The content is portaled into the panel, so it keeps the page's React
+// context (queries, feature stores).
 //
 // While more than one <Inspector> is mounted, the last one mounted shows. `]` toggles the panel
 // on desktop; on tablet and phone it is a slide-over opened with the panel button.

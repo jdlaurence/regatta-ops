@@ -1,5 +1,5 @@
-// The rules editor (PLAN.md §4.10): loading rules as sentences, grouped Must then Prefer, each
-// with a toggle, a weight, and an edit form; "Add rule" from the gallery; "Reset to defaults".
+// The rules editor: loading rules as sentences, grouped Must then Prefer, each with a toggle, a
+// weight, and an edit form; "Add rule" from the gallery; "Reset to defaults".
 //
 // Controlled: it shows `rules` and reports every change through `onChange(rules)`.
 // - mode 'trailer' (the trailers admin page) edits a trailer's default rules in place.

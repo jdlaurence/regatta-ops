@@ -1,13 +1,7 @@
-// Outgoing email for mentions and notifications (PLAN.md §4.6).
-//
-// - send() delivers one plain-text message through PocketBase's mailer (SMTP settings from the
-//   dashboard or from REGATTA_OPS_SMTP_* on start, see mail.pb.js). It never throws: an email problem must
-//   never fail the edit that caused it.
-// - Without SMTP configured, Regatta Ops does not fall back to the system `sendmail`: it writes the message
-//   to the PocketBase log and moves on (local development).
-// - REGATTA_OPS_MAIL_CAPTURE=1 turns every outgoing email into a mail_outbox row instead (mail.pb.js), so
-//   tests can read what would have been sent.
-// - Links in emails start with REGATTA_OPS_APP_URL (default http://localhost:5173, the Vite dev server).
+// Outgoing email for mentions and notifications (backend/README.md "Email"). send() delivers one
+// plain-text message through PocketBase's mailer, writes it to the log when SMTP is not
+// configured, or stores it in mail_outbox under REGATTA_OPS_MAIL_CAPTURE=1. It never throws: an
+// email problem must never fail the edit that caused it.
 
 function appUrl() {
   const raw = ($os.getenv('REGATTA_OPS_APP_URL') || '').trim() || 'http://localhost:5173';

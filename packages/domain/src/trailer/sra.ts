@@ -1,11 +1,7 @@
-// SRA's two trailers and the default rule set (PLAN.md §4.9, §14, §17.1, §17.2).
-// Dimensions are placeholders until measured (PLAN.md §15 Q1).
-//
-// Amendment to §14/§17.1 (recorded in PLAN.md §17.1): the plan's placeholder overhangs
-// (1220 + 450 front + 300 rear = 1970 cm) are shorter than an eight (1990 cm, §16.1), so no
-// eight could be placed. The upper levels here allow enough front overhang for an eight with
-// a little slack. The 2026 layout puts an eight on level 3 of the boys' trailer and on level 2
-// of the girls', so those levels get the long overhang too. Revisit once measured (§15 Q1).
+// SRA's two trailers and the default rule set (PLAN.md §14, §17.1, §17.2). Dimensions are
+// placeholders until measured (PLAN.md §15 Q1). The upper levels allow enough front overhang for
+// an eight (1990 cm, §16.1) with a little slack. The 2026 layout puts an eight on level 3 of the
+// boys' trailer and on level 2 of the girls', so those levels get the long overhang too.
 
 import type { CompartmentDef, Rule, ShelfDef, TrailerDef } from './types';
 
@@ -63,10 +59,9 @@ interface BedLayout {
 }
 
 /**
- * SRA's bed as zones along the frame, front to back (PLAN.md §4.9, §16.4), as the owner
- * describes it: oars, which are long, take roughly the front half; slings a small section in
- * the middle; riggers the rest of the back of the bed, across its full width. The lengths are
- * placeholders until measured (§15 Q1).
+ * SRA's bed as zones along the frame, front to back (PLAN.md §16.4): oars, which are long, take
+ * roughly the front half; slings a small section in the middle; riggers the rest of the back of
+ * the bed, across its full width. The lengths are placeholders until measured (§15 Q1).
  */
 function bedZonesAlong(prefix: string, frameLengthCm: number, bed: BedLayout): CompartmentDef[] {
   return [
@@ -208,10 +203,9 @@ export const SRA_DEFAULT_RULES: Rule[] = [
     origin: 'trailer',
     params: {},
   },
-  // Low, not Medium as §9.3.3 first proposed (amendment proposed by WP-B): at Medium the balance
-  // term outweighs "fours on levels 3 and 2" and moves a four to level 1, narrow side; the
-  // coaches' own 2026 layout is 27% heavier on the wide side. Like heavy-low, balance should
-  // break ties without fighting the convention (§9.3.5 case 12).
+  // Low: at Medium the balance term outweighs "fours on levels 3 and 2" and moves a four to
+  // level 1, narrow side; the coaches' own 2026 layout is 27% heavier on the wide side. Like
+  // heavy-low, balance should break ties without fighting the convention (§9.3.5 case 12).
   {
     id: 'r_balance',
     type: 'side-balance',

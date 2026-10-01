@@ -1,4 +1,4 @@
-// The drag-and-drop helpers the trailer page uses (§4.10 interactive layout, "Why here?").
+// The drag-and-drop helpers the trailer page uses (interactive layout, "Why here?").
 
 import { describe, expect, it } from 'vitest';
 import {

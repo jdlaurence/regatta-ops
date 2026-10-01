@@ -42,9 +42,9 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       localRosters(mode),
       pagesSite(mode),
-      // PWA (PLAN.md §7.1, §10.4): installable, and the app shell opens with no connection.
-      // The service worker precaches the build and never caches API responses; data offline
-      // comes from the query cache saved in IndexedDB. Off in `vite dev` unless REGATTA_OPS_PWA_DEV=1.
+      // PWA: installable, and the app shell opens with no connection. The service worker
+      // precaches the build and never caches API responses; data offline comes from the query
+      // cache saved in IndexedDB. Off in `vite dev` unless REGATTA_OPS_PWA_DEV=1.
       VitePWA({
         registerType: 'prompt',
         // src/pwa/UpdatePrompt.tsx registers it and offers updates with a toast.

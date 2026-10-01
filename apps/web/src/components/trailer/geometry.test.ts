@@ -127,7 +127,7 @@ describe('endViewGeometry: offset post (SRA)', () => {
   });
 
   it('shows the bed from the back: the riggers across its width, the zones ahead named', () => {
-    // SRA's riggers fill the back of the bed (PLAN.md §4.9); slings and oars ride ahead of them.
+    // SRA's riggers fill the back of the bed; slings and oars ride ahead of them.
     expect(g.compartments.map((c) => c.label)).toEqual(['Riggers']);
     const [riggers] = g.compartments;
     expect(riggers!.rect.x).toBeCloseTo(g.bed.x + 4, 5);

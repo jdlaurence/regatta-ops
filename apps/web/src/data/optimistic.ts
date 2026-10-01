@@ -1,6 +1,6 @@
-// Optimistic cache edits (PLAN.md §10.2). A change is applied to every cached list and record of
-// its collection: updates merge by id, creates join the lists whose query they match, deletes
-// leave. Lists are re-sorted by their own sort. Snapshots restore the cache on error.
+// Optimistic cache edits. A change is applied to every cached list and record of its collection:
+// updates merge by id, creates join the lists whose query they match, deletes leave. Lists are
+// re-sorted by their own sort. Snapshots restore the cache on error.
 
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import type { CollectionName } from '@regatta-ops/domain';

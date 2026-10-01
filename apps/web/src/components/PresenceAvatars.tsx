@@ -1,8 +1,8 @@
-// Who else is on this regatta right now (PLAN.md §4.6, §10.3): initials avatars ringed in team
-// color, at most `max` of them and then "+2". Hover an avatar for "Sarah W. · editing Girls
-// lineups · just now"; the stack is also a button that opens the full list, which is how touch
-// and keyboard users read it. `compact` (phones) shows only a count. Renders nothing when the
-// coach is alone, which in demo mode is always.
+// Who else is on this regatta right now: initials avatars ringed in team color, at most `max` of
+// them and then "+2". Hover an avatar for "Sarah W. · editing Girls lineups · just now"; the
+// stack is also a button that opens the full list, which is how touch and keyboard users read it.
+// `compact` (phones) shows only a count. Renders nothing when the coach is alone, which in demo
+// mode is always.
 
 import { Users } from 'lucide-react';
 import { initialsOf, useRegattaPresence, type PresenceViewer } from '@/data';

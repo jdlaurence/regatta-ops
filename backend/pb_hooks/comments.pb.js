@@ -1,12 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Comment mentions (PLAN.md §4.6, Phase 3). Parsing rules are in regatta-ops/mentions.js.
-//
-// - comments.mentions is recomputed from the body on every write, by any path (API, batch, seed,
-//   dashboard); client-supplied values are ignored. The UI highlights these users.
-// - After a signed-in user creates a comment, each mentioned user (not the author) gets an email
-//   with who mentioned them, what the comment is on, the comment, and a link into the app
-//   (REGATTA_OPS_APP_URL). Editing a comment emails only users mentioned for the first time. Superuser
-//   writes (the seed) send nothing.
+// Comment mentions (backend/README.md "Email"): comments.mentions is recomputed from the body on
+// every write, by any path (API, batch, seed, dashboard), and users mentioned for the first time
+// are emailed. Parsing rules are in regatta-ops/mentions.js.
 
 onRecordCreate((e) => {
   require(`${__hooks}/regatta-ops/mentions.js`).stamp(e.app, e.record);

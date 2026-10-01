@@ -22,7 +22,7 @@ describe('RULE_CATALOG', () => {
     for (const e of RULE_CATALOG) expect(e.hard).toBe(HARD_RULE_TYPES.includes(e.type));
   });
 
-  it('lists the §4.10 gallery in order, with the built-in fit rule kept out', () => {
+  it('lists the gallery in order, with the built-in fit rule kept out', () => {
     expect(RULE_CATALOG.filter((e) => e.inGallery).map((e) => e.title)).toEqual([
       'Only certain boat classes on a shelf',
       'A shelf fits N boats side by side',

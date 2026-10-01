@@ -183,7 +183,7 @@ export function entryLabel(prefix: string, cls: BoatClass, crew: string | null):
   return `${prefix}${sep}${boat}${crew ? ` ${crew}` : ''}`;
 }
 
-/** Snapshot of a team's entries in a regatta, as Publish lineups stores it (§4.1). */
+/** Snapshot of a team's entries in a regatta, as Publish lineups stores it. */
 export function snapshotFor(
   w: World,
   regattaId: Id,

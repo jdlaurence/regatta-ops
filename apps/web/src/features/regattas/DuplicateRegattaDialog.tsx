@@ -1,5 +1,5 @@
-// "Duplicate" (PLAN.md §4.1): a new regatta with this one's settings, events (moved to the new
-// dates), and participating teams. Entries, availability, and load plans stay behind.
+// "Duplicate": a new regatta with this one's settings, events (moved to the new dates), and
+// participating teams. Entries, availability, and load plans stay behind.
 
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

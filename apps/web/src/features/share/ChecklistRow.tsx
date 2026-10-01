@@ -1,5 +1,5 @@
-// One line of the phone load checklist (PLAN.md §4.8, §6.7): the item, where it rides, and two
-// big boxes, Loaded and Returned, each saying who ticked it and when.
+// One line of the phone load checklist: the item, where it rides, and two big boxes, Loaded and
+// Returned, each saying who ticked it and when.
 
 import { useId } from 'react';
 import { Check, CloudUpload } from 'lucide-react';

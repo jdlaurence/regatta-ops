@@ -1,7 +1,7 @@
-// What each print view shows, derived from the regatta working set (PLAN.md §4.11, §6.12).
-// Pure functions of plain data so they are tested without rendering. Every lineup view reads
-// PublishedEntry rows: the team's published snapshot, or the live draft built the same way
-// (buildPublishedSnapshot), so the published/live toggle changes the rows and nothing else.
+// What each print view shows, derived from the regatta working set. Pure functions of plain data
+// so they are tested without rendering. Every lineup view reads PublishedEntry rows: the team's
+// published snapshot, or the live draft built the same way (buildPublishedSnapshot), so the
+// published/live toggle changes the rows and nothing else.
 
 import {
   bedZones,
@@ -166,7 +166,7 @@ export function unboatedFor(
 }
 
 // ---------------------------------------------------------------------------
-// Lineup grid (PLAN.md §4.11): events as columns, seats as rows, cox first then stroke to bow
+// Lineup grid: events as columns, seats as rows, cox first then stroke to bow
 
 export interface GridColumn {
   key: string;
@@ -412,9 +412,9 @@ export interface ListRaceRow {
 export type ListScheduleRow = ListRaceRow | LogisticsRow;
 
 /**
- * One day of the schedule page's list view (PLAN.md §6.3) as it prints: the same races,
- * logistics lines, and entries under the same filters (`scheduleItems`), each entry with its
- * lineup from `lineups` (the live draft, as on screen).
+ * One day of the schedule page's list view as it prints: the same races, logistics lines, and
+ * entries under the same filters (`scheduleItems`), each entry with its lineup from `lineups`
+ * (the live draft, as on screen).
  */
 export function listScheduleRows(
   ws: RegattaWorkingSet,
@@ -467,7 +467,7 @@ export function scheduleDays(
 }
 
 // ---------------------------------------------------------------------------
-// Load sheet (PLAN.md §4.8, §4.9, §4.11)
+// Load sheet
 
 export interface ShelfPlacementRow {
   placement: LoadPlacement;
@@ -487,7 +487,7 @@ export interface ShelfRow {
 export interface ChecklistRow extends MergedLoadRow {
   /** Where it rides: "Top level, wide side, lane 2 (outer)", "Riggers (back of bed)". */
   where: string;
-  /** The bed zone it rides in on this trailer, if any (PLAN.md §4.9). */
+  /** The bed zone it rides in on this trailer, if any. */
   zoneId: Id | null;
   /** Nothing puts it on a trailer or in a truck yet. */
   unassigned: boolean;
@@ -501,7 +501,7 @@ export interface ChecklistGroup {
   rows: ChecklistRow[];
 }
 
-/** One of the trailer's bed zones, front to back, with what rides in it (PLAN.md §4.9). */
+/** One of the trailer's bed zones, front to back, with what rides in it. */
 export interface BedZoneRow {
   id: Id;
   /** "Riggers (back of bed)". */
@@ -666,7 +666,7 @@ export function loadSheet(ws: RegattaWorkingSet, trailerId: Id): LoadSheet | nul
     add({ ...row, ...keep, spare: false });
   }
 
-  // Shells on this trailer that no entry uses ride as spares (PLAN.md §4.8): list them, flagged.
+  // Shells on this trailer that no entry uses ride as spares: list them, flagged.
   for (const p of placements) {
     if (listed.has(p.shellId)) continue;
     const shell = ws.byId.shells.get(p.shellId);

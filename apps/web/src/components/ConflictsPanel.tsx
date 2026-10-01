@@ -1,7 +1,7 @@
-// The conflicts panel (PLAN.md §4.4, §4.5, §5.3): every finding for a regatta, grouped by
-// severity, filterable to one team, each with its message, the teams involved, one-click links
-// to the entries, and "Acknowledge hot seat" for hot seats. Shown in the default inspector and
-// on the schedule page (as a tab on narrow screens).
+// The conflicts panel: every finding for a regatta, grouped by severity, filterable to one team,
+// each with its message, the teams involved, one-click links to the entries, and "Acknowledge hot
+// seat" for hot seats. Shown in the default inspector and on the schedule page (as a tab on
+// narrow screens).
 
 import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router';

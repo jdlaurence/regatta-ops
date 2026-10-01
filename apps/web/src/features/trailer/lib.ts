@@ -1,6 +1,6 @@
-// Pure helpers for the regatta trailer page (PLAN.md §4.9, §4.10, §6.6): the boats a regatta
-// takes and where they are, which trailer each still-to-load boat is headed for, the writes a
-// drop, a lock, or a pack turns into, and the numbers under the drawing. No React, no store.
+// Pure helpers for the regatta trailer page: the boats a regatta takes and where they are, which
+// trailer each still-to-load boat is headed for, the writes a drop, a lock, or a pack turns into,
+// and the numbers under the drawing. No React, no store.
 
 import {
   DEFAULT_BALANCE_TOLERANCE_PCT,
@@ -63,16 +63,16 @@ export interface TrailerPageModel {
   placedOn: Map<Id, Id>;
   /** Boats on no trailer yet, in load-list order. */
   toLoad: PackBoat[];
-  /** Shells placed on a trailer that no entry uses (§4.8 "spare"). */
+  /** Shells placed on a trailer that no entry uses. */
   spareIds: Set<Id>;
   /** Where each boat still to load is headed: shell → trailer (see `assignTrailers`). */
   assignment: Map<Id, Id>;
 }
 
 /**
- * The effective rule set for a plan (§4.9): the trailer's current defaults with the plan's
- * regatta overrides merged in, so an admin's later change to a default still applies to plans
- * that did not override it. Without a plan, the defaults.
+ * The effective rule set for a plan: the trailer's current defaults with the plan's regatta
+ * overrides merged in, so an admin's later change to a default still applies to plans that did
+ * not override it. Without a plan, the defaults.
  */
 export function effectiveRules(trailer: Pick<Trailer, 'defaultRules'>, plan: LoadPlan | null) {
   const defaults = trailer.defaultRules ?? [];
@@ -303,8 +303,8 @@ export interface DropCheck {
 }
 
 /**
- * Drop a boat into a lane of this trailer (§4.10): where it would sit and whether that breaks
- * a hard rule. The boat may come from "To load", this trailer, or another trailer.
+ * Drop a boat into a lane of this trailer: where it would sit and whether that breaks a hard
+ * rule. The boat may come from "To load", this trailer, or another trailer.
  */
 export function checkDrop(
   tm: TrailerModel,
@@ -327,7 +327,7 @@ export interface PlanRef {
   create?: Omit<LoadPlan, 'id' | 'created' | 'updated'>;
 }
 
-/** The record a new load plan starts from: the trailer's default rules, draft (§4.9). */
+/** The record a new load plan starts from: the trailer's default rules, draft. */
 export function newPlanData(regattaId: Id, trailer: Trailer): Omit<LoadPlan, 'id'> {
   return {
     regattaId,
@@ -363,10 +363,10 @@ function placementPatch(p: Placement): GuardedWrite['patch'] {
 }
 
 /**
- * The writes for a boat dropped by hand (§4.10): the moved placement is locked ("Locked by
- * Sam"); a flagged drop keeps the rules it breaks as its reasons. A move within the plan is
- * one guarded update (plus lane-mates the drop shifted along the shelf); a move from another
- * plan, or from "To load", deletes and creates in one batch, starting the plan if needed.
+ * The writes for a boat dropped by hand: the moved placement is locked ("Locked by Sam"); a
+ * flagged drop keeps the rules it breaks as its reasons. A move within the plan is one guarded
+ * update (plus lane-mates the drop shifted along the shelf); a move from another plan, or from
+ * "To load", deletes and creates in one batch, starting the plan if needed.
  */
 export function dropWrites(input: {
   result: DropResult;
@@ -436,7 +436,7 @@ function samePlacement(rec: LoadPlacement, p: Placement): boolean {
 }
 
 /**
- * A pack result as writes to one plan (§4.10: the result replaces unlocked placements): moved
+ * A pack result as writes to one plan (the result replaces unlocked placements): moved
  * boats update their records, new boats get records, boats no longer placed lose theirs, and
  * the plan is stamped `packedAt`. Unchanged records are left alone.
  */

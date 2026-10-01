@@ -21,8 +21,8 @@ function start(rosters: RosterAthlete[], { signInAsAdmin = false } = {}) {
   // MemoryStore signs in at once, before the first render, so the app never shows sign-in.
   if (signInAsAdmin && !store.auth.user) void store.auth.signInWithPassword(SEED_EMAILS.admin, '');
   const queryClient = createQueryClient({ mode: store.mode });
-  // Offline reads (PLAN.md §10.4): the query cache is saved on this device, and the app checks
-  // that it can reach the server before offering edits.
+  // Offline reads: the query cache is saved on this device, and the app checks that it can reach
+  // the server before offering edits.
   const persister = createIdbPersister();
   const probe = networkProbeFor(store);
   const router = createAppRouter({ store, queryClient });
@@ -36,7 +36,7 @@ function start(rosters: RosterAthlete[], { signInAsAdmin = false } = {}) {
   );
 }
 
-// The published demo (`--mode pages`, PLAN.md §18) opens its sealed rosters first: with the key
+// The published demo (`--mode pages`, PLAN.md §14) opens its sealed rosters first: with the key
 // this device remembers, or with the password, after which it signs in as the admin.
 if (sealedRoster) {
   const sealed = sealedRoster;

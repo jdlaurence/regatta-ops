@@ -1,6 +1,5 @@
-// Roster import from CSV (PLAN.md §4.2) on the shared CsvImportDialog: paste or upload, match
-// columns (guessed from the headers), preview each row's problems, then add the good rows in
-// batches.
+// Roster import from CSV on the shared CsvImportDialog: paste or upload, match columns (guessed
+// from the headers), preview each row's problems, then add the good rows in batches.
 
 import { useState } from 'react';
 import type { Athlete, Team } from '@regatta-ops/domain';

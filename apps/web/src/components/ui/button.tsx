@@ -3,7 +3,7 @@ import { Slot } from 'radix-ui';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/cn';
 
-// Controls are 36 px tall with a fine pointer and 44 px on touch (PLAN.md §5.2).
+// Controls are 36 px tall with a fine pointer and 44 px on touch.
 export const buttonVariants = cva(
   'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control font-medium transition-colors disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
   {

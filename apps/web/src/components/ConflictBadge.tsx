@@ -2,8 +2,8 @@ import type { Finding, Severity } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/menu';
 
-// Severity is always shape plus color, never color alone (PLAN.md §5.4): a filled circle for
-// errors, a triangle for warnings, a circle with an i for information.
+// Severity is always shape plus color, never color alone: a filled circle for errors, a triangle
+// for warnings, a circle with an i for information.
 
 const TEXT: Record<Severity, string> = {
   error: 'text-danger',
@@ -78,8 +78,8 @@ export interface ConflictBadgeProps {
 }
 
 /**
- * A small badge with a severity icon and a count or label. Radius is the control radius:
- * pills mean boats (PLAN.md §5.2).
+ * A small badge with a severity icon and a count or label. Radius is the control radius: pills
+ * mean boats.
  */
 export function ConflictBadge({ severity, count, label, findings, className }: ConflictBadgeProps) {
   const n = count ?? findings?.length ?? 1;

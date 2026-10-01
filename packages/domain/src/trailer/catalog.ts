@@ -1,5 +1,5 @@
-// Rule catalog for the rules editor gallery (PLAN.md §4.10, §9.3.3), rule construction, and
-// merging trailer defaults with regatta overrides.
+// Rule catalog for the rules editor gallery (PLAN.md §9.3.3), rule construction, and merging
+// trailer defaults with regatta overrides.
 
 import { hash32 } from '../ids';
 import type { FitRule, Rule, RuleOrigin, RuleType, RuleWeight } from './types';
@@ -52,7 +52,7 @@ export interface RuleEditorNeeds {
 
 export interface RuleCatalogEntry<T extends RuleType = RuleType> {
   type: T;
-  /** Gallery wording (§4.10). */
+  /** Gallery wording. */
   title: string;
   /** Must (true) or Prefer (false). */
   hard: boolean;
@@ -96,8 +96,8 @@ function entry<T extends RuleType>(
 }
 
 /**
- * Every rule type, in gallery order (§4.10's list, then the two types §9.3.3 adds, then the
- * built-in fit rule). Each rule type appears exactly once.
+ * Every rule type, in gallery order (the rules editor's list, then the two types §9.3.3 adds,
+ * then the built-in fit rule). Each rule type appears exactly once.
  */
 export const RULE_CATALOG: readonly AnyRuleCatalogEntry[] = [
   entry(
@@ -233,8 +233,8 @@ export function makeRule<T extends RuleType>(
 }
 
 /**
- * The effective rule set for a load plan (§4.9, §4.10): trailer defaults in order, each replaced
- * by the regatta rule with the same id when there is one, then regatta-only rules appended.
+ * The effective rule set for a load plan: trailer defaults in order, each replaced by the regatta
+ * rule with the same id when there is one, then regatta-only rules appended.
  */
 export function mergeRules(
   trailerDefaults: readonly Rule[],

@@ -1,6 +1,6 @@
-// "Day at a glance" on the overview (PLAN.md §6.2): per day, a one-line summary in words and the
-// miniature timeline (shells as rows, components/DayTimeline.tsx). With no events yet it offers
-// the two ways to add them.
+// "Day at a glance" on the overview: per day, a one-line summary in words and the miniature
+// timeline (shells as rows, components/DayTimeline.tsx). With no events yet it offers the two
+// ways to add them.
 
 import { Link, useNavigate } from 'react-router';
 import { CalendarClock, ClipboardPaste, Plus } from 'lucide-react';

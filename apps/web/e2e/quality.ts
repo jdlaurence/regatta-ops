@@ -59,8 +59,6 @@ export interface PageCase {
   prepare?: (page: Page) => Promise<void>;
   /** The page shows loading skeletons on purpose (the component gallery). */
   skeletons?: boolean;
-  /** Pages still being built elsewhere: listed so they are not forgotten. */
-  fixme?: string;
 }
 
 export const PAGES: PageCase[] = [
@@ -70,7 +68,8 @@ export const PAGES: PageCase[] = [
   { name: 'schedule, timeline', path: regattaUrl(NW_YOUTH, 'schedule?view=timeline') },
   { name: 'lineups, by event', path: regattaUrl(NW_YOUTH, `lineups/${BOYS}`) },
   { name: 'lineups, by athlete', path: regattaUrl(NW_YOUTH, `lineups/${BOYS}?view=athlete`) },
-  { name: 'availability', path: regattaUrl(HOTL, 'availability') },
+  { name: 'lineups, planning regatta', path: regattaUrl(HOTL, `lineups/${BOYS}`) },
+  { name: 'availability', path: `/teams/${BOYS}/availability` },
   { name: 'fleet, shells', path: '/fleet/shells', who: 'admin' },
   { name: 'fleet, oars', path: '/fleet/oars', who: 'admin' },
   { name: 'fleet, gear', path: '/fleet/gear', who: 'admin' },

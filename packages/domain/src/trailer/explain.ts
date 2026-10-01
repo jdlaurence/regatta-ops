@@ -1,5 +1,5 @@
 // Rule sentences (PLAN.md §9.3.3). The sentence on a rule card is generated from the rule type
-// and params, so the same rule always reads the same way (§4.10).
+// and params, so the same rule always reads the same way.
 
 import type { Id } from '../types';
 import {

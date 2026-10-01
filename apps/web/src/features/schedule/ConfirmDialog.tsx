@@ -1,9 +1,5 @@
-// A promise-based confirmation for edits on a final regatta (PLAN.md §4.1: "final" asks before
-// each edit; it does not lock).
-//
-//   const { confirm, dialog } = useConfirm();
-//   if (await confirm({ title, description, action: 'Save change' })) save();
-//   return <>{...}{dialog}</>;
+// A promise-based confirmation for edits on a final regatta ("final" asks before each edit; it
+// does not lock): `confirm(...)` resolves to the answer, and `dialog` must be rendered.
 
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';

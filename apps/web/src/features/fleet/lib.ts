@@ -1,6 +1,6 @@
-// Pure helpers for the fleet inventory (PLAN.md §4.7, §6.8, §16.1): labels, class defaults for
-// new and edited shells, table filters and grouping, and a shell's or oar set's upcoming use
-// (§4.5). No React here; the components and tests share these.
+// Pure helpers for the fleet inventory (PLAN.md §16.1): labels, class defaults for new and edited
+// shells, table filters and grouping, and a shell's or oar set's upcoming use. No React here; the
+// components and tests share these.
 
 import {
   boatClassSpec,
@@ -432,7 +432,7 @@ export function compareOarSets(a: OarSet, b: OarSet): number {
 }
 
 // ---------------------------------------------------------------------------
-// Upcoming use (§4.5: a shell's page shows its usage across upcoming regattas)
+// Upcoming use: a shell's drawer shows its usage across upcoming regattas
 
 export interface UsageRow {
   entry: Entry;

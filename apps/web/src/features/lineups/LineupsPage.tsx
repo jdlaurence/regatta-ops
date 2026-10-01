@@ -1,7 +1,6 @@
-// The lineup builder, /regattas/:id/lineups/:teamId (PLAN.md §4.4, §6.4): the roster panel with
-// its crossed-off athletes, the team's entries by event as cards with their boats stood on end
-// (or the by-athlete matrix), shell and oar pickers with live conflict hints, and entry details
-// in the inspector.
+// The lineup builder, /regattas/:id/lineups/:teamId: the roster panel with its crossed-off
+// athletes, the team's entries by event as cards with their boats stood on end (or the by-athlete
+// matrix), shell and oar pickers with live conflict hints, and entry details in the inspector.
 //
 // Layout: the roster is a sticky column when the builder has room for it and two columns of
 // boats (layout.ts); otherwise it is a collapsible panel above the entries. Entries fill a grid
@@ -19,6 +18,7 @@ import { BoatStripSkeleton } from '@/components/BoatStrip';
 import { TeamDot } from '@/components/chips';
 import { Inspector, useInspector, useInspectorStore } from '@/components/Inspector';
 import { PageHeader } from '@/components/PageHeader';
+import { PublishStatus } from '@/components/PublishStatus';
 import { ShareLinksDialog } from '@/components/ShareLinksDialog';
 import { EmptyState, ErrorState, Skeleton } from '@/components/states';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,6 @@ import { EntryDetails } from './EntryDetails';
 import { LineupDnd } from './LineupDnd';
 import { CARD_MIN, ROSTER_COLUMN, useMediaQuery, useWidth, WIDE_MIN } from './layout';
 import { buildIndex } from './lib';
-import { PublishSlot } from './PublishSlot';
 import { RosterColumn, RosterDrawer } from './RosterPanel';
 import { SEAT_HELP_ID } from './Seats';
 import { SeatSheet } from './SeatSheet';
@@ -261,7 +260,7 @@ function Builder({ regattaId }: { regattaId: string }) {
         title={<TeamTitle team={team} teams={racing} regattaId={regattaId} />}
         actions={
           <>
-            <PublishSlot regattaId={regattaId} teamId={team.id} />
+            <PublishStatus regattaId={regattaId} teamId={team.id} />
             {canEdit && (
               <Button size="sm" onClick={() => setShareOpen(true)}>
                 <Share2 aria-hidden />
@@ -359,11 +358,11 @@ function Builder({ regattaId }: { regattaId: string }) {
 }
 
 /**
- * Room for the builder (PLAN.md §5.3, §6.4). When the inspector column would squeeze the
- * builder into its narrow layout (roster folded above the entries), the lineup page starts
- * with the column closed, without changing the remembered choice. `]` and
- * an entry's details open it again; leaving the page restores the remembered state. Decided
- * once, on the first measurement, and never when arriving at a linked entry.
+ * Room for the builder. When the inspector column would squeeze the builder into its narrow
+ * layout (roster folded above the entries), the lineup page starts with the column closed,
+ * without changing the remembered choice. `]` and an entry's details open it again; leaving the
+ * page restores the remembered state. Decided once, on the first measurement, and never when
+ * arriving at a linked entry.
  */
 function useRoomForBuilder(width: number, wideMin: number, isPhone: boolean) {
   const decided = useRef(false);

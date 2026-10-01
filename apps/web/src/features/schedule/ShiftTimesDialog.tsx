@@ -1,5 +1,5 @@
-// Bulk time shift (PLAN.md §6.3): "everything after 11:00 is 20 minutes late". Pick a day, a
-// start time, and minutes; preview the events that move; apply as one batch.
+// Bulk time shift: "everything after 11:00 is 20 minutes late". Pick a day, a start time, and
+// minutes; preview the events that move; apply as one batch.
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { ArrowRight } from 'lucide-react';

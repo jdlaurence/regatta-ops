@@ -112,7 +112,7 @@ test.describe('desktop', () => {
     await regattas.getByRole('link', { name: /^Head of the Lake/ }).click();
     await page.waitForURL(`**${regattaUrl(SEED_REGATTA_IDS.headOfTheLake2026)}`);
     await expect(pageHeading(page, 'Overview')).toBeVisible();
-    for (const tab of ['Schedule', 'Lineups', 'Availability', 'Trailer', 'Load list']) {
+    for (const tab of ['Schedule', 'Lineups', 'Trailer', 'Load list']) {
       await expect(regattas.getByRole('link', { name: tab, exact: true })).toBeVisible();
     }
     await regattas.getByRole('link', { name: 'Schedule', exact: true }).click();

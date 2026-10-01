@@ -1,6 +1,6 @@
-// Add or edit one event (PLAN.md §4.3): a race or a logistics line on the regatta's schedule.
-// Used by the schedule page (WP-H) for "Add event" and "Edit event", and by the regatta
-// overview. Deleting an event leaves its entries unscheduled; their lineups stay.
+// Add or edit one event: a race or a logistics line on the regatta's schedule. Used by the
+// schedule page for "Add event" and "Edit event", and by the regatta overview. Deleting an event
+// leaves its entries unscheduled; their lineups stay.
 
 import { useId, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -173,7 +173,7 @@ function LoadedEventForm({
         toast.success(race ? 'Event added' : 'Logistics item added');
       } else {
         const ops: BatchOp[] = [batchOp.update('events', event.id, fields)];
-        // The server moves the entries with the event's class (§18); do the same here so the
+        // The server moves the entries with the event's class (§8.3); do the same here so the
         // change shows at once and demo mode matches.
         if (fields.boatClass && fields.boatClass !== event.boatClass) {
           for (const e of onEvent) {

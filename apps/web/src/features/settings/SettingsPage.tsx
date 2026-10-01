@@ -1,5 +1,5 @@
-// Settings (PLAN.md §4.12, §6.11): club defaults, users and roles, the signed-in user's
-// preferences, and the activity log. The tab is in the URL (?tab=activity) so it can be linked.
+// Settings: club defaults, users and roles, the signed-in user's preferences, and the activity
+// log. The tab is in the URL (?tab=activity) so it can be linked.
 
 import { useSearchParams } from 'react-router';
 import { PageHeader } from '@/components/PageHeader';

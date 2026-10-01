@@ -1,5 +1,5 @@
-// The load sheet's trailer diagram (features/print/PrintLoadPage.tsx TrailerDiagramSlot), filled
-// by WP-M with the end view of the regatta's load plan.
+// The load sheet's trailer diagram (PrintLoadPage.tsx TrailerDiagramSlot): the end view of the
+// regatta's load plan.
 
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';

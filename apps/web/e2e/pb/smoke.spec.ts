@@ -1,8 +1,8 @@
-// The PocketBase smoke suite (PLAN.md §11.3, §13): the production build served by a real
-// PocketBase with the seed world (e2e/pb/server.ts). Email and password sign-in, the schedule
-// and its conflicts from the server, a seat edit that persists and reaches another coach live,
-// a viewer who cannot edit, and a public share link opened in a separate browser, ticked offline
-// and synced. One database for the run: the tests take turns and touch different records.
+// The PocketBase smoke suite (PLAN.md §13): the production build served by a real PocketBase with
+// the seed world (e2e/pb/server.ts). Email and password sign-in, the schedule and its conflicts
+// from the server, a seat edit that persists and reaches another coach live, a viewer who cannot
+// edit, and a public share link opened in a separate browser, ticked offline and synced. One
+// database for the run: the tests take turns and touch different records.
 
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
 import {

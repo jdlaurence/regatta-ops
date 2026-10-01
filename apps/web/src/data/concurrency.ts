@@ -1,7 +1,7 @@
-// Stale-write check (PLAN.md §8.3 concurrency.pb.js, §10.2). Only events (their times) and load
+// Stale-write check (PLAN.md §8.3 concurrency.pb.js). Only events (their times) and load
 // placements carry it: an update sent with `expectedUpdated` is refused with a 'conflict'
-// StoreError when the stored record has changed since. Everything else is last-write-wins.
-// Shared by MemoryStore (so demo mode and tests behave like the server) and useGuardedUpdate.
+// StoreError when the stored record has changed since. Everything else is last-write-wins. Shared
+// by MemoryStore (so demo mode and tests behave like the server) and useGuardedUpdate.
 
 import type { CollectionName } from '@regatta-ops/domain';
 
@@ -27,5 +27,5 @@ export function sameStamp(a: string | null | undefined, b: string | null | undef
   return normalizeStamp(a) === normalizeStamp(b);
 }
 
-/** The toast after a refused stale write (PLAN.md §5.5: what happened, what to do). */
+/** The toast after a refused stale write (what happened, what to do). */
 export const CONFLICT_TOAST = 'Someone else changed this a moment ago. Refreshed; try again.';

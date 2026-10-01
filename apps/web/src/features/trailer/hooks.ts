@@ -1,5 +1,5 @@
-// Trailer page hooks: writes through the data hooks (PLAN.md §11.2), the page's own small store,
-// and the pack animation (§5.2: the app's one orchestrated motion, 400 ms, FLIP).
+// Trailer page hooks: writes through the data hooks, the page's own small store, and the pack
+// animation (the app's one orchestrated motion, 400 ms, FLIP).
 
 import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from 'react';
 import { create } from 'zustand';
@@ -34,7 +34,7 @@ export function useMediaQuery(query: string): boolean {
   );
 }
 
-/** Phones get tap-and-choose instead of drag and drop (PLAN.md §5.3, §6.6). */
+/** Phones get tap-and-choose instead of drag and drop. */
 export function useIsPhone(): boolean {
   return useMediaQuery('(max-width: 767px)');
 }
@@ -56,8 +56,8 @@ interface RulesDirtyState {
 }
 
 /**
- * Plans whose rules were edited here since their last pack: "Rules changed · Auto pack to
- * apply". Session state; editing rules never repacks by itself (§4.10).
+ * Plans whose rules were edited here since their last pack: "Rules changed · Auto pack to apply".
+ * Session state; editing rules never repacks by itself.
  */
 export const useRulesDirty = create<RulesDirtyState>((set) => ({
   plans: {},
@@ -128,8 +128,8 @@ export function useTrailerWrites() {
 type TrailerWrites = ReturnType<typeof useTrailerWrites>;
 
 /**
- * The trailer page's writes, each asking first on a final regatta (PLAN.md §4.1). The first
- * yes covers the rest of the visit, as on the lineup page.
+ * The trailer page's writes, each asking first on a final regatta. The first yes covers the rest
+ * of the visit, as on the lineup page.
  */
 export function useFinalGuardedWrites(
   writes: TrailerWrites,

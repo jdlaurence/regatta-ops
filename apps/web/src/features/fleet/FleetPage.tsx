@@ -1,5 +1,5 @@
-// Fleet (PLAN.md §4.7, §6.8): shells, oar sets, and gear as three tabs, each its own route
-// (/fleet/shells, /fleet/oars, /fleet/gear). The router lazy-loads this file's default export.
+// Fleet: shells, oar sets, and gear as three tabs, each its own route (/fleet/shells,
+// /fleet/oars, /fleet/gear). The router lazy-loads this file's default export.
 
 import { NavLink, useParams } from 'react-router';
 import { cn } from '@/lib/cn';

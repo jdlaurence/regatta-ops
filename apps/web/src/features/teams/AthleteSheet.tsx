@@ -1,5 +1,5 @@
-// The athlete drawer (PLAN.md §6.10): every field, and the regattas and entries the athlete is
-// in, upcoming first. Coaches edit and delete; viewers read.
+// The athlete drawer: every field, and the regattas and entries the athlete is in, upcoming
+// first. Coaches edit and delete; viewers read.
 
 import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router';

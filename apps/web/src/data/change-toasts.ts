@@ -1,6 +1,6 @@
-// "Updated by Sarah W. just now" toasts (PLAN.md §10.2). Mounted once per open regatta (the
-// regatta layout). The data itself is already fresh: RealtimeProvider refetches on every change;
-// this only tells the coach that someone else moved things under them.
+// "Updated by Sarah W. just now" toasts. Mounted once per open regatta (the regatta layout). The
+// data itself is already fresh: RealtimeProvider refetches on every change; this only tells the
+// coach that someone else moved things under them.
 
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';

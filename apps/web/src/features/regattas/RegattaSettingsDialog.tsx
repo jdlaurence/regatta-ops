@@ -1,5 +1,5 @@
-// Regatta settings (PLAN.md §4.1): every regatta field, the status, and the timing values with
-// the club default beside each override and a per-field reset.
+// Regatta settings: every regatta field, the status, and the timing values with the club default
+// beside each override and a per-field reset.
 
 import { useId } from 'react';
 import { Controller, useForm, useWatch, type UseFormReturn } from 'react-hook-form';

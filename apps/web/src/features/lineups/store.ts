@@ -37,7 +37,7 @@ interface LineupUiState {
   settling: SeatRef | null;
   /** Polite live-region text. */
   announcement: string;
-  /** A final regatta asks once per visit before the first edit (PLAN.md §4.1). */
+  /** A final regatta asks once per visit before the first edit. */
   finalConfirmed: boolean;
   pendingEdit: (() => void) | null;
   select: (id: Id | null) => void;

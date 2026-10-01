@@ -341,8 +341,8 @@ export function buildModel(
 
 /**
  * Effective shelves for a trailer under a rule set: active flag, overhang limits, and the number
- * of lane cells to draw (§4.10 end view). Lanes on shelves without an override depend on the
- * boats, so draw `max(laneSlots, highest used lane + 1)`.
+ * of lane cells to draw. Lanes on shelves without an override depend on the boats, so draw
+ * `max(laneSlots, highest used lane + 1)`.
  */
 export function effectiveShelvesFor(trailer: TrailerDef, rules: readonly Rule[]): EffectiveShelf[] {
   return buildModel(trailer, [], rules).shelves;

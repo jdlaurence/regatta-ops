@@ -1,7 +1,7 @@
-// File fields (PLAN.md §4.7, §8.1): what both stores do to a photo before storing it, and the
-// words for what can go wrong. PocketBase keeps the file and serves it (with thumbnails);
-// MemoryStore keeps it in the record as a data URL, so it must stay small (demo mode saves the
-// whole world in localStorage).
+// File fields (PLAN.md §8.1): what both stores do to a photo before storing it, and the words for
+// what can go wrong. PocketBase keeps the file and serves it (with thumbnails); MemoryStore keeps
+// it in the record as a data URL, so it must stay small (demo mode saves the whole world in
+// localStorage).
 
 import {
   browserImageCodec,

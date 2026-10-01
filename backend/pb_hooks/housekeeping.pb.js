@@ -1,7 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 // Small guards and chores.
 //
-// - club_settings holds one record (§18): a second create is refused.
+// - club_settings holds one record (§8.1): a second create is refused.
 // - presence rows older than 2 minutes are pruned every minute (§8.1 presence). Deleted through
 //   the app, so realtime subscribers see the deletes.
 

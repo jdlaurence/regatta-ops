@@ -1,6 +1,6 @@
-// Automated accessibility (PLAN.md §5.6, §13): axe with the WCAG 2.1 A and AA rules on every
-// main page, in the light and the dark theme, plus the landmark and heading rules from axe's
-// best practices. A violation fails the test with the rule, the elements, and what to fix.
+// Automated accessibility (PLAN.md §13): axe with the WCAG 2.1 A and AA rules on every main page,
+// in the light and the dark theme, plus the landmark and heading rules from axe's best practices.
+// A violation fails the test with the rule, the elements, and what to fix.
 //
 //   pnpm --filter @regatta-ops/web exec playwright test e2e/a11y.spec.ts
 
@@ -52,7 +52,6 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
     for (const c of PAGES) {
       test(c.name, async ({ page }) => {
-        test.fixme(!!c.fixme, c.fixme);
         await openPage(page, c);
         expect(await shownTheme(page)).toBe(colorScheme);
         await expectNoViolations(page);
@@ -153,6 +152,7 @@ test.describe('phone', () => {
       'regatta overview',
       'schedule, list',
       'lineups, by event',
+      'lineups, planning regatta',
       'availability',
       'fleet, shells',
       'team page',
@@ -193,7 +193,7 @@ test.describe('phone', () => {
 
 /**
  * Seat an athlete from the keyboard on the Head of the Lake boys page and return every
- * animation that ran (PLAN.md §5.2: the cross-off strike, the seat settle), with durations in
+ * animation that ran (the cross-off strike, the seat settle), with durations in
  * milliseconds. CSS animations are caught as they start; script ones (the strike) as they are
  * made.
  */

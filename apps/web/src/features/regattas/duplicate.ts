@@ -1,6 +1,6 @@
-// Duplicating a regatta (PLAN.md §4.1): settings, events, and participating teams are copied;
-// entries, availability, load plans, and published lineups are not. Days move with the new
-// start date and race times keep their wall-clock time in the regatta's timezone. Pure.
+// Duplicating a regatta: settings, events, and participating teams are copied; entries,
+// availability, load plans, and published lineups are not. Days move with the new start date and
+// race times keep their wall-clock time in the regatta's timezone. Pure.
 
 import {
   daysBetween,

@@ -1,9 +1,9 @@
-// The isometric trailer view (PLAN.md §4.10, Phase 3): a three-quarter picture of the whole
-// trailer, front to the upper right, with the rack levels, the uprights, and every boat as a
-// hull in its team's color at its place along the trailer, so what sticks out past the frame at
-// either end is plain to see, and the bed's compartments as zones along the length (§4.9).
-// Read-only; the end view stays the view for moving boats. Takes the same inputs as
-// TrailerEndView. Screen readers get a summary instead of the drawing.
+// The isometric trailer view: a three-quarter picture of the whole trailer, front to the upper
+// right, with the rack levels, the uprights, and every boat as a hull in its team's color at its
+// place along the trailer, so what sticks out past the frame at either end is plain to see, and
+// the bed's compartments as zones along the length. Read-only; the end view stays the view for
+// moving boats. Takes the same inputs as TrailerEndView. Screen readers get a summary instead of
+// the drawing.
 
 import { useCallback, useMemo, useState } from 'react';
 import { effectiveShelvesFor, type Id, type Rule, type TrailerDef } from '@regatta-ops/domain';

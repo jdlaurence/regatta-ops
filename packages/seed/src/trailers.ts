@@ -54,8 +54,8 @@ function addTrailer(w: World, def: TrailerDef, id: string): void {
       label: c.label,
       capacity: c.capacity,
       capacityUnit: unitOf(c),
-      // Zones along the frame (§4.9). PocketBase keeps a start of 0 as blank, which reads as the
-      // front, so the seed stores it that way too.
+      // Zones along the frame. PocketBase keeps a start of 0 as blank, which reads as the front,
+      // so the seed stores it that way too.
       startCm: c.startCm ? c.startCm : null,
       endCm: c.endCm ?? null,
     });

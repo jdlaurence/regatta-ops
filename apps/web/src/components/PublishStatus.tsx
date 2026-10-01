@@ -1,9 +1,7 @@
-// Publishing a team's lineups (PLAN.md §4.1): "Published 2 h ago · 3 changes since" (hover or
-// tap lists the changes) or "Not published yet", and the "Publish lineups" button (coach and
-// admin) with a confirmation that shows what changes. Publishing writes publishedAt and the
-// snapshot to the team's regatta_teams record; entries stay live for coaches.
-//
-// Placed in the lineup page header: <PublishStatus regattaId={id} teamId={teamId} />.
+// Publishing a team's lineups: "Published 2 h ago · 3 changes since" (hover or tap lists the
+// changes) or "Not published yet", and the "Publish lineups" button (coach and admin) with a
+// confirmation that shows what changes. Publishing writes publishedAt and the snapshot to the
+// team's regatta_teams record; entries stay live for coaches.
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { Send } from 'lucide-react';

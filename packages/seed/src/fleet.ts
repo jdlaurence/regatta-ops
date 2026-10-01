@@ -1,5 +1,5 @@
 // Fleet: shells and oar sets from data/reference, and the gear list from the trailer sheet
-// (PLAN.md §4.7, §14). Mapping rules are documented next to each helper.
+// (PLAN.md §14). Mapping rules are documented next to each helper.
 
 import {
   BOAT_CLASSES,
@@ -59,8 +59,8 @@ const MODEL_LENGTH_CM: [RegExp, number][] = [
 
 /**
  * Classes a shell can race as. The Lundberg 4+ is the club's one 4+ used as a 4x+: the 2025
- * schedule lists it as "Lundberg 4x+ (rerig)" (PLAN.md §4.7), though shells.csv lists no
- * compatible classes for it.
+ * schedule lists it as "Lundberg 4x+ (rerig)", though shells.csv lists no compatible classes for
+ * it.
  */
 const COMPATIBLE_OVERRIDES: Record<string, BoatClass[]> = { Lundberg: ['4+', '4x+'] };
 
@@ -109,7 +109,7 @@ function spreadAndSpan(
  * The sheet's "unavailable" column marks two boats out of service (PLAN.md §14). A "do not row"
  * note on a boat the column still lists as available (Fowler: "Serious hull damage do not row.")
  * becomes 'limited', so it is flagged without reading as an error on the 2025 schedule that raced
- * it; the owner should confirm whether it is out of service now.
+ * it.
  */
 function statusFor(row: Pick<ShellRow, 'name' | 'notes' | 'unavailable'>): EquipmentStatus {
   if (row.unavailable === 'True') return 'out_of_service';

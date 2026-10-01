@@ -1,6 +1,6 @@
-// Theme: light, dark, or follow the system (PLAN.md §5.2). The choice lives in localStorage
-// (read before first paint by index.html) and in the signed-in user's preferences, so it
-// follows the coach to another device.
+// Theme: light, dark, or follow the system. The choice lives in localStorage (read before first
+// paint by index.html) and in the signed-in user's preferences, so it follows the coach to
+// another device.
 
 import {
   createContext,

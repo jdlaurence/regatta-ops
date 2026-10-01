@@ -1,13 +1,7 @@
-// Edits to a final regatta ask first (PLAN.md §4.1: "final" shows a banner and requires
-// confirmation to edit; it does not lock). Any feature can adopt it:
-//
-//   const finalEdit = useConfirmFinalEdit(regatta);          // Pick<Regatta, 'id' | 'status'>
-//   const onSave = () => finalEdit.guard(() => save.mutate(...), 'Save event');
-//   // or: if (!(await finalEdit.confirm('Delete event'))) return;
-//   return <>{...}{finalEdit.dialog}</>;
-//
-// A page that spans regattas (a team's availability sheet) passes `null` and names the regatta
-// on each call: `finalEdit.guard(fn, 'Change availability', regatta)`.
+// Edits to a final regatta ask first: "final" shows a banner and requires confirmation to edit;
+// it does not lock. `guard(fn, action)` runs `fn` after a yes, `confirm(action)` resolves to the
+// answer, and `dialog` must be rendered. A page that spans regattas (a team's availability sheet)
+// passes `null` and names the regatta on each call.
 //
 // On a planning or archived regatta confirm() resolves true at once. "Don't ask again" lasts
 // until the page reloads and covers every feature for that regatta.

@@ -1,5 +1,5 @@
-// Shared zod building blocks: ids, days, instants, and the rowing vocabulary enums.
-// Messages are sentence case and say what to do (PLAN.md §5.5).
+// Shared zod building blocks: ids, days, instants, and the rowing vocabulary enums. Messages are
+// sentence case and say what to do.
 
 import { z } from 'zod';
 import { BOAT_CLASSES, GEAR_CATEGORIES, SEATS, TEAM_COLOR_KEYS } from '../types';

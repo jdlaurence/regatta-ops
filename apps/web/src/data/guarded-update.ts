@@ -1,11 +1,7 @@
-// Guarded updates for the fields where last-write-wins is not good enough (PLAN.md §10.2): event
-// times and trailer placements. The write carries the `updated` stamp the coach was looking at;
-// if someone else saved the record since, the store refuses it ('conflict', HTTP 409), and this
-// hook rolls the optimistic change back, refetches, and says so.
-//
-//   const moveEvent = useGuardedUpdate('events');
-//   moveEvent.mutate({ id: ev.id, patch: { scheduledAt } });   // stamp read from the cache
-//   moveEvent.mutate({ id: ev.id, patch: { scheduledAt }, expectedUpdated: ev.updated });
+// Guarded updates for the fields where last-write-wins is not good enough: event times and
+// trailer placements. The write carries the `updated` stamp the coach was looking at; if someone
+// else saved the record since, the store refuses it ('conflict', HTTP 409), and this hook rolls
+// the optimistic change back, refetches, and says so.
 //
 // The coach's own quick successive writes to one record (arrow-key nudges of a placement) are
 // not conflicts: they run in order, and each one expects the stamp the previous one produced.

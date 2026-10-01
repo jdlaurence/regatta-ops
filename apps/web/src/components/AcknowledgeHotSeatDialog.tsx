@@ -1,4 +1,4 @@
-// Acknowledge a hot seat with a short plan (PLAN.md §4.4, §9.2). Shared by the conflicts panel
+// Acknowledge a hot seat with a short plan (PLAN.md §9.2). Shared by the conflicts panel
 // (schedule, inspector) and the lineup builder.
 //
 // The acknowledgment lives on the later entry of the pair: hotSeatAckBy (who), hotSeatPlan (the

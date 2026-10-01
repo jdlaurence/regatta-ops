@@ -1,6 +1,6 @@
-// The banner a regatta page shows for its status (PLAN.md §4.1): "final" asks for confirmation
-// on edits but does not lock; "archived" is hidden from the default list. Planning shows
-// nothing. Edits on a final regatta confirm through useConfirmFinalEdit (features/regattas).
+// The banner a regatta page shows for its status: "final" asks for confirmation on edits but does
+// not lock; "archived" is hidden from the default list. Planning shows nothing. Edits on a final
+// regatta confirm through useConfirmFinalEdit (features/regattas).
 
 import type { ReactNode } from 'react';
 import { Archive, Lock } from 'lucide-react';

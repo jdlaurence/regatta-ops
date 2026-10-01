@@ -1,6 +1,6 @@
-// The schedule as a list (PLAN.md §4.3, §4.5, §6.3): one day's races in time order with
-// logistics lines between them, each race's entries nested under it. Times and names edit
-// inline; each entry links to its team's lineups page.
+// The schedule as a list: one day's races in time order with logistics lines between them, each
+// race's entries nested under it. Times and names edit inline; each entry links to its team's
+// lineups page.
 
 import { useMemo, useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router';

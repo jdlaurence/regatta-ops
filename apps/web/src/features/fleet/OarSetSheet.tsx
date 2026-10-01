@@ -1,5 +1,5 @@
-// The oar set drawer (PLAN.md §4.7): every field of a set, and where it is used next. The same
-// form adds a new set.
+// The oar set drawer: every field of a set, and where it is used next. The same form adds a new
+// set.
 
 import { useId, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';

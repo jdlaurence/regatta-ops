@@ -1,5 +1,4 @@
-// "Export entries": downloads the regatta's entries as CSV (PLAN.md §4.11). Place it on any
-// regatta page: <ExportEntriesButton regattaId={id} /> or, for one team, add teamId.
+// "Export entries": downloads the regatta's entries as CSV, or one team's with `teamId`.
 
 import { Download } from 'lucide-react';
 import { useRegattaWorkingSet } from '@/data';

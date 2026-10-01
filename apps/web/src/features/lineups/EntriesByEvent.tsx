@@ -1,5 +1,5 @@
-// The by-event view (PLAN.md §4.4, §6.4): the team's entries under their events in schedule
-// order, day headings on multi-day regattas, unscheduled entries at the end.
+// The by-event view: the team's entries under their events in schedule order, day headings on
+// multi-day regattas, unscheduled entries at the end.
 //
 // Each day is a grid of equal card columns, filled in schedule order, row by row, like the
 // club's printed grid. An event's heading spans its cards on a row; an event that does not fit

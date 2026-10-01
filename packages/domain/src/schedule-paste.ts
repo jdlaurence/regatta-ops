@@ -1,6 +1,6 @@
-// Schedule paste parser (PLAN.md §4.3, §9.5). A coach pastes rows copied from a published
-// schedule (RegattaCentral, a PDF, a spreadsheet); the parser splits them, guesses what each
-// column is, and returns parsed events for the mapping step. Pure and deterministic.
+// Schedule paste parser (PLAN.md §9.5). A coach pastes rows copied from a published schedule
+// (RegattaCentral, a PDF, a spreadsheet); the parser splits them, guesses what each column is,
+// and returns parsed events for the mapping step. Pure and deterministic.
 
 import { parseBoatClass } from './boat-classes';
 import { detectDelimiter, parseDelimited } from './csv';
@@ -128,7 +128,7 @@ export function parseEventNumber(cell: string): string | undefined {
 /**
  * '8:00' → '08:00', '1:04 PM' → '13:04', '12:30 am' → '00:30'. TBD, TBA, and dashes → null.
  * Not a time → undefined. Without AM/PM, 1:00–5:59 read as afternoon: regattas do not race
- * before 6 am, and club sheets write afternoon times on a 12-hour clock ([ASSUMPTION]).
+ * before 6 am, and club sheets write afternoon times on a 12-hour clock.
  */
 export function parseClockTime(cell: string): string | null | undefined {
   const t = cell.trim();

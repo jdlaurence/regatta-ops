@@ -1,5 +1,5 @@
-// Load list derivation (PLAN.md §4.8, §9.4). Pure: the UI merges the result with stored
-// load_items by (kind, refId) so Loaded / Returned checkboxes survive re-derivation.
+// Load list derivation (PLAN.md §9.4). Pure: the UI merges the result with stored load_items by
+// (kind, refId) so Loaded / Returned checkboxes survive re-derivation.
 
 import { defaultRiggerCount } from './boat-classes';
 import { oarSetLabel, shellFullLabel, shellLabel } from './format';

@@ -16,7 +16,7 @@ import {
 
 export { SEED_EMAILS, SEED_PASSWORD, SEED_REGATTA_IDS, SEED_TEAM_IDS, SEED_TRAILER_IDS };
 
-/** A phone (PLAN.md §5.3: < 768 px gets the top bar and the bottom tab bar). */
+/** A phone (< 768 px gets the top bar and the bottom tab bar). */
 export const PHONE = { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true };
 export const DESKTOP = { viewport: { width: 1280, height: 800 } };
 
@@ -192,7 +192,7 @@ export function pageHeading(page: Page, name: string | RegExp) {
   return page.getByRole('heading', { level: 1, name });
 }
 
-/** Buttons whose name starts with an editing verb (PLAN.md §5.5: buttons say what happens). */
+/** Buttons whose name starts with an editing verb (buttons say what happens). */
 const EDIT_VERBS =
   /^(add|new|create|edit|rename|delete|remove|move|copy|swap|pack|import|publish|mark|acknowledge|save|set|assign|clear|reset|shift)\b/i;
 

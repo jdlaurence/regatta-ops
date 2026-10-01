@@ -175,7 +175,7 @@ test.describe('desktop', () => {
     ).toBeVisible();
     await expect(shelves.getByRole('row', { name: '1 Narrow side Empty' })).toBeVisible();
 
-    // The bed front to back, riggers filling the back of it (PLAN.md §4.9).
+    // The bed front to back, riggers filling the back of it.
     const bed = sheet.getByRole('table', { name: 'Bed, front to back' });
     await expect(bed.getByRole('rowheader')).toHaveText([
       'Oars',
@@ -204,7 +204,7 @@ test.describe('desktop', () => {
   });
 
   test('a final regatta asks before the trailer is repacked', async ({ page }) => {
-    // PLAN.md §4.1 and §18: changes to a final regatta's load plans ask first; load list ticks
+    // Changes to a final regatta's load plans ask first; load list ticks
     // (what happened at the trailer) don't.
     await signInDemo(page);
     await page.goto(regattaUrl(NW_YOUTH, 'trailer'));
@@ -226,7 +226,7 @@ test.describe('phone', () => {
     await expect(pageHeading(page, 'Load list')).toBeVisible();
     const main = page.getByRole('main');
     const groups = ['Shells', 'Riggers', 'Oars', 'Gear'];
-    // Grouped by kind, with Loaded and Returned for each line (§6.7), and flags.
+    // Grouped by kind, with Loaded and Returned for each line, and flags.
     await expect(main.getByText('6 of 69 loaded · 2 returned')).toBeVisible();
     for (const group of groups) {
       await expect(main.getByRole('region', { name: group, exact: true })).toBeVisible();

@@ -120,7 +120,7 @@ describe('RegattaSettingsDialog', () => {
     const user = userEvent.setup();
     const { store, dialog } = await setup();
     await user.click(within(dialog).getByLabelText('Status'));
-    // Coaches cannot archive (PLAN.md §2).
+    // Coaches cannot archive.
     expect(await screen.findByRole('option', { name: 'Archived (admins only)' })).toHaveAttribute(
       'aria-disabled',
       'true',

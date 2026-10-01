@@ -1,6 +1,6 @@
-// Rule-list edits for the rules editor (PLAN.md §4.10, §9.3.3). Pure. In regatta mode every
-// change becomes a regatta override (same id, origin 'regatta', so mergeRules replaces the
-// trailer default); a change that lands back on the default drops the override again.
+// Rule-list edits for the rules editor (PLAN.md §9.3.3). Pure. In regatta mode every change
+// becomes a regatta override (same id, origin 'regatta', so mergeRules replaces the trailer
+// default); a change that lands back on the default drops the override again.
 
 import {
   isRegattaOverride,

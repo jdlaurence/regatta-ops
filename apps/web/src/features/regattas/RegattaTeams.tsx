@@ -1,5 +1,5 @@
-// The overview's teams table (PLAN.md §6.2): each participating team with its entries, boated
-// count, conflicts, and load plan status, plus adding and removing teams (regatta_teams).
+// The overview's teams table: each participating team with its entries, boated count, conflicts,
+// and load plan status, plus adding and removing teams (regatta_teams).
 
 import { useState } from 'react';
 import { Link } from 'react-router';

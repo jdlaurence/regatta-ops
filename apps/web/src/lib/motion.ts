@@ -1,5 +1,5 @@
-// Motion preferences (PLAN.md §5.2): prefers-reduced-motion turns off every animation. CSS
-// handles transitions and keyframes (globals.css); script-driven motion asks here.
+// Motion preferences: prefers-reduced-motion turns off every animation. CSS handles transitions
+// and keyframes (globals.css); script-driven motion asks here.
 
 export function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function'

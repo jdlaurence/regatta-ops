@@ -1,4 +1,4 @@
-// Share links (PLAN.md §2, §4.8, §8.2; Phase 3). Used by share.pb.js.
+// Share links (PLAN.md §8.2). Used by share.pb.js.
 //
 // A share link is a token that grants read-only access, without signing in, to one regatta's
 // published lineups (one team's, or every participating team's), its day schedule, and, when

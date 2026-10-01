@@ -1,6 +1,6 @@
-// Bed zones (PLAN.md §4.9): compartments placed along the trailer's length, each across the
-// bed's full width. On SRA's trailers the riggers fill the back of the bed, with oars and slings
-// ahead of them. A compartment with no position runs the whole length. Pure.
+// Bed zones: compartments placed along the trailer's length, each across the bed's full width. On
+// SRA's trailers the riggers fill the back of the bed, with oars and slings ahead of them. A
+// compartment with no position runs the whole length. Pure.
 
 import type { CompartmentKind, Id } from '../types';
 import { capitalize, joinAnd, meters } from './format';
@@ -201,7 +201,7 @@ export interface ZoneOverlap {
 
 /**
  * Pairs of compartments that share part of the bed, where at least one is placed along the
- * frame (two that both run the whole length share the bed side by side, as they always did).
+ * frame (two that both run the whole length share the bed side by side, which is no overlap).
  */
 export function zoneOverlaps(
   def: Pick<TrailerDef, 'compartments' | 'frameLengthCm'>,

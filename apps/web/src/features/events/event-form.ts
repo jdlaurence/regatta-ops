@@ -1,5 +1,5 @@
-// The event form (PLAN.md §4.3): a race or a logistics line. The form works in wall-clock
-// time ('HH:mm', blank for TBD) on one of the regatta's days; the record stores an instant.
+// The event form: a race or a logistics line. The form works in wall-clock time ('HH:mm', blank
+// for TBD) on one of the regatta's days; the record stores an instant.
 
 import { z } from 'zod';
 import {

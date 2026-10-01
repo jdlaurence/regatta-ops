@@ -1,5 +1,5 @@
-// Teams (PLAN.md §4.2, §6.10): every team with its color, short name, program, and roster
-// size. Admins add and edit teams; everyone else sees the settings read-only.
+// Teams: every team with its color, short name, program, and roster size. Admins add and edit
+// teams; everyone else sees the settings read-only.
 
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';

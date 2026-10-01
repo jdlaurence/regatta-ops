@@ -2,7 +2,7 @@
 // editable seat is a drop target, a drag source when occupied, and the trigger of its athlete
 // picker (a bottom sheet on phones).
 //
-// Keyboard (PLAN.md §5.6, every drag has an equivalent):
+// Keyboard (every drag has an equivalent):
 //   Enter            choose an athlete (the picker)
 //   a letter         the picker, searching for what you typed
 //   Space            pick up the seat's athlete; Space or Enter on another seat puts them there

@@ -1,5 +1,5 @@
-// Users and roles (PLAN.md §2, §4.12): everyone with an account, their role, and their default
-// team. Admins change roles and default teams; everyone else reads.
+// Users and roles: everyone with an account, their role, and their default team. Admins change
+// roles and default teams; everyone else reads.
 
 import { useState } from 'react';
 import type { Role, User } from '@regatta-ops/domain';

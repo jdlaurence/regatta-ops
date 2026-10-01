@@ -1,7 +1,7 @@
-// Shells: the club's equipment list as a dense, filterable table with inline edits for the
-// fields that change often (status, home team, location, level), a grouped view that reads like
-// the club's list (gender affinity, then class), CSV import and export, and the shell drawer.
-// Phones get stacked cards instead of the table (PLAN.md §5.3).
+// Shells: the club's equipment list as a dense, filterable table with inline edits for the fields
+// that change often (status, home team, location, level), a grouped view that reads like the
+// club's list (gender affinity, then class), CSV import and export, and the shell drawer. Phones
+// get stacked cards instead of the table.
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
@@ -109,7 +109,7 @@ export function ShellsTab({ nav }: { nav: ReactNode }) {
     toast.success(`${rows.length} ${rows.length === 1 ? 'shell' : 'shells'} exported`);
   };
 
-  // The photo column shows once any shell has a photo (PLAN.md §4.7, Phase 3).
+  // The photo column shows once any shell has a photo.
   const withPhotos = useMemo(() => all.some((s) => !!s.photoUrl), [all]);
   const columns = useShellColumns({
     canEdit,

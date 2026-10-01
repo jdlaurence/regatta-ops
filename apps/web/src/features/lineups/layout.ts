@@ -1,5 +1,5 @@
-// Layout of the builder (PLAN.md §6.4): entries are cards in a grid of equal columns, each card
-// a boat stood on end, so a coach sees several crews side by side like the club's printed grid.
+// Layout of the builder: entries are cards in a grid of equal columns, each card a boat stood on
+// end, so a coach sees several crews side by side like the club's printed grid.
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 

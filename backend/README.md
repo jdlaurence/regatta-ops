@@ -23,7 +23,7 @@ instead of invented ones, so real names reach `pb_data` and never the repository
 (`packages/seed/src/local-rosters.ts`). A team without a workbook stays invented, and
 `REGATTA_OPS_SEED_INVENTED=1` keeps both invented. Sides and sculling are not on the rosters; the seed assigns them, so set them in the app.
 Athlete ids come from the name, so after switching between invented and real athletes run
-`pnpm pb:reset`, which clears the old ones. The unit tests and both Playwright suites always use invented athletes. `pnpm demo` reads the same workbooks (PLAN.md §18).
+`pnpm pb:reset`, which clears the old ones. The unit tests and both Playwright suites always use invented athletes. `pnpm demo` reads the same workbooks (PLAN.md §14).
 
 ## Local accounts
 
@@ -85,7 +85,7 @@ keep their name (`created_by`, `hot_seat_ack_by`, `loaded_by`). `targetId` and `
 - **Emails** of other users are hidden unless the viewer is that user or an admin.
 - **Batch API** is enabled (up to 200 writes per transaction). Swapping two athletes between
   seats needs a clear first (unique `(entry, athlete)`), so send the three writes as one batch.
-- **Phase 3 fields:** `comments.mentions` (users mentioned in the body; server-set),
+- **Sharing and comment fields:** `comments.mentions` (users mentioned in the body; server-set),
   `load_items.loaded_by_name` / `returned_by_name` (the name typed on a share link; `loaded_by`
   stays empty then), `activity_log.team` (the team whose data changed: entries, seats,
   availability, share links), `share_links.created_by`. Show "loaded by" as the `loaded_by`
@@ -107,7 +107,8 @@ keep their name (`created_by`, `hot_seat_ack_by`, `loaded_by`). `targetId` and `
   class is edited); moving an entry or changing its shell clears `hot_seat_ack_by` unless the
   same write sets it.
 - `activity.pb.js` (+ `regatta-ops/activity.js`): an `activity_log` row after each create, update, or
-  delete of entries, seats, events, availability, placements, load items, shells, and oar sets.
+  delete of teams, athletes, regattas, participating teams, entries, seats, events, availability,
+  placements, load items, shells, oar sets, and share links.
   `summary` is a sentence without the actor, e.g. `moved entry Boys V4+ to Event 21`,
   `set seat 3 of Boys V8 to Sam Lee`; several changes are joined with `; `. `diff` is
   `{ field: { from, to } }`.
@@ -198,7 +199,8 @@ Regatta Ops sends three kinds of email, all plain text, one message per recipien
   character. On create, every mentioned user except the author gets "Cam Coach mentioned you on
   Boys V4+" with the comment quoted and a link (`/regattas/<id>/lineups/<team>?entry=<id>`,
   `/regattas/<id>/schedule?event=<id>`, or `/regattas/<id>/trailer/<trailer>`). Editing a comment
-  emails only people mentioned for the first time.
+  emails only people mentioned for the first time. `comments.mentions` is recomputed from the
+  body on every write, whatever the client sends; superuser writes (the seed) send no email.
 - **Change emails.** When a signed-in user changes an entry or its seats and is not a coach of
   that team, the team's coaches get "Cy Coach changed Boys V4+ (Event 14)" with one line per
   change. A team's coaches are users with role coach or admin whose `default_team` is that team.

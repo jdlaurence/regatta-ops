@@ -1,6 +1,5 @@
-// Sign-in (PLAN.md §2): email and password for local accounts, Google through PocketBase
-// OAuth2 (works once a Google client id is configured), and in demo mode a list of the seeded
-// accounts to pick from.
+// Sign-in: email and password for local accounts, Google through PocketBase OAuth2 (works once a
+// Google client id is configured), and in demo mode a list of the seeded accounts to pick from.
 
 import { useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';

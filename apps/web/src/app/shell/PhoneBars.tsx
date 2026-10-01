@@ -1,4 +1,4 @@
-// Phone chrome (< 768 px, PLAN.md §5.3): a top bar with the regatta name and a back button, and
+// Phone chrome (< 768 px): a top bar with the regatta name and a back button, and
 // inside a regatta a bottom tab bar (Schedule, Lineups, Trailer, Load list). Outside a regatta
 // the top bar opens the full navigation in a sheet.
 

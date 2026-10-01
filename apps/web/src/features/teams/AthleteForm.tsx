@@ -1,5 +1,5 @@
-// The athlete form (PLAN.md §4.2): every roster field and the derived age badge as the coach
-// types. Used by "Add athlete" and the athlete drawer.
+// The athlete form: every roster field and the derived age badge as the coach types. Used by "Add
+// athlete" and the athlete drawer.
 
 import { useId, type ReactNode } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';

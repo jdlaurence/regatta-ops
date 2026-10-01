@@ -1,7 +1,7 @@
-// Client-side photo downscaling (PLAN.md §4.7): a phone photo is 3 to 12 MB and 4000 px wide;
-// a shell photo needs about 1600 px. The decode and encode steps sit behind `ImageCodec` so the
-// size logic is tested without a canvas (jsdom has none); the browser codec uses
-// createImageBitmap and a canvas.
+// Client-side photo downscaling: a phone photo is 3 to 12 MB and 4000 px wide; a shell photo
+// needs about 1600 px. The decode and encode steps sit behind `ImageCodec` so the size logic is
+// tested without a canvas (jsdom has none); the browser codec uses createImageBitmap and a
+// canvas.
 
 /** Formats kept as they are when they are already small enough. */
 export const WEB_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;

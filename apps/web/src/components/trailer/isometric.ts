@@ -1,6 +1,6 @@
-// Geometry of the isometric trailer view (PLAN.md §4.10, Phase 3). Pure: a trailer, its
-// effective shelves, placements, and boats in; polygons and lines in pixels out, in the order
-// they are painted. The component draws what this returns.
+// Geometry of the isometric trailer view. Pure: a trailer, its effective shelves, placements, and
+// boats in; polygons and lines in pixels out, in the order they are painted. The component draws
+// what this returns.
 //
 // A three-quarter view from behind and to the right, a little above: the trailer's length runs
 // along a shallow diagonal with the front (and the tow vehicle) to the upper right, the width
@@ -11,8 +11,8 @@
 // Across the width, shelves, lanes, and posts sit exactly where the end view puts them
 // (endViewGeometry), so the two views always agree about which lane a boat is in.
 //
-// The bed shows its compartments as zones along the length (PLAN.md §4.9), each across the bed's
-// full width, with its name under the near side of the frame where the wheels leave room.
+// The bed shows its compartments as zones along the length, each across the bed's full width,
+// with its name under the near side of the frame where the wheels leave room.
 
 import {
   BOAT_CLASS_SPECS,
@@ -128,7 +128,7 @@ const WIDTH_ANGLE = (32 * Math.PI) / 180;
 const WIDTH_FORESHORTEN = 0.75;
 const BED_Z = 62;
 const BED_DEPTH = 16;
-/** SRA's beds are boxes about 2 ft deep (the owner, 2026-09-30); to scale with the length. */
+/** SRA's beds are boxes about 2 ft deep; to scale with the length. */
 export const BED_WALL_CM = 61;
 /** The first rack sits about 4 in above the top of the bed's walls. */
 export const FIRST_RACK_ABOVE_WALL_CM = 10;
@@ -288,9 +288,9 @@ export function isometricGeometry(input: IsoInput): IsoGeometry {
   };
   const front = P(-HITCH_CM, W / 2, BED_Z - BED_DEPTH);
   const hitch = [P(0, 0, BED_Z - BED_DEPTH / 2), front, P(0, W, BED_Z - BED_DEPTH / 2)];
-  // Compartments along the bed (§4.9): each zone's patch of the bed, across the full width
-  // unless zones share a stretch, with a divider down the near side where one gives way to the
-  // next, and the name hung under the near side, clear of the wheels.
+  // Compartments along the bed: each zone's patch of the bed, across the full width unless zones
+  // share a stretch, with a divider down the near side where one gives way to the next, and the
+  // name hung under the near side, clear of the wheels.
   const zones: IsoZone[] = bedZones({ ...trailer, frameLengthCm: frameL }).map((z) => {
     const l1 = z.startCm + ZONE_INSET / 2;
     const l2 = Math.max(l1, z.endCm - ZONE_INSET / 2);

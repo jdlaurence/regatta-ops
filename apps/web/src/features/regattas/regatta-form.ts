@@ -1,5 +1,5 @@
-// The regatta form (PLAN.md §4.1): new regatta and regatta settings share one schema. Timing
-// values are overrides: null means "use the club default" (§4.1, club_settings §8.1).
+// The regatta form: new regatta and regatta settings share one schema. Timing values are
+// overrides: null means "use the club default" (club_settings, PLAN.md §8.1).
 
 import { z } from 'zod';
 import {

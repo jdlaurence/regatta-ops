@@ -3,10 +3,10 @@
 // crosses athletes off as they are boated, and marking a seated athlete unavailable is an error.
 //
 // The scenario runs on Tail of the Lake (seeded with events and no entries), so every count
-// starts from zero. Head race timing (PLAN.md §4.1, §9.2): a boat is busy until 20 minutes of
-// racing and 15 of return after its start, so a second crew 55 minutes later has 20 minutes
-// between the boat landing and its race: a hot seat (at least 15, under the 40 minute launch
-// lead). No seeded race is 50 to 75 minutes after a boys' eight, so the girls' coach adds one.
+// starts from zero. Head race timing (PLAN.md §9.2): a boat is busy until 20 minutes of racing
+// and 15 of return after its start, so a second crew 55 minutes later has 20 minutes between the
+// boat landing and its race: a hot seat (at least 15, under the 40 minute launch lead). No seeded
+// race is 50 to 75 minutes after a boys' eight, so the girls' coach adds one.
 //
 // Demo mode keeps data in the browser context, so both coaches work in one context, signing out
 // and in, as two coaches on one laptop would.
@@ -160,21 +160,11 @@ test.describe('desktop', () => {
     await test.step('marking a seated athlete unavailable makes it an error', async () => {
       const name = crew.keyboard[2]!;
       const card = entryCard(eventSection(page, "Men's Youth 8+"), boysLabel);
+      const roster = page.getByRole('complementary', { name: 'Roster' });
       await expect(card.getByRole('button', { name: /error/ })).toHaveCount(0);
 
-      await page
-        .getByRole('navigation', { name: 'Regatta sections' })
-        .getByRole('link', { name: 'Availability' })
-        .click();
-      await expect(pageHeading(page, 'Availability')).toBeVisible();
-      const toggle = page.getByRole('radiogroup', { name: `Availability for ${name}` });
-      await toggle.getByRole('radio', { name: 'Unavailable' }).click();
-      await expect(toggle.getByRole('radio', { name: 'Unavailable' })).toBeChecked();
-      await page.getByRole('textbox', { name: `Reason for ${name}` }).fill('Family trip');
-      await page.getByRole('textbox', { name: `Reason for ${name}` }).press('Enter');
-
-      await page.goto(lineupsUrl(TOTL, BOYS));
-      await expect(pageHeading(page, 'Junior boys lineups')).toBeVisible();
+      // The roster's one-click toggle, for the whole regatta.
+      await roster.getByRole('button', { name: `Mark ${name} unavailable` }).click();
       await expect(seat(card, '6')).toHaveAccessibleName(
         new RegExp(`^Seat 6, ${name}.*, has an error$`),
       );
@@ -185,22 +175,10 @@ test.describe('desktop', () => {
       await page.keyboard.press('Escape');
       // Unavailable athletes leave the roster count and sit in their own group.
       await expectBoated(page, 4, crew.total - 1);
-      await expect(
-        page
-          .getByRole('complementary', { name: 'Roster' })
-          .getByRole('button', { name: /^Unavailable/ }),
-      ).toBeVisible();
+      await expect(roster.getByRole('button', { name: /^Unavailable/ })).toBeVisible();
 
       // Back to available: the error goes.
-      await page
-        .getByRole('navigation', { name: 'Regatta sections' })
-        .getByRole('link', { name: 'Availability' })
-        .click();
-      await page
-        .getByRole('radiogroup', { name: `Availability for ${name}` })
-        .getByRole('radio', { name: 'Available', exact: true })
-        .click();
-      await page.goto(lineupsUrl(TOTL, BOYS));
+      await roster.getByRole('button', { name: `Mark ${name} available` }).click();
       await expect(seat(card, '6')).not.toHaveAccessibleName(/has an error/);
       await expect(card.getByRole('button', { name: /error/ })).toHaveCount(0);
       await expectBoated(page, 5, crew.total);

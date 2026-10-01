@@ -1,5 +1,5 @@
-// Side navigation (PLAN.md §5.3): regattas (upcoming first), then club sections. The current
-// regatta expands to show its tabs. Desktop shows the full 232 px column; tablet an icon rail.
+// Side navigation: regattas (upcoming first), then club sections. The current regatta expands to
+// show its tabs. Desktop shows the full 232 px column; tablet an icon rail.
 
 import { useMemo, useState } from 'react';
 import { NavLink, useMatch, useResolvedPath } from 'react-router';

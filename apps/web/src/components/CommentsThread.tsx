@@ -1,15 +1,9 @@
-// Comments on an entry, an event, or a load plan (PLAN.md §4.6; Phase 3 mentions). Everyone
-// signed in can comment, viewers included (§2); authors edit and delete their own comments
-// (admins may delete any). "@" opens a list of people; picking one inserts "@Full Name", and the
-// server (or MemoryStore in demo mode) resolves it into `comment.mentions` and emails them.
-// New comments from others arrive through realtime: the comments collection is invalidated on
-// every change.
+// Comments on an entry, an event, or a load plan. Everyone signed in can comment, viewers
+// included; authors edit and delete their own comments (admins may delete any). "@" opens a list
+// of people; picking one inserts "@Full Name", and the server (or MemoryStore in demo mode)
+// resolves it into `comment.mentions` and emails them. New comments from others arrive through
+// realtime: the comments collection is invalidated on every change.
 //
-// Placement (other work packages wire these in):
-//   - Entry inspector (lineups):  <CommentsThread targetType="entry" targetId={entry.id} />
-//   - Event rows (schedule):      <CommentCount targetType="event" targetId={event.id} /> on the
-//                                 row, and the thread in the event's detail panel or popover.
-//   - Load plan (trailer page):   <CommentsThread targetType="load_plan" targetId={plan.id} />
 // For many rows at once, count with one query: useCommentCounts('event', eventIds), then pass
 // `count` to CommentCount so it does not query per row.
 

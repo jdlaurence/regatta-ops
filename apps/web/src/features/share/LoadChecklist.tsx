@@ -1,6 +1,5 @@
-// The load list on a phone, through a share link that can check it off (PLAN.md §4.8, §12.1
-// Phase 3: "the loading crew ticks the checklist on phones"). Works with no signal: ticks wait
-// on the device and sync when the connection is back (§10.4).
+// The load list on a phone, through a share link that can check it off. Works with no signal:
+// ticks wait on the device and sync when the connection is back.
 
 import { useSearchParams } from 'react-router';
 import { CloudOff, RefreshCw } from 'lucide-react';

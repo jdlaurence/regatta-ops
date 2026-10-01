@@ -1,5 +1,5 @@
-// Paste import model (PLAN.md §4.3, §9.5) on the club's reference schedule and a
-// RegattaCentral-style paste. Equipment names only; no athletes.
+// Paste import model (PLAN.md §9.5) on the club's reference schedule and a RegattaCentral-style
+// paste. Equipment names only; no athletes.
 
 import { describe, expect, it } from 'vitest';
 import { clockAt } from '@regatta-ops/domain';

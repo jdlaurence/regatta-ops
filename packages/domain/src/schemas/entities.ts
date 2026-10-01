@@ -1,5 +1,5 @@
-// One zod schema per entity in types.ts (PLAN.md §7.1 Forms, §8.1). The drift checks at the
-// bottom fail the typecheck if a schema and its type stop matching in either direction.
+// One zod schema per entity in types.ts (PLAN.md §8.1). The drift checks at the bottom fail the
+// typecheck if a schema and its type stop matching in either direction.
 
 import { z } from 'zod';
 import type {

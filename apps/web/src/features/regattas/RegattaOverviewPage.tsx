@@ -1,6 +1,6 @@
-// Regatta overview (PLAN.md §4.1, §6.2): participating teams with entries, boated counts,
-// conflicts by severity, and load plan status; the day at a glance; recent activity. The
-// layout above (app/shell/RegattaLayout) shows the name, dates, place, tabs, and status banner.
+// Regatta overview: participating teams with entries, boated counts, conflicts by severity, and
+// load plan status; the day at a glance; recent activity. The layout above
+// (app/shell/RegattaLayout) shows the name, dates, place, tabs, and status banner.
 
 import { useMemo, useState } from 'react';
 import { Copy, Settings, Share2 } from 'lucide-react';

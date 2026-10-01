@@ -1,5 +1,5 @@
-// Paste import (PLAN.md §4.3, §9.5): the parser's column guesses, the coach's corrections, the
-// preview rows with anything unrecognized flagged, and the event records to create. Pure.
+// Paste import (PLAN.md §9.5): the parser's column guesses, the coach's corrections, the preview
+// rows with anything unrecognized flagged, and the event records to create. Pure.
 
 import {
   applyColumnMapping,

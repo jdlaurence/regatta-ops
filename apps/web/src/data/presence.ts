@@ -1,7 +1,7 @@
-// Presence hooks (PLAN.md §4.6, §10.3). usePresence keeps the signed-in user's row for the open
-// regatta fresh; useRegattaPresence lists everyone else seen there in the last 2 minutes.
-// Heartbeats do not go through TanStack mutations (no toasts, no optimistic state), and pushes
-// patch the cached presence list in place rather than refetching it on every heartbeat.
+// Presence hooks. usePresence keeps the signed-in user's row for the open regatta fresh;
+// useRegattaPresence lists everyone else seen there in the last 2 minutes. Heartbeats do not go
+// through TanStack mutations (no toasts, no optimistic state), and pushes patch the cached
+// presence list in place rather than refetching it on every heartbeat.
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';

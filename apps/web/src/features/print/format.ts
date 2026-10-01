@@ -84,8 +84,8 @@ export function seatText(seat: Seat): string {
 }
 
 /**
- * The seats of a class with the cox first, then stroke down to bow: how the club's printed
- * sheets read (PLAN.md §4.4).
+ * The seats of a class with the cox first, then stroke down to bow: how the club's printed sheets
+ * read.
  */
 export function paperSeatOrder(boatClass: BoatClass): Seat[] {
   const seats = seatsFor(boatClass);

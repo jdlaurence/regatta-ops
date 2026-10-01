@@ -1,12 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Entry consistency (PLAN.md §8.1 entries, §8.3). Model hooks, so they hold for every write path
-// (API, batch, other hooks, the dashboard).
-//
-// - boat_class is copied from the event when an entry is created in an event or moves to another
-//   event, and follows the event when the event's own boat class is edited.
-// - hot_seat_ack_by is cleared when the entry's shell or event changes, unless the same write sets
-//   a new acknowledgment. The conflict engine also compares hot_seat_fingerprint (§9.2), so an
-//   acknowledgment never outlives the pairing it was given for.
+// Entry consistency (PLAN.md §8.3): boat_class follows the entry's event, and a hot seat
+// acknowledgment is cleared when the shell or event changes, unless the same write sets a new
+// one. Model hooks, so they hold for every write path (API, batch, other hooks, the dashboard).
 
 onRecordCreate((e) => {
   const eventId = e.record.getString('event');

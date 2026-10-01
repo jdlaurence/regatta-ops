@@ -1,4 +1,4 @@
-# PLAN.md §11.3: typecheck, lint, unit tests with coverage, build, then the Playwright flows:
+# Typecheck, lint, unit tests with coverage, build, then the Playwright flows:
 # the phase demos against demo mode, and the smoke suite against a real PocketBase (temporary
 # data folder, migrated and seeded) serving the built app. See apps/web/playwright.config.ts.
 name: ci

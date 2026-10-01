@@ -1,6 +1,6 @@
-// The lineup grid (PLAN.md §4.11), the layout the club publishes today: events as columns with
-// their time trial and final times in the header rows, seats as rows (cox, then stroke down to
-// bow), names in cells. One grid for eights, one for fours and smaller boats. Landscape.
+// The lineup grid, the layout the club publishes today: events as columns with their time trial
+// and final times in the header rows, seats as rows (cox, then stroke down to bow), names in
+// cells. One grid for eights, one for fours and smaller boats. Landscape.
 
 import type { RegattaWorkingSet } from '@/data';
 import { teamStyle } from '@/lib/team-colors';

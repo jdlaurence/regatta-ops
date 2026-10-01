@@ -1,6 +1,6 @@
-// The roster table (PLAN.md §6.10): one row per athlete, grouped by level like the boys'
-// sheet, with spreadsheet-style inline editing for coaches. On a phone it keeps the name and
-// badges; the drawer holds the rest.
+// The roster table: one row per athlete, grouped by level like the boys' sheet, with
+// spreadsheet-style inline editing for coaches. On a phone it keeps the name and badges; the
+// drawer holds the rest.
 
 import { useMemo, type ReactNode } from 'react';
 import { Check } from 'lucide-react';

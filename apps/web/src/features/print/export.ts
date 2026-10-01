@@ -1,6 +1,6 @@
-// CSV export of a regatta's entries (PLAN.md §4.11): one row per entry, every team or one,
-// in schedule order, with seats by name. Live data (the coaches' working copy), scratched
-// entries included with their status.
+// CSV export of a regatta's entries: one row per entry, every team or one, in schedule order,
+// with seats by name. Live data (the coaches' working copy), scratched entries included with
+// their status.
 
 import {
   athleteName,

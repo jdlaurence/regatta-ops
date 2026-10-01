@@ -1,6 +1,6 @@
-// Zod schemas: records shaped like the stub seed world parse (built inline; nothing is
-// imported from @regatta-ops/seed), bad input is rejected with readable messages, and every
-// collection has a schema. Type drift is caught at compile time in schemas/entities.ts.
+// Zod schemas: records shaped like the seed world's parse (built inline; nothing is imported
+// from @regatta-ops/seed), bad input is rejected with readable messages, and every collection
+// has a schema. Type drift is caught at compile time in schemas/entities.ts.
 
 import { describe, expect, it } from 'vitest';
 import {

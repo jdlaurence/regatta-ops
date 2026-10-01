@@ -1,14 +1,7 @@
-// Share links for a regatta (PLAN.md §2, §4.11; Phase 3): coaches and admins list, create, copy,
-// and revoke the read-only links athletes and parents open without signing in. Revoking is
-// permanent; a new link is the way back.
-//
-// Placement: the regatta overview's header actions ("Share") and the lineup page's toolbar
-// (pass defaultTeamId so a new link starts scoped to that team). Hide the trigger for viewers
-// with useCan('regatta.edit'); the dialog also says so if a viewer opens it.
-//
-//   const [open, setOpen] = useState(false);
-//   <Button onClick={() => setOpen(true)}><Link2 aria-hidden />Share</Button>
-//   <ShareLinksDialog regattaId={id} open={open} onOpenChange={setOpen} defaultTeamId={teamId} />
+// Share links for a regatta: coaches and admins list, create, copy, and revoke the read-only
+// links athletes and parents open without signing in. Revoking is permanent; a new link is the
+// way back. Callers hide the trigger for viewers with useCan('regatta.edit'); the dialog also
+// says so if a viewer opens it.
 
 import { useMemo, useState } from 'react';
 import { Copy, ExternalLink, Link2Off, Plus } from 'lucide-react';

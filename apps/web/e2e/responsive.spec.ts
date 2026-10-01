@@ -1,5 +1,5 @@
-// Phone and tablet widths (PLAN.md §5.3, §5.6): no page scrolls sideways at 390 px or 820 px,
-// and on a touch screen every control on the first screens of a page is a 44 px target.
+// Phone and tablet widths: no page scrolls sideways at 390 px or 820 px, and on a touch screen
+// every control on the first screens of a page is a 44 px target.
 //
 //   pnpm --filter @regatta-ops/web exec playwright test e2e/responsive.spec.ts
 
@@ -46,7 +46,6 @@ for (const width of [390, 820]) {
     test.use({ viewport: { width, height: 844 } });
     for (const c of PAGES) {
       test(c.name, async ({ page }) => {
-        test.fixme(!!c.fixme, c.fixme);
         await openPage(page, c);
         expect(await sidewaysScroll(page, width)).toBeNull();
       });
@@ -119,7 +118,6 @@ test.describe('390 px touch targets', () => {
 
   const phonePages = PAGES.filter(
     (c) =>
-      !c.fixme &&
       !c.name.startsWith('print') &&
       !['component gallery', 'trailers admin, edit', 'fleet, shell drawer'].includes(c.name),
   );

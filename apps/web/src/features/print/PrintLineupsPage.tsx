@@ -1,7 +1,7 @@
-// /print/regattas/:id/lineups/:teamId?day=&source=published|live&layout=sheet|grid&boats=
-// (PLAN.md §4.1, §4.11, §6.12). The lineup sheet (one page per team per day) or the lineup
-// grid, from the team's published snapshot by default with a toggle to the live draft.
-// :teamId may be "all" to print every participating team.
+// /print/regattas/:id/lineups/:teamId?day=&source=published|live&layout=sheet|grid&boats=. The
+// lineup sheet (one page per team per day) or the lineup grid, from the team's published snapshot
+// by default with a toggle to the live draft. :teamId may be "all" to print every participating
+// team.
 
 import { useMemo, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';

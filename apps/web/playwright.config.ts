@@ -1,4 +1,4 @@
-// Playwright (PLAN.md §11.3, §13): the phase demos of §12.1 as flows, in two projects.
+// Playwright, in two projects.
 //
 //   demo        e2e/*.spec.ts against a production build of demo mode (the app on the seed world
 //               with MemoryStore, no backend), served by `vite preview`. The build includes the
@@ -7,15 +7,9 @@
 //               and seeded, serving the production build (e2e/pb/server.ts). Needs
 //               `pnpm pb:download` once.
 //
-//   pnpm test:e2e                          the demo project (from the repo root or apps/web)
-//   pnpm test:e2e:pb                       the pocketbase project
-//   pnpm test:e2e e2e/offline.spec.ts      one spec
-//   PW_REUSE_SERVER=1 pnpm test:e2e        reuse a server already running on the port
-//
 // Only the servers of the projects asked for with --project=<name> start (both without it).
-//
-// Browser: Playwright's Chromium when installed (`pnpm exec playwright install chromium`, as CI
-// does), otherwise the system Chrome. PW_CHANNEL overrides the choice.
+// PW_REUSE_SERVER=1 reuses a server already running on the port. The browser is Playwright's
+// Chromium when installed, otherwise the system Chrome; PW_CHANNEL overrides the choice.
 
 import { existsSync } from 'node:fs';
 import { chromium, defineConfig, devices } from '@playwright/test';

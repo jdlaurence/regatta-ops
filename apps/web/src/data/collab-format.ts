@@ -1,5 +1,5 @@
-// Small formatting helpers shared by the collaboration pieces (PLAN.md §4.6, §10): change
-// toasts, presence avatars, and the activity feed. Pure; no React.
+// Small formatting helpers shared by the collaboration pieces: change toasts, presence avatars,
+// and the activity feed. Pure; no React.
 
 import { COLLECTION_NAMES, type CollectionName } from '@regatta-ops/domain';
 

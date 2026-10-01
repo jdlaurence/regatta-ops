@@ -1,7 +1,7 @@
-// "To load" (PLAN.md §6.6 left column): the boats on no trailer yet, grouped by the trailer
-// "Auto pack trailer" will put them on, each draggable onto the racks (or selectable, then a lane),
-// then the gear checklist summary with a link to the load list. Dropping a boat from the racks
-// here takes it off the trailer.
+// "To load": the boats on no trailer yet, grouped by the trailer "Auto pack trailer" will put
+// them on, each draggable onto the racks (or selectable, then a lane), then the gear checklist
+// summary with a link to the load list. Dropping a boat from the racks here takes it off the
+// trailer.
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';

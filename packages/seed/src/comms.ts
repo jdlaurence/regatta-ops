@@ -1,5 +1,5 @@
-// A few comments and activity log rows so the overview and entry threads have content (§4.6).
-// Presence and share links stay empty.
+// A few comments and activity log rows so the overview and entry threads have content. Presence
+// and share links stay empty.
 
 import {
   athleteName,

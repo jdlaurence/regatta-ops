@@ -1,5 +1,5 @@
-// Club defaults (PLAN.md §4.1, §4.12, §8.1 club_settings): name, timezone, weight unit, first
-// day of the week, and the regatta timing values new regattas start from. Admins edit.
+// Club defaults (PLAN.md §8.1 club_settings): name, timezone, weight unit, first day of the week,
+// and the regatta timing values new regattas start from. Admins edit.
 
 import { useId, useMemo } from 'react';
 import { Controller, useForm, type UseFormRegisterReturn } from 'react-hook-form';

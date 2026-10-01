@@ -1,6 +1,6 @@
-// Writes of the lineup builder, built on the data hooks (PLAN.md §10.2): every change is one
-// optimistic batch, so the strip updates before the server answers and rolls back together if
-// it refuses. On a final regatta each edit goes through the confirm-once guard.
+// Writes of the lineup builder, built on the data hooks: every change is one optimistic batch, so
+// the strip updates before the server answers and rolls back together if it refuses. On a final
+// regatta each edit goes through the confirm-once guard.
 
 import { useMemo } from 'react';
 import {
@@ -50,7 +50,7 @@ export interface LineupActions {
   copyRows: (rows: CopyRow[]) => Promise<number>;
   /**
    * Mark an athlete out for the whole regatta, or back to plainly coming (from out, out some
-   * days, or maybe): the roster's one-click availability toggle (PLAN.md §4.4).
+   * days, or maybe): the roster's one-click availability toggle.
    */
   toggleAvailability: (athleteId: Id) => void;
 }

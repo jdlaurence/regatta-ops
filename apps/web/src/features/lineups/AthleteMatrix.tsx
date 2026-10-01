@@ -1,6 +1,6 @@
-// The by-athlete view (PLAN.md §4.4 Views): athletes as rows, the team's events as columns,
-// seats as cells. Athletes racing three or more times are marked, since that is what coaches
-// scan this view for. Clicking a cell opens that entry in the by-event view.
+// The by-athlete view: athletes as rows, the team's events as columns, seats as cells. Athletes
+// racing three or more times are marked, since that is what coaches scan this view for. Clicking
+// a cell opens that entry in the by-event view.
 
 import { athleteName } from '@regatta-ops/domain';
 import { cn } from '@/lib/cn';

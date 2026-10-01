@@ -1,4 +1,4 @@
-// Regatta timing settings (PLAN.md §4.1, §14).
+// Regatta timing settings (PLAN.md §14).
 
 import type { ClubSettings, Regatta, RegattaSettings } from './types';
 

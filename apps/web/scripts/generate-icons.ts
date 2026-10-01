@@ -1,4 +1,4 @@
-// Draws the app icons into public/ (PLAN.md §7.1: installable PWA). Run after changing the
+// Draws the app icons into public/ (the installable PWA). Run after changing the
 // mark or the accent token, and commit the output:
 //
 //   pnpm --filter @regatta-ops/web icons

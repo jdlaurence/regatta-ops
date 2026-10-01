@@ -1,6 +1,6 @@
-// The app shell (PLAN.md §5.3). Desktop (≥ 1024 px): 232 px navigation, content, and an
-// optional 336 px inspector. Tablet: an icon rail and the inspector as a slide-over. Phone: a
-// top bar, a bottom tab bar inside a regatta, 16 px gutters, no horizontal scroll.
+// The app shell. Desktop (≥ 1024 px): 232 px navigation, content, and an optional 336 px
+// inspector. Tablet: an icon rail and the inspector as a slide-over. Phone: a top bar, a bottom
+// tab bar inside a regatta, 16 px gutters, no horizontal scroll.
 
 import { Suspense } from 'react';
 import { Outlet } from 'react-router';

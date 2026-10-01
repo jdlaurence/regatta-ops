@@ -94,7 +94,7 @@ export function DialogFooter({ className, ...props }: ComponentProps<'div'>) {
 
 /**
  * A panel that slides in from an edge: the right on tablet and desktop, the bottom on phones
- * (the phone lineup builder's tap-to-edit seat sheet, §5.3).
+ * (the phone lineup builder's tap-to-edit seat sheet).
  */
 export function SheetContent({
   side = 'right',

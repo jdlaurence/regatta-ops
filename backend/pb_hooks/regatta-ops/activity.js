@@ -6,8 +6,8 @@
 // are joined with "; ". Returns null when nothing worth logging changed. `team` is the team whose
 // data changed (entries, seats, availability, share links), '' otherwise.
 //
-// handle() also hands entry and seat changes to regatta-ops/notify.js, which emails the team's coaches
-// when someone from another team made the change (PLAN.md §4.6).
+// handle() also hands entry and seat changes to regatta-ops/notify.js, which emails the team's
+// coaches when someone from another team made the change.
 
 const time = require(`${__hooks}/regatta-ops/time.js`);
 

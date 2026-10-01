@@ -1,6 +1,6 @@
-// Pure helpers for the lineup builder (PLAN.md §4.4, §6.4). No React, no store: they take the
-// regatta's working set (or any object with the same arrays) and return plain data, so every
-// rule here is unit-tested in lib.test.ts.
+// Pure helpers for the lineup builder. No React, no store: they take the regatta's working set
+// (or any object with the same arrays) and return plain data, so every rule here is unit-tested
+// in lib.test.ts.
 
 import {
   boatClassSpec,
@@ -181,7 +181,7 @@ export function eventTitleText(event: RegattaEvent, timezone: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Entries grouped by event (PLAN.md §4.4: schedule order, unscheduled at the end)
+// Entries grouped by event (schedule order, unscheduled at the end)
 
 export interface EventGroup {
   event: RegattaEvent;
@@ -244,7 +244,7 @@ export function groupEntries(
 }
 
 // ---------------------------------------------------------------------------
-// Roster (PLAN.md §4.4 Roster panel)
+// Roster
 
 export interface RosterAthlete {
   athlete: Athlete;
@@ -439,7 +439,7 @@ function timeOf(index: LineupIndex, entry: Entry): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Seat candidates (click a seat → combobox; PLAN.md §4.4 Filling seats)
+// Seat candidates (click a seat → combobox)
 
 export type CandidateRank = 0 | 1 | 2 | 3;
 
@@ -726,7 +726,7 @@ function shellDetail(shell: Shell): string {
 
 /**
  * Shells for an entry: those that race as its class, grouped by home team (this team first,
- * then the other teams, then club boats) and sorted by nickname. `showAll` adds the other
+ * then club boats, then the other teams) and sorted by nickname. `showAll` adds the other
  * classes as a last group. Out-of-service and retired shells are disabled with a reason; retired
  * ones only show with `showAll`. The entry's current shell always shows.
  */
@@ -1019,7 +1019,7 @@ export function seatConflicts(
 
 /**
  * The plans of acknowledged hot seats among an entry's findings. The plan is stored on the later
- * entry of the pair, and shows on both (PLAN.md §4.4: it prints on both teams' sheets).
+ * entry of the pair, and shows on both (it prints on both teams' sheets).
  */
 export function hotSeatPlans(
   findings: readonly Finding[],
@@ -1099,7 +1099,7 @@ export function athleteMatrix(
 }
 
 // ---------------------------------------------------------------------------
-// Copy lineups from a previous regatta (PLAN.md §4.4 Copy and move)
+// Copy lineups from a previous regatta
 
 export type CopyMatch = 'name' | 'category' | 'class' | 'none';
 

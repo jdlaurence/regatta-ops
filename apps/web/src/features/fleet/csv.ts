@@ -1,6 +1,6 @@
-// CSV import and export for shells, oar sets, and gear (PLAN.md §4.7). Import columns are
-// guessed from headers: the export's own headers (the §8.1 field names) and the columns of
-// data/reference/shells.csv and oar-sets.csv both map without changes. Pure.
+// CSV import and export for shells, oar sets, and gear. Import columns are guessed from headers:
+// the export's own headers (the §8.1 field names) and the columns of data/reference/shells.csv
+// and oar-sets.csv both map without changes. Pure.
 
 import {
   BOAT_CLASSES,

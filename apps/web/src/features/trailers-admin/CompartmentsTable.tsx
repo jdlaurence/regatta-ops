@@ -1,6 +1,6 @@
-// Compartments (PLAN.md §4.9): the bed's zones along the trailer's length (riggers, oars,
-// slings), oar boxes and tubes, rigger racks, storage. Each sits from a distance from the front
-// of the frame to another, across the bed's full width; both blank runs the whole length.
+// Compartments: the bed's zones along the trailer's length (riggers, oars, slings), oar boxes and
+// tubes, rigger racks, storage. Each sits from a distance from the front of the frame to another,
+// across the bed's full width; both blank runs the whole length.
 
 import { useId } from 'react';
 import { Plus, Trash2, TriangleAlert } from 'lucide-react';

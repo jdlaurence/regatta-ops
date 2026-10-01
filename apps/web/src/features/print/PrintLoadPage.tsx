@@ -1,8 +1,7 @@
-// /print/regattas/:id/load/:trailerId (PLAN.md §4.8, §4.11, §6.12): the load sheet. The trailer
-// end view, then shelf by shelf from the top level down with the boats the regatta's load plan
-// puts there, then the bed's zones front to back with what rides in each (§4.9), then the
-// checklist of what rides on this trailer with empty Loaded and Returned boxes to tick at the
-// boathouse.
+// /print/regattas/:id/load/:trailerId: the load sheet. The trailer end view, then shelf by shelf
+// from the top level down with the boats the regatta's load plan puts there, then the bed's zones
+// front to back with what rides in each, then the checklist of what rides on this trailer with
+// empty Loaded and Returned boxes to tick at the boathouse.
 
 import { useMemo, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
@@ -28,7 +27,7 @@ import { printedText, instantText } from './format';
 import { TickBox, usePrintedAt } from './parts';
 
 /**
- * The trailer end view at print size (WP-M): the plan's boats on the racks, in team colors,
+ * The trailer end view at print size: the plan's boats on the racks, in team colors,
  * above the shelf-by-shelf table. Hidden when the trailer has no load plan.
  */
 export function TrailerDiagramSlot({

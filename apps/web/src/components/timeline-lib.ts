@@ -1,5 +1,5 @@
-// Layout math for the day timeline (PLAN.md §4.5, §6.3): pure functions from a ConflictInput
-// and its findings to rows, lanes, bars, and marks. <DayTimeline> only draws what this returns.
+// Layout math for the day timeline: pure functions from a ConflictInput and its findings to rows,
+// lanes, bars, and marks. <DayTimeline> only draws what this returns.
 //
 // - Each entry with a scheduled race is a bar spanning its busy window (launch lead to return),
 //   with the race as a darker segment (busyWindows() from the conflict engine).

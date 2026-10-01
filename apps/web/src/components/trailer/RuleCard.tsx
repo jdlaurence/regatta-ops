@@ -1,6 +1,6 @@
-// The rule card (PLAN.md §4.10, §5.4): a loading rule as a sentence, a Must or Prefer tag, a
-// toggle, the weight of a Prefer rule (Low, Medium, High), and edit and delete controls. A rule
-// changed or added for one regatta carries a "This regatta" tag.
+// The rule card: a loading rule as a sentence, a Must or Prefer tag, a toggle, the weight of a
+// Prefer rule (Low, Medium, High), and edit and delete controls. A rule changed or added for one
+// regatta carries a "This regatta" tag.
 
 import { useId, type ReactNode } from 'react';
 import { Pencil, Trash2, Undo2 } from 'lucide-react';

@@ -1,6 +1,6 @@
-// Offline reads (PLAN.md §10.4). TanStack Query's cache is saved to IndexedDB on this device
-// and restored on the next load, so a regatta opened in the last week renders with no
-// connection: schedule, lineups, trailer, load list. Writes still need the server (online.ts).
+// Offline reads. TanStack Query's cache is saved to IndexedDB on this device and restored on the
+// next load, so a regatta opened in the last week renders with no connection: schedule, lineups,
+// trailer, load list. Writes still need the server (online.ts).
 //
 // What is saved: successful ['regatta-ops', ...] queries (every DataStore list and record) fetched in
 // the last CACHE_MAX_AGE, except presence and lists too long to be worth it. Older versions of
@@ -145,7 +145,7 @@ export interface IdbPersisterOptions {
 
 /**
  * Saves the query cache to IndexedDB, throttled. Null where IndexedDB is missing (some private
- * modes, tests without fake-indexeddb): the app then works online only, as before.
+ * modes, tests without fake-indexeddb): the app then works online only.
  */
 export function createIdbPersister({
   storage,

@@ -1,8 +1,8 @@
-// /regattas/:id/load (PLAN.md §4.8, §6.7): the load list as a checklist, phone first. Grouped by
-// Shells, Riggers, Oars, Gear, Extras; each line has where it rides and two big boxes, Loaded
-// and Returned, that record who ticked them and when. Flags keep anything from falling
-// through: a shell with no spot on a trailer, a spare on a trailer, a line nothing needs any
-// more. Offline it reads from the device and every control is off (§10.4).
+// /regattas/:id/load: the load list as a checklist, phone first. Grouped by Shells, Riggers,
+// Oars, Gear, Extras; each line has where it rides and two big boxes, Loaded and Returned, that
+// record who ticked them and when. Flags keep anything from falling through: a shell with no spot
+// on a trailer, a spare on a trailer, a line nothing needs any more. Offline it reads from the
+// device and every control is off.
 //
 // Stored rows are made lazily (see lib.ts): ticking a line, or saying where it rides, saves it;
 // "Save list" saves every line at once so a share link shows the whole list.

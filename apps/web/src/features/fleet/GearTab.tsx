@@ -1,5 +1,5 @@
 // Gear: cox boxes, slings, tents, and the rest. Default-load items go on every regatta's load
-// list (PLAN.md §4.8). Edited inline on wider screens; phones edit through a dialog.
+// list. Edited inline on wider screens; phones edit through a dialog.
 
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { useForm, useWatch } from 'react-hook-form';

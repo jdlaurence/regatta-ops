@@ -63,7 +63,7 @@ The PocketBase dashboard is at http://127.0.0.1:8090/_/ with the same admin cred
 | ----------------- | ------------------------------------------------------------------------------- |
 | `apps/web`        | The React app (Vite, React Router, TanStack Query, Tailwind, dnd-kit)           |
 | `packages/domain` | Pure TypeScript: types, schemas, conflict engine, trailer packer, parsers       |
-| `packages/seed`   | Builds the development world from `data/reference` (invented athletes only)     |
+| `packages/seed`   | Builds the development world from `data/reference`, with invented athletes      |
 | `backend`         | PocketBase migrations, hooks, seed loader, and rule tests                       |
 | `data/reference`  | Sanitized extracts of the club's spreadsheets (fleet, oars, a schedule, layout) |
 
@@ -79,4 +79,4 @@ pnpm build       # the app into backend/pb_public/, served by PocketBase in prod
 ```
 
 The club's workbooks with athlete names stay out of git (see `.gitignore` and
-`data/reference/README.md`); no real athlete name belongs anywhere in this repository.
+`data/reference/README.md`); no real athlete name belongs in this repository in plain text.

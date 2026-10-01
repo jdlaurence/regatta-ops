@@ -1,6 +1,6 @@
-// Entry details in the inspector (PLAN.md §4.4 Entry details): label, status, coach, notes,
-// shell and oars, the re-rig flag, computed facts, and the entry's findings with hot-seat
-// acknowledgment. Text fields save when they lose focus (or on Enter for the label).
+// Entry details in the inspector: label, status, coach, notes, shell and oars, the re-rig flag,
+// computed facts, and the entry's findings with hot-seat acknowledgment. Text fields save when
+// they lose focus (or on Enter for the label).
 
 import { useId, useState, type ReactNode } from 'react';
 import { ArrowRightLeft, Copy, RefreshCcw, Trash2 } from 'lucide-react';

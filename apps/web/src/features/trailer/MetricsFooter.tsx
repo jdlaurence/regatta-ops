@@ -1,5 +1,5 @@
-// Under the drawing (PLAN.md §6.6 bottom row): weight per side with the balance tolerance,
-// overhang per level, the layout's warnings, and how many boats are still to load.
+// Under the drawing: weight per side with the balance tolerance, overhang per level, the layout's
+// warnings, and how many boats are still to load.
 
 import { Scale, TriangleAlert } from 'lucide-react';
 import { cn } from '@/lib/cn';

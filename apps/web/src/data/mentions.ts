@@ -1,4 +1,4 @@
-// @-mentions in comments (PLAN.md §4.6). The same rules as the server
+// @-mentions in comments. The same rules as the server
 // (backend/pb_hooks/regatta-ops/mentions.js), so demo mode resolves mentions the way PocketBase does and
 // the comment thread highlights exactly what the server matched:
 //

@@ -1,5 +1,5 @@
-// My preferences (PLAN.md §4.12): theme, weight unit, and default team for the signed-in
-// user. Changes save right away and follow the user to other devices.
+// My preferences: theme, weight unit, and default team for the signed-in user. Changes save right
+// away and follow the user to other devices.
 
 import { useId } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';

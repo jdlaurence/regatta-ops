@@ -108,11 +108,11 @@ export function packBoatFromShell(
 }
 
 /**
- * One boat per shell used by a non-scratched entry (§4.8), in order of first use in `entries`.
- * `firstRaceAt` is the earliest scheduled race among the shell's entries; the team is that of
- * the shell's first entry, meaning the one racing earliest (entries without a time count as
- * latest, then in list order). `spareShellIds` adds shells on the trailer that no entry uses
- * (§4.8 "spare"), with the shell's home team, so their placements survive a re-pack.
+ * One boat per shell used by a non-scratched entry, in order of first use in `entries`.
+ * `firstRaceAt` is the earliest scheduled race among the shell's entries; the team is that of the
+ * shell's first entry, meaning the one racing earliest (entries without a time count as latest,
+ * then in list order). `spareShellIds` adds shells on the trailer that no entry uses, with the
+ * shell's home team, so their placements survive a re-pack.
  */
 export function packBoatsFromEntities(input: {
   shells: Shell[];

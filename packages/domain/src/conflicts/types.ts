@@ -89,7 +89,7 @@ export interface EntryStats {
   starboardCount: number;
 }
 
-/** Findings the coach can acknowledge with a plan (PLAN.md §4.4). */
+/** Findings the coach can acknowledge with a plan. */
 export const HOT_SEAT_CODES = [
   'SHELL_HOT_SEAT',
   'OARS_HOT_SEAT',

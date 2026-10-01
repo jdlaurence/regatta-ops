@@ -1,12 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
-// Mail setup (PLAN.md §4.6). See backend/README.md "Email".
-//
-// - SMTP from the environment on start: when REGATTA_OPS_SMTP_HOST is set, the SMTP settings (and the
-//   sender from REGATTA_OPS_MAIL_FROM / REGATTA_OPS_MAIL_FROM_NAME) are written into PocketBase's settings, the
-//   same ones the dashboard edits (Settings > Mail settings). Without REGATTA_OPS_SMTP_HOST the dashboard
-//   values stand.
-// - REGATTA_OPS_MAIL_CAPTURE=1: every outgoing email, the app's and PocketBase's own, is stored in the
-//   mail_outbox collection and not sent. Tests read it with a superuser client.
+// Mail setup (backend/README.md "Email"): SMTP settings from REGATTA_OPS_SMTP_* on start, and,
+// with REGATTA_OPS_MAIL_CAPTURE=1, every outgoing email stored in mail_outbox and not sent.
 
 onBootstrap((e) => {
   e.next();
