@@ -573,7 +573,7 @@ export function placementWhere(
 }
 
 // ---------------------------------------------------------------------------
-// Metrics footer
+// Weight and balance
 
 export interface TierOverhang {
   tier: number;

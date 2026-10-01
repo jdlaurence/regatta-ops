@@ -78,7 +78,10 @@ test.describe('desktop', () => {
       await expect(toLoad.getByRole('heading', { name: /^For this trailer/ })).toHaveCount(0);
       // The three eights go up top, as the default rule prefers.
       for (const shell of eights) expect(await levelOf(page, shell)).toBeGreaterThanOrEqual(4);
-      const metrics = main.getByRole('region', { name: 'Weight, overhang, and warnings' });
+      // Weight, overhang, and warnings start folded under their heading.
+      const metrics = main.getByRole('region', { name: 'Weight and balance' });
+      await expect(metrics).not.toContainText('on this trailer');
+      await metrics.getByRole('button', { name: /^Weight and balance/ }).click();
       await expect(metrics).toContainText('11 on this trailer');
     });
 

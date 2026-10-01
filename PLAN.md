@@ -467,7 +467,7 @@ A tab of the team page: the season sheet, athletes by regattas, with a checkbox 
 ││ ▭ Spare oars…         │ │  level 2  [ Thursday ]║[ —          ][ —         ]│ │Prefer    │ │
 ││                        │ │  level 1  [ —        ]║[ —          ][ —         ]│ │☑ Eights  │ │
 ││ Gear checklist  ▸      │ │   narrow side   post   wide side (outer first)   │ │  on top ▮▮▮│ │
-│└────────────────────────┘ │  Left 384 kg · Right 576 kg · check balance     │ │☑ Fours   │ │
+│└────────────────────────┘ │  Weight and balance              1 warning  ▾   │ │☑ Fours   │ │
 │                           └──────────────────────────────────────────────────┘ │  lower ▮▮▯│ │
 │ Why here? Peggy: Prefer eights on levels 5 and 4 (+30) · Heavier boats low (−4)  │+ Add rule│ │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -476,7 +476,7 @@ A tab of the team page: the season sheet, athletes by regattas, with a checkbox 
 - Left: unplaced shells (draggable), then the gear checklist. "To load" says "No boats yet" when no entry has a shell.
 - Center: end view by default, drawn as the real cross-section (post at one third, one lane left, two lanes right, bed compartments below); plan view per level, and the isometric view, via the toggle. Selecting a cell or chip shows reasons in the inspector; after a move, focus follows the boat. A trailer switcher at the top moves between the boys' and girls' trailers; unplaced boats can be dragged onto either.
 - Right: rules panel, folded under its "Loading rules" heading and closed when the page opens (the heading shows how many rules are this regatta's and "Changed" after an edit). Editing a rule and clicking "Auto pack trailer" re-packs; locked chips stay.
-- Bottom: weight per side, per-tier overhang, warnings.
+- Bottom: "Weight and balance", folded under its heading and closed when the page opens (the heading shows how many warnings the layout has): weight per side, per-tier overhang, warnings.
 
 ### 6.7 Load list `/regattas/:id/load`
 
